@@ -2,6 +2,7 @@ package com.youzan.sz.common.util;
 
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.oa.staff.api.StaffService;
@@ -47,18 +48,33 @@ public class AuthorizationAspect extends BaseAspect {
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         Method method = this.getMethod(pjp);
         Authorization authorization = method.getAnnotation(Authorization.class);
+        Class<?> returnType = method.getReturnType();
 
         RoleEnum[] allowedRoles = authorization.allowedRoles();
         Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
         Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
 
-        boolean allowAccess = allowAccess(allowedRoles, adminId, shopId);
+        boolean allowAccess;
+        try {
+            allowAccess = this.allowAccess(allowedRoles, adminId, shopId);
+        } catch (Exception e) {
+            LOGGER.error("Authorization Exception:{}", e);
+            if (BaseResponse.class.isAssignableFrom(returnType)) {
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+            } else {
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+            }
+        }
+
         if (allowAccess) {
             return pjp.proceed();
         } else {
-            throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+            if (BaseResponse.class.isAssignableFrom(returnType)) {
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+            } else {
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+            }
         }
-
     }
 
 
@@ -74,8 +90,8 @@ public class AuthorizationAspect extends BaseAspect {
         if (adminId == null) {
             return false;
         }
-
         StaffDTO staffDTO = staffService.getStaffByAdminId(adminId.toString());
+
         if (staffDTO == null) {
             Future<StaffDTO> future = RpcContext.getContext().getFuture();
             try {
