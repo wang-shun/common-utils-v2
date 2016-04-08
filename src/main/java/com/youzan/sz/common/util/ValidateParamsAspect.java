@@ -37,6 +37,7 @@ public class ValidateParamsAspect extends BaseAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidateParamsAspect.class);
 
+
     @Resource //TODO 注入两次,第二次注入null
     private Validator validator;
 
@@ -52,9 +53,13 @@ public class ValidateParamsAspect extends BaseAspect {
     //检验内部使用传递过来的参数
     @Around("pointcut()")
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
+
+        long beginTime = System.currentTimeMillis();
+
         if (validator == null) { //TODO Spring加载了两次该类，第一次注入了validator,第二次注入null，暂时采用这样的方式注入
             validator = (Validator) SpringUtils.getBean("validator");
         }
+
 
         Method method = this.getMethod(pjp);
         ValidateParams validateParamsAnnotation = method.getAnnotation(ValidateParams.class);
@@ -64,24 +69,32 @@ public class ValidateParamsAspect extends BaseAspect {
         Object[] args = pjp.getArgs();
         String[] excludeProperties = validateParamsAnnotation.excludeProperties();
 
-        Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
-        if (!constraintSet.isEmpty()) {
-            String errors = buildErrorMsg(constraintSet);
-            if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
-            } else {
-                throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:" + errors);
-            }
-        } else {
-            try {
-                return pjp.proceed();
-            } catch (BusinessException be) {
-                LOGGER.error("Error:{}", be);
+        try {
+            Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
+            if (!constraintSet.isEmpty()) {
+                String errors = buildErrorMsg(constraintSet);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
-                    return new BaseResponse(be.getCode().intValue(), be.getMessage(), null);
+                    return new BaseResponse(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
                 } else {
-                    throw be;
+                    throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:" + errors);
                 }
+            } else {
+                try {
+                    return pjp.proceed();
+                } catch (BusinessException be) {
+                    LOGGER.error("Error:{}", be);
+                    if (BaseResponse.class.isAssignableFrom(returnType)) {
+                        return new BaseResponse(be.getCode().intValue(), be.getMessage(), null);
+                    } else {
+                        throw be;
+                    }
+                }
+            }
+        } finally {
+            if (BaseResponse.class.isAssignableFrom(returnType)) {
+                LOGGER.error("整个调用执行时间 (ms):{}", System.currentTimeMillis() - beginTime);
+            } else {
+                LOGGER.error("调用ServiceImpl的方法所用时间 (ms):{}", System.currentTimeMillis() - beginTime);
             }
         }
     }

@@ -46,34 +46,43 @@ public class AuthorizationAspect extends BaseAspect {
     //检验权限
     @Around("pointcut()")
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
-        Method method = this.getMethod(pjp);
-        Authorization authorization = method.getAnnotation(Authorization.class);
-        Class<?> returnType = method.getReturnType();
-
-        RoleEnum[] allowedRoles = authorization.allowedRoles();
-        Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
-        Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
-
-        boolean allowAccess;
+        long beginTime = System.currentTimeMillis();
         try {
-            allowAccess = this.allowAccess(allowedRoles, adminId, shopId);
-        } catch (Exception e) {
-            LOGGER.error("Authorization Exception:{}", e);
-            if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
-            } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
-            }
-        }
 
-        if (allowAccess) {
-            return pjp.proceed();
-        } else {
-            if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
-            } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+            Method method = this.getMethod(pjp);
+            Authorization authorization = method.getAnnotation(Authorization.class);
+            Class<?> returnType = method.getReturnType();
+
+            RoleEnum[] allowedRoles = authorization.allowedRoles();
+            Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
+            Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
+
+            boolean allowAccess;
+            try {
+                allowAccess = this.allowAccess(allowedRoles, adminId, shopId);
+            } catch (Exception e) {
+                LOGGER.error("Authorization Exception:{}", e);
+                if (BaseResponse.class.isAssignableFrom(returnType)) {
+                    return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+                } else {
+                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+                }
+            } finally {
+                LOGGER.error("完成鉴权所用时间(ms):{}", System.currentTimeMillis() - beginTime);
+                beginTime = System.currentTimeMillis();
             }
+
+            if (allowAccess) {
+                return pjp.proceed();
+            } else {
+                if (BaseResponse.class.isAssignableFrom(returnType)) {
+                    return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+                } else {
+                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+                }
+            }
+        } finally {
+            LOGGER.error("纯粹处理业务本身所用时间(ms):{}", System.currentTimeMillis() - beginTime);
         }
     }
 
