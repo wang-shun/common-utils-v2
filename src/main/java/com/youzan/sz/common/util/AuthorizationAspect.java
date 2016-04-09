@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 public class AuthorizationAspect extends BaseAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationAspect.class);
+    private static final ThreadLocal<StaffDTO> LOCAL = new ThreadLocal<>();
 
     @Resource
     private StaffService staffService;
@@ -48,7 +49,6 @@ public class AuthorizationAspect extends BaseAspect {
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         long beginTime = System.currentTimeMillis();
         try {
-
             Method method = this.getMethod(pjp);
             Authorization authorization = method.getAnnotation(Authorization.class);
             Class<?> returnType = method.getReturnType();
@@ -57,6 +57,7 @@ public class AuthorizationAspect extends BaseAspect {
             Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
             Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
 
+            // 鉴权
             boolean allowAccess;
             try {
                 allowAccess = this.allowAccess(allowedRoles, adminId, shopId);
@@ -65,7 +66,7 @@ public class AuthorizationAspect extends BaseAspect {
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
                 } else {
-                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口,Exception:" + e.getMessage());
                 }
             } finally {
                 LOGGER.error("完成鉴权所用时间(ms):{}", System.currentTimeMillis() - beginTime);
@@ -73,8 +74,19 @@ public class AuthorizationAspect extends BaseAspect {
             }
 
             if (allowAccess) {
-                return pjp.proceed();
+                // 通过鉴权,开始调用业务逻辑方法
+                try {
+                    return pjp.proceed();
+                } catch (Exception e) {
+                    LOGGER.error("Exception:{}", e);
+                    if (BaseResponse.class.isAssignableFrom(returnType)) {
+                        return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
+                    } else {
+                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常,Exception:" + e.getMessage());
+                    }
+                }
             } else {
+                // 未通过鉴权
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
                 } else {
@@ -82,6 +94,7 @@ public class AuthorizationAspect extends BaseAspect {
                 }
             }
         } finally {
+            LOCAL.remove();
             LOGGER.error("纯粹处理业务本身所用时间(ms):{}", System.currentTimeMillis() - beginTime);
         }
     }
@@ -99,35 +112,40 @@ public class AuthorizationAspect extends BaseAspect {
         if (adminId == null) {
             return false;
         }
-        StaffDTO staffDTO = staffService.getStaffByAdminId(adminId.toString());
+
+        StaffDTO staffDTO = LOCAL.get();
 
         if (staffDTO == null) {
-            Future<StaffDTO> future = RpcContext.getContext().getFuture();
-            try {
-                if (future != null) {
-                    staffDTO = future.get();
-                }
-            } catch (InterruptedException e) {
-                LOGGER.error("Error:{}", e);
-            } catch (ExecutionException e) {
-                LOGGER.error("Error:{}", e);
-            }
+            staffDTO = staffService.getStaffByAdminId(adminId.toString());
             if (staffDTO == null) {
-                return false;
-            } else {
-                for (int i = 0; i < allowedRoles.length; i++) {
-                    if (allowedRoles[i].equals(RoleEnum.valueOf(staffDTO.getRole()))) {
-
-                        if (shopId != null && staffDTO.getShopId() != ((Long) shopId)) {
-                            return false;
-                        } else {
-                            return true;
-                        }
+                Future<StaffDTO> future = RpcContext.getContext().getFuture();
+                try {
+                    if (future != null) {
+                        staffDTO = future.get();
                     }
+                } catch (InterruptedException e) {
+                    LOGGER.error("Exception:{}", e);
+                } catch (ExecutionException e) {
+                    LOGGER.error("Exception:{}", e);
                 }
-                return false;
+                if (staffDTO == null) {
+                    return false;
+                } else {
+                    LOCAL.set(staffDTO);
+                }
             }
         }
+
+        for (int i = 0; i < allowedRoles.length; i++) {
+            if (allowedRoles[i].equals(RoleEnum.valueOf(staffDTO.getRole()))) {
+                if (shopId != null && staffDTO.getShopId() != ((Long) shopId)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+
         return true;
     }
 
