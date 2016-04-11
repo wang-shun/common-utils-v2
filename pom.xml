@@ -74,6 +74,12 @@
             <artifactId>base-model</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
