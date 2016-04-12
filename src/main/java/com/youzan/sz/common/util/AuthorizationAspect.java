@@ -123,9 +123,7 @@ public class AuthorizationAspect extends BaseAspect {
                     if (future != null) {
                         staffDTO = future.get();
                     }
-                } catch (InterruptedException e) {
-                    LOGGER.error("Exception:{}", e);
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     LOGGER.error("Exception:{}", e);
                 }
                 if (staffDTO == null) {
