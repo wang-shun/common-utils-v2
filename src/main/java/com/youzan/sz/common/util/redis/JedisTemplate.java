@@ -12,8 +12,12 @@ import java.util.Set;
 /**
  * Created by YANG on 16/4/11.
  */
+
+
 public class JedisTemplate {
     private static final Logger LOGGER = LoggerFactory.getLogger(JedisTemplate.class);
+
+    private static final Long SET_SUCCESS = 1L;
 
     private JedisPool jedisPool;
 
@@ -34,8 +38,7 @@ public class JedisTemplate {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
-            T t = jedisAction.action(jedis);
-            return t;
+            return jedisAction.action(jedis);
         } catch (JedisException je) {
             LOGGER.error("Jedis Exception:{}", je);
             throw je;
@@ -89,552 +92,305 @@ public class JedisTemplate {
 
 
     public boolean del(final String... keys) {
-        return ((Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                String[] var2 = keys;
-                int var3 = var2.length;
-
-                for (int var4 = 0; var4 < var3; ++var4) {
-                    String key = var2[var4];
-                    jedis.del(key);
-                }
-
-                return Boolean.valueOf(true);
-            }
-        })).booleanValue();
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.del(keys) > 0);
     }
 
     public String get(final String key) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                return jedis.get(key);
-            }
-        });
+        return this.execute((JedisAction<String>) jedis -> jedis.get(key));
     }
 
     public Long getAsLong(final String key) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                String result = jedis.get(key);
-                return result != null ? Long.valueOf(result) : null;
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> {
+                    String result = jedis.get(key);
+                    return result != null ? Long.valueOf(result) : null;
+                }
+        );
     }
 
     public Integer getAsInteger(final String key) {
-        return (Integer) this.execute(new JedisAction() {
-            public Integer action(Jedis jedis) {
-                String result = jedis.get(key);
-                return result != null ? Integer.valueOf(result) : null;
-            }
-        });
+        return this.execute((JedisAction<Integer>) jedis -> {
+                    String result = jedis.get(key);
+                    return result != null ? Integer.valueOf(result) : null;
+                }
+        );
     }
 
     public void set(final String key, final String value) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.set(key, value);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.set(key, value));
     }
 
     public void setex(final String key, final String value, final int seconds) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.setex(key, seconds, value);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.setex(key, seconds, value));
     }
 
     public Boolean setnx(final String key, final String value) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.setnx(key, value).longValue() == 1L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.setnx(key, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean setnxex(final String key, final String value, final long seconds) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                String result = jedis.set(key, value, "NX", "EX", seconds);
-                return Boolean.valueOf(JedisUtils.isStatusOk(result));
-            }
+        return this.execute((JedisAction<Boolean>) jedis -> {
+            String result = jedis.set(key, value, "NX", "EX", seconds);
+            return JedisUtils.isStatusOk(result);
         });
     }
 
     public String getSet(final String key, final String value) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                return jedis.getSet(key, value);
-            }
-        });
+        return this.execute((JedisAction<String>) jedis -> jedis.getSet(key, value));
     }
 
     public Long incr(final String key) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.incr(key);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.incr(key));
     }
 
     public Long incrBy(final String key, final Long increment) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.incrBy(key, increment.longValue());
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.incrBy(key, increment.longValue()));
     }
 
     public Double incrByFloat(final String key, final double increment) {
-        return (Double) this.execute(new JedisAction() {
-            public Double action(Jedis jedis) {
-                return jedis.incrByFloat(key, increment);
-            }
-        });
+        return this.execute((JedisAction<Double>) jedis -> jedis.incrByFloat(key, increment));
     }
 
     public Long decr(final String key) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.decr(key);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.decr(key));
     }
 
     public Long decrBy(final String key, final long decrement) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.decrBy(key, decrement);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.decrBy(key, decrement));
     }
 
     public String hget(final String key, final String field) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                return jedis.hget(key, field);
-            }
-        });
+        return this.execute((JedisAction<String>) jedis -> jedis.hget(key, field));
     }
 
     public List<String> hmget(final String key, final String... fields) {
-        return (List) this.execute(new JedisAction() {
-            public List<String> action(Jedis jedis) {
-                return jedis.hmget(key, fields);
-            }
-        });
+        return this.execute((JedisAction<List<String>>) jedis -> jedis.hmget(key, fields));
     }
 
     public Map<String, String> hgetAll(final String key) {
-        return (Map) this.execute(new JedisAction() {
-            public Map<String, String> action(Jedis jedis) {
-                return jedis.hgetAll(key);
-            }
-        });
+        return this.execute((JedisAction<Map<String, String>>) jedis -> jedis.hgetAll(key));
     }
 
     public void hset(final String key, final String field, final String value) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.hset(key, field, value);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.hset(key, field, value));
     }
 
     public void hmset(final String key, final Map<String, String> map) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.hmset(key, map);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.hmset(key, map));
     }
 
     public Boolean hsetnx(final String key, final String field, final String value) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.hsetnx(key, field, value).longValue() == 1L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.hsetnx(key, field, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Long hincrBy(final String key, final String field, final long increment) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.hincrBy(key, field, increment);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.hincrBy(key, field, increment));
     }
 
     public Double hincrByFloat(final String key, final String field, final double increment) {
-        return (Double) this.execute(new JedisAction() {
-            public Double action(Jedis jedis) {
-                return jedis.hincrByFloat(key, field, increment);
-            }
-        });
+        return this.execute((JedisAction<Double>) jedis -> jedis.hincrByFloat(key, field, increment));
     }
 
     public Long hdel(final String key, final String... fields) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.hdel(key, fields);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.hdel(key, fields));
     }
 
     public Boolean hexists(final String key, final String field) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.hexists(key, field);
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.hexists(key, field));
     }
 
     public Set<String> hkeys(final String key) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<String> action(Jedis jedis) {
-                return jedis.hkeys(key);
-            }
-        });
+        return this.execute((JedisAction<Set<String>>) jedis -> jedis.hkeys(key));
     }
 
     public Long hlen(final String key) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.hlen(key);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.hlen(key));
     }
 
     public Long lpush(final String key, final String... values) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.lpushx(key, values);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.lpushx(key, values));
     }
 
     public String rpop(final String key) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                return jedis.rpop(key);
-            }
-        });
+        return this.execute((JedisAction<String>) jedis -> jedis.rpop(key));
     }
 
+    /**
+     * @Deprecated unusable command, this command will be removed in 3.0.0.
+     */
+    @Deprecated
     public String brpop(final String key) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                List result = jedis.brpop(key);
-                return result != null && result.size() > 0 ? (String) result.get(0) : null;
-            }
+        return this.execute((JedisAction<String>) jedis -> {
+            List result = jedis.brpop(key);
+            return result != null && result.size() > 0 ? (String) result.get(0) : null;
         });
     }
 
     public String brpop(final int timeout, final String key) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                List result = jedis.brpop(timeout, key);
-                return result != null && result.size() > 0 ? (String) result.get(0) : null;
-            }
+        return this.execute((JedisAction<String>) jedis -> {
+            List result = jedis.brpop(timeout, key);
+            return result != null && result.size() > 0 ? (String) result.get(0) : null;
         });
     }
 
     public Long llen(final String key) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.llen(key);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.llen(key));
     }
 
     public String lindex(final String key, final long index) {
-        return (String) this.execute(new JedisAction() {
-            public String action(Jedis jedis) {
-                return jedis.lindex(key, index);
-            }
-        });
+        return this.execute((JedisAction<String>) jedis -> jedis.lindex(key, index));
     }
 
     public List<String> lrange(final String key, final int start, final int end) {
-        return (List) this.execute(new JedisAction() {
-            public List<String> action(Jedis jedis) {
-                return jedis.lrange(key, (long) start, (long) end);
-            }
-        });
+        return this.execute((JedisAction<List<String>>) jedis -> jedis.lrange(key, (long) start, (long) end));
     }
 
     public void ltrim(final String key, final int start, final int end) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.ltrim(key, (long) start, (long) end);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.ltrim(key, (long) start, (long) end));
     }
 
     public void ltrimFromLeft(final String key, final int size) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.ltrim(key, 0L, (long) (size - 1));
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.ltrim(key, 0L, (long) (size - 1)));
     }
 
     public Boolean lremFirst(final String key, final String value) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.lrem(key, 1L, value).longValue() == 1L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.lrem(key, 1L, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean lremAll(final String key, final String value) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.lrem(key, 0L, value).longValue() > 0L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.lrem(key, 0L, value) > 0L ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean sadd(final String key, final String... members) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.sadd(key, members).longValue() == 1L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.sadd(key, members).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Set<String> smembers(final String key) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<String> action(Jedis jedis) {
-                return jedis.smembers(key);
-            }
-        });
+        return this.execute((JedisAction<Set<String>>) jedis -> jedis.smembers(key));
     }
 
     public Boolean zadd(final String key, final double score, final String member) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.zadd(key, score, member).longValue() == 1L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.zadd(key, score, member).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Double zscore(final String key, final String member) {
-        return (Double) this.execute(new JedisAction() {
-            public Double action(Jedis jedis) {
-                return jedis.zscore(key, member);
-            }
-        });
+        return this.execute((JedisAction<Double>) jedis -> jedis.zscore(key, member));
     }
 
     public Long zrank(final String key, final String member) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.zrank(key, member);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.zrank(key, member));
     }
 
     public Long zrevrank(final String key, final String member) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.zrevrank(key, member);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.zrevrank(key, member));
     }
 
     public Long zcount(final String key, final double min, final double max) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.zcount(key, min, max);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.zcount(key, min, max));
     }
 
     public Set<String> zrange(final String key, final int start, final int end) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<String> action(Jedis jedis) {
-                return jedis.zrange(key, (long) start, (long) end);
-            }
-        });
+        return this.execute((JedisAction<Set<String>>) jedis -> jedis.zrange(key, (long) start, (long) end));
     }
 
     public Set<Tuple> zrangeWithScores(final String key, final int start, final int end) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<Tuple> action(Jedis jedis) {
-                return jedis.zrangeWithScores(key, (long) start, (long) end);
-            }
-        });
+        return this.execute((JedisAction<Set<Tuple>>) jedis -> jedis.zrangeWithScores(key, (long) start, (long) end));
     }
 
     public Set<String> zrevrange(final String key, final int start, final int end) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<String> action(Jedis jedis) {
-                return jedis.zrevrange(key, (long) start, (long) end);
-            }
-        });
+        return this.execute((JedisAction<Set<String>>) jedis -> jedis.zrevrange(key, (long) start, (long) end));
     }
 
     public Set<Tuple> zrevrangeWithScores(final String key, final int start, final int end) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<Tuple> action(Jedis jedis) {
-                return jedis.zrevrangeWithScores(key, (long) start, (long) end);
-            }
-        });
+        return this.execute((JedisAction<Set<Tuple>>) jedis -> jedis.zrevrangeWithScores(key, (long) start, (long) end));
     }
 
     public Set<String> zrangeByScore(final String key, final double min, final double max) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<String> action(Jedis jedis) {
-                return jedis.zrangeByScore(key, min, max);
-            }
-        });
+        return this.execute((JedisAction<Set<String>>) jedis -> jedis.zrangeByScore(key, min, max));
     }
 
     public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<Tuple> action(Jedis jedis) {
-                return jedis.zrangeByScoreWithScores(key, min, max);
-            }
-        });
+        return this.execute((JedisAction<Set<Tuple>>) jedis -> jedis.zrangeByScoreWithScores(key, min, max));
     }
 
     public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<String> action(Jedis jedis) {
-                return jedis.zrevrangeByScore(key, max, min);
-            }
-        });
+        return this.execute((JedisAction<Set<String>>) jedis -> jedis.zrevrangeByScore(key, min, max));
     }
 
     public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
-        return (Set) this.execute(new JedisAction() {
-            public Set<Tuple> action(Jedis jedis) {
-                return jedis.zrevrangeByScoreWithScores(key, max, min);
-            }
-        });
+        return this.execute((JedisAction<Set<Tuple>>) jedis -> jedis.zrevrangeByScoreWithScores(key, min, max));
     }
 
     public Boolean zrem(final String key, final String... members) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                return jedis.zrem(key, members).longValue() == 1L ? Boolean.TRUE : Boolean.FALSE;
-            }
-        });
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.zrem(key, members).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Long zremrangeByScore(final String key, final double start, final double end) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.zremrangeByScore(key, start, end);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.zremrangeByScore(key, start, end));
     }
 
     public Long zremrangeByRank(final String key, final long start, final long end) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.zremrangeByRank(key, start, end);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.zremrangeByRank(key, start, end));
     }
 
     public Long zcard(final String key) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.zcard(key);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.zcard(key));
     }
 
     public void expire(final String key, final int seconds) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.expire(key, seconds);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.expire(key, seconds));
     }
 
 
     public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.subscribe(jedisPubSub, channels);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.subscribe(jedisPubSub, channels));
     }
 
     public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                jedis.psubscribe(jedisPubSub, patterns);
-            }
-        });
+        this.execute((JedisActionNoResult) jedis -> jedis.psubscribe(jedisPubSub, patterns));
     }
 
     public Long publish(final String channel, final String message) {
-        return (Long) this.execute(new JedisAction() {
-            public Long action(Jedis jedis) {
-                return jedis.publish(channel, message);
-            }
-        });
+        return this.execute((JedisAction<Long>) jedis -> jedis.publish(channel, message));
     }
 
     public List<String> pubsubChannels(final String pattern) {
-        return (List) this.execute(new JedisAction() {
-            public List<String> action(Jedis jedis) {
-                return jedis.pubsubChannels(pattern);
-            }
-        });
+        return this.execute((JedisAction<List<String>>) jedis -> jedis.pubsubChannels(pattern));
     }
 
     public Map<String, String> pubsubNumSub(final String... channels) {
-        return (Map) this.execute(new JedisAction() {
-            public Map<String, String> action(Jedis jedis) {
-                return jedis.pubsubNumSub(channels);
-            }
-        });
+        return this.execute((JedisAction<Map<String, String>>) jedis -> jedis.pubsubNumSub(channels));
     }
 
-    public Boolean acquireLock(final String lock, final long timeout) {
-        return (Boolean) this.execute(new JedisAction() {
-            public Boolean action(Jedis jedis) {
-                boolean success = false;
-                long expired = timeout;
-                long value = System.currentTimeMillis() + expired + 1L;
-                System.out.println(value);
-                long acquired = jedis.setnx(lock, String.valueOf(value)).longValue();
-                if (acquired == 1L) {
-                    success = true;
-                } else {
-                    long oldValue = Long.valueOf(jedis.get(lock)).longValue();
-                    if (oldValue < System.currentTimeMillis()) {
-                        String getValue = jedis.getSet(lock, String.valueOf(value));
-                        if (Long.valueOf(getValue).longValue() == oldValue) {
-                            success = true;
-                        } else {
-                            success = false;
-                        }
-                    } else {
-                        success = false;
-                    }
-                }
 
-                return Boolean.valueOf(success);
+    public Boolean acquireLock(final String lock, final long timeout) {
+        return this.execute((JedisAction<Boolean>) jedis -> {
+            long expired = timeout;
+            long value = System.currentTimeMillis() + expired + 1L;
+
+            Long acquired = jedis.setnx(lock, String.valueOf(value));
+            if (SET_SUCCESS.equals(acquired)) {
+                return Boolean.TRUE;
+            } else {
+                long oldValue = Long.valueOf(jedis.get(lock)).longValue();
+                if (oldValue < System.currentTimeMillis()) {
+                    String getValue = jedis.getSet(lock, String.valueOf(value));
+                    if (Long.valueOf(getValue) == oldValue) {
+                        return Boolean.TRUE;
+                    } else {
+                        return Boolean.FALSE;
+                    }
+                } else {
+                    return Boolean.FALSE;
+                }
             }
         });
     }
 
     public void releaseLock(final String lock) {
-        this.execute(new JedisActionNoResult() {
-            public void action(Jedis jedis) {
-                long current = System.currentTimeMillis();
-                if (current < Long.valueOf(jedis.get(lock)).longValue()) {
-                    jedis.del(lock);
-                }
-
+        this.execute((JedisActionNoResult) jedis -> {
+            long current = System.currentTimeMillis();
+            if (current < Long.valueOf(jedis.get(lock)).longValue()) {
+                jedis.del(lock);
             }
         });
     }
@@ -650,7 +406,6 @@ public class JedisTemplate {
             jedis.close();
         }
     }
-
 
     public interface PipelineAction<T> {
         T action(Pipeline pipeline);
