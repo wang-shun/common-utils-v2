@@ -17,8 +17,10 @@ public @interface Authorization {
 
     RoleEnum[] allowedRoles();
 
-    String adminId();
+    //不传,则从DistributedContext上下文中获取,如果上下文中没有,则返回鉴权失败
+    String adminId() default "";
 
+    // 不传,表示不检验操作人与店铺的关系
     String shopId() default "";
 
 }

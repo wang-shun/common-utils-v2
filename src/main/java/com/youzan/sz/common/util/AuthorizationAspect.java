@@ -2,6 +2,7 @@ package com.youzan.sz.common.util;
 
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
@@ -29,7 +30,6 @@ import java.util.concurrent.Future;
 public class AuthorizationAspect extends BaseAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationAspect.class);
-    private static final ThreadLocal<StaffDTO> LOCAL = new ThreadLocal<>();
 
     @Resource
     private StaffService staffService;
@@ -49,10 +49,12 @@ public class AuthorizationAspect extends BaseAspect {
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         long beginTime = System.currentTimeMillis();
         try {
+            //获取拦截到的方法及方法上的注解
             Method method = this.getMethod(pjp);
             Authorization authorization = method.getAnnotation(Authorization.class);
             Class<?> returnType = method.getReturnType();
 
+            // 获取注解上传过来的参数
             RoleEnum[] allowedRoles = authorization.allowedRoles();
             Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
             Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
@@ -94,7 +96,6 @@ public class AuthorizationAspect extends BaseAspect {
                 }
             }
         } finally {
-            LOCAL.remove();
             LOGGER.error("纯粹处理业务本身所用时间(ms):{}", System.currentTimeMillis() - beginTime);
         }
     }
@@ -110,27 +111,24 @@ public class AuthorizationAspect extends BaseAspect {
         LOGGER.info("ADMIN_ID:{}, SHOP_ID:{}", adminId, shopId);
 
         if (adminId == null) {
-            return false;
+            adminId = DistributedContextTools.getAdminId();
+            if (adminId == null) {
+                return false;
+            }
         }
 
-        StaffDTO staffDTO = LOCAL.get();
-
+        StaffDTO staffDTO = staffService.getStaffByAdminId(adminId.toString());
         if (staffDTO == null) {
-            staffDTO = staffService.getStaffByAdminId(adminId.toString());
+            Future<StaffDTO> future = RpcContext.getContext().getFuture();
+            try {
+                if (future != null) {
+                    staffDTO = future.get();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.error("Exception:{}", e);
+            }
             if (staffDTO == null) {
-                Future<StaffDTO> future = RpcContext.getContext().getFuture();
-                try {
-                    if (future != null) {
-                        staffDTO = future.get();
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    LOGGER.error("Exception:{}", e);
-                }
-                if (staffDTO == null) {
-                    return false;
-                } else {
-                    LOCAL.set(staffDTO);
-                }
+                return false;
             }
         }
 
