@@ -2,6 +2,7 @@ package com.youzan.sz.common.aspect;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.Feature;
+import com.youzan.sz.common.annotation.CacheEvict;
 import com.youzan.sz.common.annotation.Cacheable;
 import com.youzan.sz.common.redis.JedisTemplate;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -25,9 +26,9 @@ import java.lang.reflect.Type;
 public class CacheAspect extends BaseAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheAspect.class);
 
-    @Value("#{CacheEnable}")
+    @Value("${CacheEnable}")
     private boolean cacheEnable;
-    
+
     @Resource
     private JedisTemplate jedisTemplate;
 
@@ -35,7 +36,7 @@ public class CacheAspect extends BaseAspect {
     @Around("@annotation(com.youzan.sz.common.annotation.Cacheable)")
     public Object cache(ProceedingJoinPoint pjp) {
         Object result = null;
-        if (!this.cacheEnable) {
+        if (!cacheEnable) {
             try {
                 result = pjp.proceed();
             } catch (Throwable throwable) {
@@ -52,10 +53,11 @@ public class CacheAspect extends BaseAspect {
             String strResult = null;
 
             if (field != null) {
-                strResult = this.jedisTemplate.hget(cacheable.key(), field);
+                strResult = jedisTemplate.hget(cacheable.key(), field);
             }
 
             if (strResult != null && !strResult.equals("nil")) {
+                // 处理泛型
                 Type returnType2 = method.getGenericReturnType();
                 if (returnType2 instanceof ParameterizedType) {
                     result = JSON.parseObject(strResult, returnType2, new Feature[0]);
@@ -63,11 +65,12 @@ public class CacheAspect extends BaseAspect {
                     result = JSON.parseObject(strResult, returnType);
                 }
             } else {
+                //缓存未找到的情况
                 try {
                     result = pjp.proceed();
                     if (result != null) {
-                        this.jedisTemplate.hset(cacheable.key(), field, JSON.toJSONString(result));
-                        this.jedisTemplate.expire(cacheable.key(), cacheable.expireTime());
+                        jedisTemplate.hset(cacheable.key(), field, JSON.toJSONString(result));
+                        jedisTemplate.expire(cacheable.key(), cacheable.expireTime());
                     }
                 } catch (Throwable throwable) {
                     LOGGER.error("Cache Exceptio:{}", throwable);
@@ -79,26 +82,18 @@ public class CacheAspect extends BaseAspect {
 
     @Around("@annotation(com.youzan.sz.common.annotation.CacheEvict)")
     public Object evict(ProceedingJoinPoint pjp) {
-        Object result = null;
-        if (!this.cacheEnable) {
-            try {
-                result = pjp.proceed();
-            } catch (Throwable throwable) {
-                LOGGER.error("Cache Exception:{}", throwable);
-            }
-            return result;
-        } else {
-            Method method = this.getMethod(pjp);
-            Cacheable cacheable = method.getAnnotation(Cacheable.class);
-            String field = (String) this.parseKey(cacheable.field(), method, pjp.getArgs());
-            Type returnType = method.getGenericReturnType();
-            String strResult = this.jedisTemplate.hget(cacheable.key(), field);
-            if (strResult != null) {
-                result = JSON.parseObject(strResult, returnType, new Feature[0]);
-                this.jedisTemplate.hdel(cacheable.key(), new String[]{field});
-            }
-            return result;
+        if (cacheEnable) {
+            Method method = getMethod(pjp);
+            CacheEvict cacheEvict = method.getAnnotation(CacheEvict.class);
+            String field = (String) parseKey(cacheEvict.field(), method, pjp.getArgs());
+            jedisTemplate.hdel(cacheEvict.key(), field);
         }
+        try {
+            return pjp.proceed();
+        } catch (Throwable throwable) {
+            LOGGER.error("Cache Exception:{}", throwable);
+        }
+        return null;
     }
 
 
