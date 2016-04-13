@@ -1,4 +1,4 @@
-package com.youzan.sz.common.util.redis;
+package com.youzan.sz.common.redis;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

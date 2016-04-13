@@ -1,13 +1,15 @@
-package com.youzan.sz.common.util;
+package com.youzan.sz.common.aspect;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Strings;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
+import com.youzan.sz.common.annotation.ValidateParams;
 import com.youzan.sz.common.model.BaseDTO;
 import com.youzan.sz.common.model.BaseModel;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.common.util.SpringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -41,7 +43,7 @@ public class ValidateParamsAspect extends BaseAspect {
     @Resource //TODO 注入两次,第二次注入null
     private Validator validator;
 
-    @Pointcut("@annotation(com.youzan.sz.common.util.ValidateParams)")
+    @Pointcut("@annotation(com.youzan.sz.common.annotation.ValidateParams)")
     public void pointcut() {
     }
 

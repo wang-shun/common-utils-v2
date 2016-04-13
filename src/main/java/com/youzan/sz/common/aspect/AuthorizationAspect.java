@@ -1,8 +1,9 @@
-package com.youzan.sz.common.util;
+package com.youzan.sz.common.aspect;
 
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
+import com.youzan.sz.common.annotation.Authorization;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
@@ -34,7 +35,7 @@ public class AuthorizationAspect extends BaseAspect {
     @Resource
     private StaffService staffService;
 
-    @Pointcut("@annotation(com.youzan.sz.common.util.Authorization)")
+    @Pointcut("@annotation(com.youzan.sz.common.annotation.Authorization)")
     public void pointcut() {
     }
 

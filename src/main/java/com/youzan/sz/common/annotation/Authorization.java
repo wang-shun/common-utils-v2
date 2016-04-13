@@ -1,4 +1,4 @@
-package com.youzan.sz.common.util;
+package com.youzan.sz.common.annotation;
 
 import com.youzan.sz.oa.enums.RoleEnum;
 

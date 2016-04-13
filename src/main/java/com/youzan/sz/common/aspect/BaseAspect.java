@@ -1,4 +1,4 @@
-package com.youzan.sz.common.util;
+package com.youzan.sz.common.aspect;
 
 import com.google.common.base.Strings;
 import org.aspectj.lang.ProceedingJoinPoint;

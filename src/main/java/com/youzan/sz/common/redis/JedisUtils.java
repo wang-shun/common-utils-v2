@@ -1,4 +1,4 @@
-package com.youzan.sz.common.util.redis;
+package com.youzan.sz.common.redis;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
