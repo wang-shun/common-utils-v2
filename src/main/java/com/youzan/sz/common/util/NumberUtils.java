@@ -23,7 +23,7 @@ public class NumberUtils {
         StringBuilder sb = new StringBuilder();
         List<String> result = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-            result.add(sb.append(NumberTypes.PRODUCT.getHead()).append(timeStamp).toString());
+            result.add(sb.append(NumberTypes.PRODUCT.getHead()).append(millTimes).toString());
             sb.delete(0, sb.length());
             millTimes++;
         }
