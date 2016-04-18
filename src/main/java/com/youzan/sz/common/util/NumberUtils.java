@@ -47,6 +47,7 @@ public class NumberUtils {
         switch (numberType.getInitType()){
             case snowflake:
                 result = batchInitSnowflakeNumber(numberType,num);
+                break;
             case random:
             case sequences:
             case uuid:
@@ -68,7 +69,7 @@ public class NumberUtils {
         String timeStamp = new DateTime().toString(numberType.getFormat());
         long millTimes = Long.parseLong(timeStamp);
         int randomNumber = RandomUtils.getRandomNumber(numberType.getNumberLength());
-        long number = millTimes*10*numberType.getNumberLength() + randomNumber;
+        long number = millTimes*10*(numberType.getNumberLength() > 0 ? numberType.getNumberLength() : 1 ) + randomNumber;
         for (int i = 0; i < num; i++) {
             result.add(numberType.getHead() + number);
             number++;
@@ -126,5 +127,15 @@ public class NumberUtils {
         System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
         System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
         System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
+        System.out.println("批量方法");
+        NumberUtils.testBatch(NumberTypes.SKU,10);
+    }
+
+    public static void testBatch(NumberTypes numberType, int num){
+        List<String> ids = batchInitNumber(numberType, num);
+        System.out.println(numberType.getName());
+        for (String str : ids){
+            System.out.println(str);
+        }
     }
 }
