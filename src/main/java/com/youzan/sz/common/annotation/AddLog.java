@@ -13,5 +13,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SzLog {
+public @interface AddLog {
+    String message() default "日志记录";
 }

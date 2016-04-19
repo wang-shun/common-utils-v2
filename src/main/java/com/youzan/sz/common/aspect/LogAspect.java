@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 public class LogAspect {
     private final static Logger logger= LoggerFactory.getLogger("有赞深圳日志记录器");
-    @Pointcut("@annotation(com.youzan.sz.common.annotation.SzLog)")
+    @Pointcut("@annotation(com.youzan.sz.common.annotation.AddLog)")
     private void  logAspect(){};
 
     @Around(value = "logAspect()")
