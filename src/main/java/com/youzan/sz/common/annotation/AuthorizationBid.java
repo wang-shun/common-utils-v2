@@ -21,6 +21,6 @@ public @interface AuthorizationBid {
     String adminId() default "";
 
     // 不传,表示不检验操作人与店铺的关系
-    String shopId() default "";
+    String bid() default "";
 
 }

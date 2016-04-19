@@ -3,8 +3,7 @@ package com.youzan.sz.common.aspect;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
-import com.youzan.sz.common.annotation.Authorization;
-import com.youzan.sz.common.annotation.AuthorizationId;
+import com.youzan.sz.common.annotation.AuthorizationBid;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
@@ -29,14 +28,14 @@ import java.util.concurrent.Future;
  */
 
 @Aspect
-public class AuthorizationIdAspect extends BaseAspect {
+public class AuthorizationBidAspect extends BaseAspect {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationIdAspect.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationBidAspect.class);
 
     @Resource
     private StaffService staffService;
 
-    @Pointcut("@annotation(com.youzan.sz.common.annotation.AuthorizationId)")
+    @Pointcut("@annotation(com.youzan.sz.common.annotation.AuthorizationBid)")
     public void pointcut() {
     }
 
@@ -53,18 +52,18 @@ public class AuthorizationIdAspect extends BaseAspect {
         try {
             //获取拦截到的方法及方法上的注解
             Method method = this.getMethod(pjp);
-            AuthorizationId authorization = method.getAnnotation(AuthorizationId.class);
+            AuthorizationBid authorization = method.getAnnotation(AuthorizationBid.class);
             Class<?> returnType = method.getReturnType();
 
             // 获取注解上传过来的参数
             RoleEnum[] allowedRoles = authorization.allowedRoles();
             Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
-            Object id = super.parseKey(authorization.id(), method, pjp.getArgs());
+            Object bid = super.parseKey(authorization.bid(), method, pjp.getArgs());
 
             // 鉴权
             boolean allowAccess;
             try {
-                allowAccess = this.allowAccess(allowedRoles, adminId, id);
+                allowAccess = this.allowAccess(allowedRoles, adminId, bid);
             } catch (Exception e) {
                 LOGGER.error("Authorization Exception:{}", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
@@ -110,8 +109,8 @@ public class AuthorizationIdAspect extends BaseAspect {
      * @param allowedRoles
      * @return
      */
-    private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object id) {
-        LOGGER.info("ID:{}, SHOP_ID:{}", adminId, id);
+    private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object bid) {
+        LOGGER.info("ADMIN_ID:{}, BID:{}", adminId, bid);
 
         if (adminId == null) {
             adminId = DistributedContextTools.getAdminId();
@@ -121,13 +120,11 @@ public class AuthorizationIdAspect extends BaseAspect {
         }
 
         StaffDTO adminStaff = staffService.getStaffByAdminId(adminId.toString());
-        StaffDTO operatedStaff=staffService.getById((long)id);
         if (adminStaff == null) {
             Future<StaffDTO> future = RpcContext.getContext().getFuture();
             try {
                 if (future != null) {
                     adminStaff = future.get();
-                    operatedStaff=future.get();
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("Exception:{}", e);
@@ -139,7 +136,7 @@ public class AuthorizationIdAspect extends BaseAspect {
 
         for (int i = 0; i < allowedRoles.length; i++) {
             if (allowedRoles[i].equals(RoleEnum.valueOf(adminStaff.getRole()))) {
-                if (adminStaff.getShopId() != operatedStaff.getShopId()) {
+                if (bid!=null&&adminStaff.getBid()!=(Long)bid) {
                     return false;
                 } else {
                     return true;
