@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -59,11 +60,12 @@ public class AuthorizationAspect extends BaseAspect {
             RoleEnum[] allowedRoles = authorization.allowedRoles();
             Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
             Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
+            Object bid = super.parseKey(authorization.bid(), method, pjp.getArgs());
 
             // 鉴权
             boolean allowAccess;
             try {
-                allowAccess = this.allowAccess(allowedRoles, adminId, shopId);
+                allowAccess = this.allowAccess(allowedRoles, adminId, shopId, bid);
             } catch (Exception e) {
                 LOGGER.error("Authorization Exception:{}", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
@@ -108,7 +110,7 @@ public class AuthorizationAspect extends BaseAspect {
      * @param allowedRoles
      * @return
      */
-    private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object shopId) {
+    private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object shopId, Object bid) {
         LOGGER.info("ADMIN_ID:{}, SHOP_ID:{}", adminId, shopId);
 
         if (adminId == null) {
@@ -133,17 +135,16 @@ public class AuthorizationAspect extends BaseAspect {
             }
         }
 
-        for (int i = 0; i < allowedRoles.length; i++) {
-            if (allowedRoles[i].equals(RoleEnum.valueOf(staffDTO.getRole()))) {
-                if (shopId != null && staffDTO.getShopId() != ((Long) shopId)) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
+        if (shopId != null && staffDTO.getShopId() != ((Long) shopId)) {
+            return false;
+        } else if (bid != null && staffDTO.getBid() != ((Long) bid)) {
+            return false;
+        } else {
+            final StaffDTO finalStaffDTO = staffDTO;
+            return Arrays.stream(allowedRoles).anyMatch(roleEnum ->
+                    roleEnum.equals(RoleEnum.valueOf(finalStaffDTO.getRole()))
+            );
         }
-
-        return true;
     }
 
 

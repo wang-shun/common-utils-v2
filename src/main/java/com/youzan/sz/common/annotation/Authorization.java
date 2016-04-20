@@ -23,4 +23,7 @@ public @interface Authorization {
     // 不传,表示不检验操作人与店铺的关系
     String shopId() default "";
 
+    // 不传,表示不检验操作人与bid 的关系
+    String bid() default "";
+
 }
