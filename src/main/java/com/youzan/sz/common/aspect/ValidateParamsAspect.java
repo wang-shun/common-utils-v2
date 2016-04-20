@@ -145,9 +145,7 @@ public class ValidateParamsAspect extends BaseAspect {
                     baseDTO.setRequestIp(DistributedContextTools.getRequestIp());
                 }
 
-            }
-
-            if (obj instanceof Collection) {
+            } else if (obj instanceof Collection) {
                 Collection collection = (Collection) obj;
                 for (Object object : collection) {
                     constraintSet.addAll(validator.validate(object));

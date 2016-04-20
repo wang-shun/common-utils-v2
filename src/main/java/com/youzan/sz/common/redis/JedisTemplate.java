@@ -1,5 +1,7 @@
 package com.youzan.sz.common.redis;
 
+import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.sz.common.response.enums.ResponseCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -34,33 +36,33 @@ public class JedisTemplate {
     }
 
 
-    public <T> T execute(JedisAction<T> jedisAction) throws JedisException {
+    public <T> T execute(JedisAction<T> jedisAction) throws BusinessException {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
             return jedisAction.action(jedis);
         } catch (JedisException je) {
             LOGGER.error("Jedis Exception:{}", je);
-            throw je;
+            throw new BusinessException((long) ResponseCode.REDIS_ERROR.getCode(), je.getMessage());
         } finally {
             closeResource(jedis);
         }
     }
 
-    public void execute(JedisActionNoResult jedisActionNoResult) throws JedisException {
+    public void execute(JedisActionNoResult jedisActionNoResult) throws BusinessException {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
             jedisActionNoResult.action(jedis);
         } catch (JedisException je) {
             LOGGER.error("Jedis Exception:{}", je);
-            throw je;
+            throw new BusinessException((long) ResponseCode.REDIS_ERROR.getCode(), je.getMessage());
         } finally {
             closeResource(jedis);
         }
     }
 
-    public List<Object> execute(PipelineAction pipelineAction) throws JedisException {
+    public List<Object> execute(PipelineAction pipelineAction) throws BusinessException {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -69,13 +71,13 @@ public class JedisTemplate {
             return pipeline.syncAndReturnAll();
         } catch (JedisException je) {
             LOGGER.error("Jedis Exception:{}", je);
-            throw je;
+            throw new BusinessException((long) ResponseCode.REDIS_ERROR.getCode(), je.getMessage());
         } finally {
             closeResource(jedis);
         }
     }
 
-    public void execute(PipelineActionNoResult pipelineActionNoResult) throws JedisException {
+    public void execute(PipelineActionNoResult pipelineActionNoResult) throws BusinessException {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -84,7 +86,7 @@ public class JedisTemplate {
             pipeline.sync();
         } catch (JedisException je) {
             LOGGER.error("Jedis Exception:{}", je);
-            throw je;
+            throw new BusinessException((long) ResponseCode.REDIS_ERROR.getCode(), je.getMessage());
         } finally {
             closeResource(jedis);
         }
@@ -115,12 +117,12 @@ public class JedisTemplate {
         );
     }
 
-    public void set(final String key, final String value) {
-        this.execute((JedisActionNoResult) jedis -> jedis.set(key, value));
+    public Boolean set(final String key, final String value) {
+        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.set(key, value)) ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    public void setex(final String key, final String value, final int seconds) {
-        this.execute((JedisActionNoResult) jedis -> jedis.setex(key, seconds, value));
+    public Boolean setex(final String key, final String value, final int seconds) {
+        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.setex(key, seconds, value)) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean setnx(final String key, final String value) {
@@ -130,7 +132,7 @@ public class JedisTemplate {
     public Boolean setnxex(final String key, final String value, final long seconds) {
         return this.execute((JedisAction<Boolean>) jedis -> {
             String result = jedis.set(key, value, "NX", "EX", seconds);
-            return JedisUtils.isStatusOk(result);
+            return JedisUtils.isStatusOk(result) ? Boolean.TRUE : Boolean.FALSE;
         });
     }
 
@@ -174,12 +176,12 @@ public class JedisTemplate {
         this.execute((JedisActionNoResult) jedis -> jedis.hset(key, field, value));
     }
 
-    public void hmset(final String key, final Map<String, String> map) {
-        this.execute((JedisActionNoResult) jedis -> jedis.hmset(key, map));
+    public Boolean hmset(final String key, final Map<String, String> map) {
+        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.hmset(key, map)) ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    public Boolean hsetnx(final String key, final String field, final String value) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.hsetnx(key, field, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
+    public void hsetnx(final String key, final String field, final String value) {
+        this.execute((JedisActionNoResult) jedis -> jedis.hsetnx(key, field, value));
     }
 
     public Long hincrBy(final String key, final String field, final long increment) {
