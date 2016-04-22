@@ -3,6 +3,7 @@ package com.youzan.sz.common.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.net.HttpUtil;
+import com.youzan.sz.common.model.Page;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.search.Searchable;
 import com.youzan.sz.common.search.es.decode.EsResult;
@@ -35,10 +36,14 @@ public class EsClient {
      * @param searchable 查询条件
      * @return 扁平的map, 由业务自行组装
      */
-    public List<Map<String, String>> search(String tableName, Searchable searchable) {
+    public Page search(String tableName, Searchable searchable) {
         try {
             String result = HttpUtil.restPost(getURL(tableName), searchable.build());
-            return decode(result);
+            List<Map<String, Object>> data = decode(result);
+            Page page = searchable.getPage();
+            page.setTotal(data.size());
+            page.setData(data);
+            return page;
         } catch (Exception e) {
             if (e instanceof IOException) {
                 throw new BusinessException((long) ResponseCode.DECODE_ERROR.getCode(), ResponseCode.DECODE_ERROR.getMessage());
@@ -52,17 +57,18 @@ public class EsClient {
         return "http://" + EsClientHost + ":" + EsClientPort + "/" + libname + "/" + tableName;
     }
 
-    private List<Map<String, String>> decode(String str) throws IOException {
+    private List<Map<String,Object>> decode(String str) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         EsResult esResult = objectMapper.readValue(str, EsResult.class);
         log(esResult);
         List<InHits> hits = esResult.getHits().getHits();
-        List<Map<String, String>> result = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<>();
         if (hits != null) {
             for (InHits inHit : hits) {
                 result.add(inHit.get_source());
             }
         }
+
         return result;
     }
 
