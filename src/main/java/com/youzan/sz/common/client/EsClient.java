@@ -21,11 +21,11 @@ import java.util.Map;
  */
 public class EsClient {
     private static final String propFileName = "application.properties";
-    private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "10.6.1.219");
+    private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "10.9.77.163");
     private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "8082");
     private static final String libname = "store";
 
-    //    10.6.1.219:8082/wholesale_goods_v3/goods/_search -d '{your query}'
+    //    10.9.77.163:8082/wholesale_goods_v3/goods/_search -d '{your query}'
     private static final Logger LOGGER = LoggerFactory.getLogger(EsClient.class);
 
     /**
