@@ -42,7 +42,7 @@ public class EsClient {
             List<Map<String, Object>> data = decode(result);
             Page page = searchable.getPage();
             page.setTotal(data.size());
-            page.setData(data);
+            page.setList(data);
             return page;
         } catch (Exception e) {
             if (e instanceof IOException) {

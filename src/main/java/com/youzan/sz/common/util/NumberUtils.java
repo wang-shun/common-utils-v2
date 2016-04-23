@@ -60,18 +60,19 @@ public class NumberUtils {
 
     private static String initSnowflakeNumber(NumberTypes numberType) {
         String timeStamp = new DateTime().toString(numberType.getFormat());
-        int randomNumber = RandomUtils.getRandomNumber(numberType.getNumberLength());
-        return numberType.getHead() + timeStamp + (randomNumber > 0 ? randomNumber : "");
+        String randomNumber = RandomUtils.getRandomNumber(numberType.getNumberLength());
+        return numberType.getHead() + timeStamp + randomNumber;
     }
 
     private static List<String> batchInitSnowflakeNumber(NumberTypes numberType, int num) {
         List<String> result = new ArrayList<>(num);
-        String timeStamp = new DateTime().toString(numberType.getFormat());
-        long millTimes = Long.parseLong(timeStamp);
-        int randomNumber = RandomUtils.getRandomNumber(numberType.getNumberLength());
-        long number = millTimes*10*(numberType.getNumberLength() > 0 ? numberType.getNumberLength() : 1 ) + randomNumber;
+        //首位补1是为了兼容0*年的情况
+        String timeStamp = "1" + new DateTime().toString(numberType.getFormat());
+        String randomNumber = RandomUtils.getRandomNumber(numberType.getNumberLength());
+        Long number = Long.parseLong(timeStamp + randomNumber);
         for (int i = 0; i < num; i++) {
-            result.add(numberType.getHead() + number);
+            //去除之前补得首位
+            result.add(numberType.getHead() + number.toString().substring(1));
             number++;
         }
         return result;
@@ -107,28 +108,28 @@ public class NumberUtils {
     }
 
     public static void main(String args[]) {
-        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
-        System.out.println(NumberTypes.SKU.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKU));
-        System.out.println(NumberTypes.SELL.getName() + ":" + NumberUtils.initNumber(NumberTypes.SELL));
-        System.out.println(NumberTypes.RETURN.getName() + ":" + NumberUtils.initNumber(NumberTypes.RETURN));
-        System.out.println(NumberTypes.STOCKCHECK.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKCHECK));
-        System.out.println(NumberTypes.PURCHASE.getName() + ":" + NumberUtils.initNumber(NumberTypes.PURCHASE));
-        System.out.println(NumberTypes.STOCKIN.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKIN));
-        System.out.println(NumberTypes.STOCKOUT.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKOUT));
-        System.out.println(NumberTypes.SHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOUKUAN));
-        System.out.println(NumberTypes.FUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.FUKUAN));
-        System.out.println(NumberTypes.YINGSHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGSHOUKUAN));
-        System.out.println(NumberTypes.YINGFUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGFUKUAN));
-        System.out.println(NumberTypes.STAFFBINDID.getName() + ":" + NumberUtils.initNumber(NumberTypes.STAFFBINDID));
-        System.out.println(NumberTypes.BANKACCOUNTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.BANKACCOUNTID));
-        System.out.println(NumberTypes.SPNODEID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SPNODEID));
-        System.out.println(NumberTypes.CATEGORYID.getName() + ":" + NumberUtils.initNumber(NumberTypes.CATEGORYID));
-        System.out.println(NumberTypes.SHOPID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOPID));
-        System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
-        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
-        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
+//        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
+//        System.out.println(NumberTypes.SKU.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKU));
+//        System.out.println(NumberTypes.SELL.getName() + ":" + NumberUtils.initNumber(NumberTypes.SELL));
+//        System.out.println(NumberTypes.RETURN.getName() + ":" + NumberUtils.initNumber(NumberTypes.RETURN));
+//        System.out.println(NumberTypes.STOCKCHECK.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKCHECK));
+//        System.out.println(NumberTypes.PURCHASE.getName() + ":" + NumberUtils.initNumber(NumberTypes.PURCHASE));
+//        System.out.println(NumberTypes.STOCKIN.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKIN));
+//        System.out.println(NumberTypes.STOCKOUT.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKOUT));
+//        System.out.println(NumberTypes.SHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOUKUAN));
+//        System.out.println(NumberTypes.FUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.FUKUAN));
+//        System.out.println(NumberTypes.YINGSHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGSHOUKUAN));
+//        System.out.println(NumberTypes.YINGFUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGFUKUAN));
+//        System.out.println(NumberTypes.STAFFBINDID.getName() + ":" + NumberUtils.initNumber(NumberTypes.STAFFBINDID));
+//        System.out.println(NumberTypes.BANKACCOUNTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.BANKACCOUNTID));
+//        System.out.println(NumberTypes.SPNODEID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SPNODEID));
+//        System.out.println(NumberTypes.CATEGORYID.getName() + ":" + NumberUtils.initNumber(NumberTypes.CATEGORYID));
+//        System.out.println(NumberTypes.SHOPID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOPID));
+//        System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
+//        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
+//        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
         System.out.println("批量方法");
-        NumberUtils.testBatch(NumberTypes.SKU,10);
+        NumberUtils.testBatch(NumberTypes.SELL,10);
     }
 
     public static void testBatch(NumberTypes numberType, int num){
