@@ -57,7 +57,7 @@ public class EsClient {
         return "http://" + EsClientHost + ":" + EsClientPort + "/" + libname + "/" + tableName;
     }
 
-    private List<Map<String,Object>> decode(String str) throws IOException {
+    private List<Map<String, Object>> decode(String str) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         EsResult esResult = objectMapper.readValue(str, EsResult.class);
         log(esResult);
