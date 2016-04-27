@@ -85,10 +85,12 @@ public class ValidateParamsAspect extends BaseAspect {
                     return pjp.proceed();
                 } catch (BusinessException be) {
                     LOGGER.error("Error:{}", be);
+                    throw be;
+                } catch (Exception e) {
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
-                        return new BaseResponse(be.getCode().intValue(), be.getMessage(), null);
+                        return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
                     } else {
-                        throw be;
+                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
                     }
                 }
             }

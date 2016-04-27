@@ -66,6 +66,8 @@ public class AuthorizationAspect extends BaseAspect {
             boolean allowAccess;
             try {
                 allowAccess = this.allowAccess(allowedRoles, adminId, shopId, bid);
+            } catch (BusinessException be) {
+                throw be;
             } catch (Exception e) {
                 LOGGER.error("Authorization Exception:{}", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
@@ -82,6 +84,8 @@ public class AuthorizationAspect extends BaseAspect {
                 // 通过鉴权,开始调用业务逻辑方法
                 try {
                     return pjp.proceed();
+                } catch (BusinessException be) {
+                    throw be;
                 } catch (Exception e) {
                     LOGGER.error("Exception:{}", e);
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
@@ -129,6 +133,7 @@ public class AuthorizationAspect extends BaseAspect {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("Exception:{}", e);
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), e.getMessage());
             }
             if (staffDTO == null) {
                 return false;
