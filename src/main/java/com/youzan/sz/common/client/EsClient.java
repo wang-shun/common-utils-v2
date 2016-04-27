@@ -1,14 +1,18 @@
 package com.youzan.sz.common.client;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.net.HttpUtil;
 import com.youzan.sz.common.model.Page;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.common.search.SearchItem;
 import com.youzan.sz.common.search.Searchable;
 import com.youzan.sz.common.search.es.decode.EsResult;
 import com.youzan.sz.common.search.es.decode.InHits;
 import com.youzan.sz.common.util.PropertiesUtils;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +27,10 @@ import java.util.Map;
 public class EsClient {
     private static final String propFileName = "application.properties";
     private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "10.9.77.163");
-    private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "8082");
+    private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "9200");
     private static final String libname = "store";
 
-    //    10.9.77.163:8082/wholesale_goods_v3/goods/_search -d '{your query}'
+    //    10.9.77.163:8082/goods/_search -d '{your query}'
     private static final Logger LOGGER = LoggerFactory.getLogger(EsClient.class);
 
     /**
@@ -36,15 +40,18 @@ public class EsClient {
      * @param searchable 查询条件
      * @return 扁平的map, 由业务自行组装
      */
-    public Page search(String tableName, Searchable searchable) {
+    public static Page search(String tableName, Searchable searchable) {
         try {
-            String result = HttpUtil.restPost(getURL(tableName), searchable.build());
+            Object build = searchable.build();
+            String url = getURL(tableName);
+            String result = HttpUtil.restPost(url, build);
             List<Map<String, Object>> data = decode(result);
             Page page = searchable.getPage();
             page.setTotal(data.size());
             page.setList(data);
             return page;
         } catch (Exception e) {
+            e.printStackTrace();
             if (e instanceof IOException) {
                 throw new BusinessException((long) ResponseCode.DECODE_ERROR.getCode(), ResponseCode.DECODE_ERROR.getMessage());
             } else {
@@ -53,12 +60,13 @@ public class EsClient {
         }
     }
 
-    private String getURL(String tableName) {
-        return "http://" + EsClientHost + ":" + EsClientPort + "/" + libname + "/" + tableName;
+    private static String getURL(String tableName) {
+        return "http://" + EsClientHost + ":" + EsClientPort + "/" + tableName + "/_search";
     }
 
-    private List<Map<String, Object>> decode(String str) throws IOException {
+    private static List<Map<String, Object>> decode(String str) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         EsResult esResult = objectMapper.readValue(str, EsResult.class);
         log(esResult);
         List<InHits> hits = esResult.getHits().getHits();
@@ -72,7 +80,15 @@ public class EsClient {
         return result;
     }
 
-    private void log(EsResult esResult) {
+    private static void log(EsResult esResult) {
         //// TODO: 16/4/21 log 
+    }
+
+    public static void main(String[] args) {
+        Searchable searchable = new Searchable();
+        searchable.addAnd(SearchItem.eq("status","0"));
+        searchable.addAnd(SearchItem.like("yz_account","1"));
+        Page page = EsClient.search("shop_staff_v1", searchable);
+        System.out.println(page.getlist().toString());
     }
 }
