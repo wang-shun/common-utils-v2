@@ -1,13 +1,11 @@
 package com.youzan.sz.common.util;
 
 import com.youzan.sz.common.client.IdClient;
-import com.youzan.sz.common.model.number.InitType;
 import com.youzan.sz.common.model.number.NumberTypes;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -15,16 +13,17 @@ import java.util.UUID;
  */
 public class NumberUtils {
     private static final String propFileName = "application.properties";
-    private static final String idClientHost = PropertiesUtils.getProperty(propFileName,"idclient.host","192.168.66.202");
-    private static final String idClientPort = PropertiesUtils.getProperty(propFileName,"idclient.port","6000");
+    private static final String idClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "192.168.66.202");
+    private static final String idClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "6000");
 
     /**
      * 获取订单 ID
+     *
      * @param numberType ID类型
      * @return
      */
-    public static String initNumber(NumberTypes numberType){
-        switch (numberType.getInitType()){
+    public static String initNumber(NumberTypes numberType) {
+        switch (numberType.getInitType()) {
             case snowflake:
                 return initSnowflakeNumber(numberType);
             case random:
@@ -39,14 +38,15 @@ public class NumberUtils {
 
     /**
      * 批量获取订单 ID
+     *
      * @param numberType ID类型
      * @return
      */
     public static List<String> batchInitNumber(NumberTypes numberType, int num) {
         List<String> result = new ArrayList<>(num);
-        switch (numberType.getInitType()){
+        switch (numberType.getInitType()) {
             case snowflake:
-                result = batchInitSnowflakeNumber(numberType,num);
+                result = batchInitSnowflakeNumber(numberType, num);
                 break;
             case random:
             case sequences:
@@ -78,13 +78,13 @@ public class NumberUtils {
         return result;
     }
 
-    private static String initRandomNumber(NumberTypes numberType){
+    private static String initRandomNumber(NumberTypes numberType) {
         return String.valueOf(RandomUtils.getRandomNumber(numberType.getNumberLength()));
     }
 
-    private static String initSequences(NumberTypes numberType){
-        IdClient idClient = new IdClient(idClientHost,Integer.parseInt(idClientPort));
-        return String.valueOf(idClient.getId("step",numberType.getHead()));
+    private static String initSequences(NumberTypes numberType) {
+        IdClient idClient = new IdClient(idClientHost, Integer.parseInt(idClientPort));
+        return String.valueOf(idClient.getId("step", numberType.getHead()));
     }
 
     private static String initUUID(NumberTypes numberType) {
@@ -94,18 +94,6 @@ public class NumberUtils {
         return str.substring(0, 8) + str.substring(9, 13) + str.substring(14, 18) + str.substring(19, 23) + str.substring(24);
     }
 
-    public static List<String> batchGenerateSkuNo(int num) {
-        String timeStamp = DateTime.now().toString(NumberTypes.PRODUCT.getFormat());
-        long millTimes = Long.parseLong(timeStamp);
-        StringBuilder sb = new StringBuilder();
-        List<String> result = new ArrayList<>(num);
-        for (int i = 0; i < num; i++) {
-            result.add(sb.append(NumberTypes.PRODUCT.getHead()).append(millTimes).toString());
-            sb.delete(0, sb.length());
-            millTimes++;
-        }
-        return result;
-    }
 
     public static void main(String args[]) {
 //        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
@@ -129,13 +117,13 @@ public class NumberUtils {
 //        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
 //        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
         System.out.println("批量方法");
-        NumberUtils.testBatch(NumberTypes.SELL,10);
+        NumberUtils.testBatch(NumberTypes.SELL, 10);
     }
 
-    public static void testBatch(NumberTypes numberType, int num){
+    public static void testBatch(NumberTypes numberType, int num) {
         List<String> ids = batchInitNumber(numberType, num);
         System.out.println(numberType.getName());
-        for (String str : ids){
+        for (String str : ids) {
             System.out.println(str);
         }
     }
