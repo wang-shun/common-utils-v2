@@ -2,6 +2,7 @@ package com.youzan.sz.common.client;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.CaseFormat;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.net.HttpUtil;
 import com.youzan.sz.common.model.Page;
@@ -11,8 +12,6 @@ import com.youzan.sz.common.search.Searchable;
 import com.youzan.sz.common.search.es.decode.EsResult;
 import com.youzan.sz.common.search.es.decode.InHits;
 import com.youzan.sz.common.util.PropertiesUtils;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by zefa on 16/4/20.
@@ -72,11 +72,13 @@ public class EsClient {
         List<InHits> hits = esResult.getHits().getHits();
         List<Map<String, Object>> result = new ArrayList<>();
         if (hits != null) {
+            Map<String, Object> resultMap;
             for (InHits inHit : hits) {
-                result.add(inHit.get_source());
+                Map<String, Object> source = inHit.get_source();
+                resultMap = source.keySet().stream().collect(Collectors.toMap(k -> CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, k), k -> source.get(k)));
+                result.add(resultMap);
             }
         }
-
         return result;
     }
 
@@ -86,8 +88,8 @@ public class EsClient {
 
     public static void main(String[] args) {
         Searchable searchable = new Searchable();
-        searchable.addAnd(SearchItem.eq("status","0"));
-        searchable.addAnd(SearchItem.like("yz_account","1"));
+        searchable.addAnd(SearchItem.eq("status", "0"));
+        searchable.addAnd(SearchItem.like("yzAccount", "1"));
         Page page = EsClient.search("shop_staff_v1", searchable);
         System.out.println(page.getlist().toString());
     }
