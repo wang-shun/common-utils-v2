@@ -75,13 +75,11 @@ public class EsClient {
         List<InHits> hits = esResult.getHits().getHits();
         List<Map<String, Object>> result = new ArrayList<>();
         if (hits != null) {
-            Map<String, Object> resultMap;
             for (InHits inHit : hits) {
                 Map<String, Object> source = inHit.get_source();
-                resultMap = new HashMap<>(source.size());
-                source.keySet().forEach(k -> {
-                    resultMap.put(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, k), source.get(k));
-                });
+                Map<String, Object> resultMap = new HashMap<>(source.size());
+                source.keySet().forEach(k ->
+                        resultMap.put(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, k), source.get(k)));
                 result.add(resultMap);
             }
         }
