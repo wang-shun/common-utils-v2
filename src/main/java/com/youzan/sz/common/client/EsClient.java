@@ -17,18 +17,23 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by zefa on 16/4/20.
  */
 public class EsClient {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String propFileName = "application.properties";
     private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "10.9.77.163");
     private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "9200");
     private static final String libname = "store";
+
+    static {
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     //    10.9.77.163:8082/goods/_search -d '{your query}'
     private static final Logger LOGGER = LoggerFactory.getLogger(EsClient.class);
@@ -51,7 +56,7 @@ public class EsClient {
             page.setList(data);
             return page;
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Es seach Error:{}", e);
             if (e instanceof IOException) {
                 throw new BusinessException((long) ResponseCode.DECODE_ERROR.getCode(), ResponseCode.DECODE_ERROR.getMessage());
             } else {
@@ -65,9 +70,7 @@ public class EsClient {
     }
 
     private static List<Map<String, Object>> decode(String str) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        EsResult esResult = objectMapper.readValue(str, EsResult.class);
+        EsResult esResult = OBJECT_MAPPER.readValue(str, EsResult.class);
         log(esResult);
         List<InHits> hits = esResult.getHits().getHits();
         List<Map<String, Object>> result = new ArrayList<>();
@@ -75,7 +78,10 @@ public class EsClient {
             Map<String, Object> resultMap;
             for (InHits inHit : hits) {
                 Map<String, Object> source = inHit.get_source();
-                resultMap = source.keySet().stream().collect(Collectors.toMap(k -> CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, k), k -> source.get(k)));
+                resultMap = new HashMap<>(source.size());
+                source.keySet().forEach(k -> {
+                    resultMap.put(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, k), source.get(k));
+                });
                 result.add(resultMap);
             }
         }

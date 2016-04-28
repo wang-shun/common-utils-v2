@@ -83,7 +83,7 @@ public class BeanUtil {
                 args[0] = value;
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
-                } catch (IllegalArgumentException e){
+                } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
             }
@@ -184,7 +184,7 @@ public class BeanUtil {
         result.add(sr1);
         List<Map> maps = BeanUtil.transListBean2ListMap(result);
         System.out.println(maps.toString());
-        List<StockRunningVO> e = BeanUtil.transListMap2ListBean(StockRunningVO.class,maps);
+        List<StockRunningVO> e = BeanUtil.transListMap2ListBean(StockRunningVO.class, maps);
         System.out.println(e.toString());
     }
 }
