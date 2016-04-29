@@ -3,6 +3,8 @@ package com.youzan.sz.common.util;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.model.number.NumberTypes;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.beans.BeanInfo;
@@ -20,6 +22,8 @@ import java.util.*;
  * Time: 20:03
  */
 public class BeanUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BeanUtil.class);
 
     public static <T> T copyProperty(Object source, Class<T> destinationClazz) {
 
@@ -74,9 +78,10 @@ public class BeanUtil {
             beanInfo = Introspector.getBeanInfo(destinationClazz);
             obj = destinationClazz.newInstance(); // 创建 JavaBean 对象
         } catch (Exception e) {
+            LOGGER.error("BeanUtil Error:{}", e);
             throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
         }
-        
+
         // 给 JavaBean 对象的属性赋值
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
@@ -92,6 +97,7 @@ public class BeanUtil {
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
                 } catch (Exception e) {
+                    LOGGER.error("BeanUtil Error:{}", e);
                     throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
                 }
             }
@@ -110,9 +116,7 @@ public class BeanUtil {
      * @throws InstantiationException    如果实例化 JavaBean 失败
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
-    public static <T> List<T> transListMap2ListBean(Class<T> destinationClazz, List<Map> listMap)
-            throws IntrospectionException, IllegalAccessException,
-            InstantiationException, InvocationTargetException {
+    public static <T> List<T> transListMap2ListBean(Class<T> destinationClazz, List<Map> listMap) {
         List<T> result = new ArrayList<>();
         for (Map map : listMap) {
             result.add(transMap2Bean(destinationClazz, map));
@@ -129,11 +133,16 @@ public class BeanUtil {
      * @throws IllegalAccessException    如果实例化 JavaBean 失败
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
-    public static <T> Map transBean2Map(T bean)
-            throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+    public static <T> Map transBean2Map(T bean) {
         Class type = bean.getClass();
         Map returnMap = new HashMap();
-        BeanInfo beanInfo = Introspector.getBeanInfo(type);
+        BeanInfo beanInfo = null;
+        try {
+            beanInfo = Introspector.getBeanInfo(type);
+        } catch (IntrospectionException e) {
+            LOGGER.error("BeanUtil Error:{}", e);
+            throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
+        }
 
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
@@ -141,7 +150,15 @@ public class BeanUtil {
             String propertyName = descriptor.getName();
             if (!propertyName.equals("class")) {
                 Method readMethod = descriptor.getReadMethod();
-                Object result = readMethod.invoke(bean, new Object[0]);
+                Object result = null;
+                try {
+                    result = readMethod.invoke(bean, new Object[0]);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    LOGGER.error("BeanUtil Error:{}", e);
+                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
+                }
                 if (result != null) {
                     returnMap.put(propertyName, result);
                 } else {
@@ -161,8 +178,7 @@ public class BeanUtil {
      * @throws IllegalAccessException    如果实例化 JavaBean 失败
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
-    public static <T> List<Map> transListBean2ListMap(List<T> listBean)
-            throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+    public static <T> List<Map> transListBean2ListMap(List<T> listBean) {
         List<Map> result = new ArrayList<>();
         for (T bean : listBean) {
             result.add(transBean2Map(bean));
