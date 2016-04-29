@@ -1,6 +1,8 @@
 package com.youzan.sz.common.util;
 
+import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.model.number.NumberTypes;
+import com.youzan.sz.common.response.enums.ResponseCode;
 import org.springframework.beans.BeanUtils;
 
 import java.beans.BeanInfo;
@@ -65,10 +67,16 @@ public class BeanUtil {
      * @throws InstantiationException    如果实例化 JavaBean 失败
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
-    public static <T> T transMap2Bean(Class<T> destinationClazz, Map map) throws IntrospectionException, IllegalAccessException, InstantiationException, InvocationTargetException {
-        BeanInfo beanInfo = Introspector.getBeanInfo(destinationClazz); // 获取类属性
-        T obj = destinationClazz.newInstance(); // 创建 JavaBean 对象
-
+    public static <T> T transMap2Bean(Class<T> destinationClazz, Map map) {
+        BeanInfo beanInfo = null; // 获取类属性
+        T obj;
+        try {
+            beanInfo = Introspector.getBeanInfo(destinationClazz);
+            obj = destinationClazz.newInstance(); // 创建 JavaBean 对象
+        } catch (Exception e) {
+            throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
+        }
+        
         // 给 JavaBean 对象的属性赋值
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
@@ -83,8 +91,8 @@ public class BeanUtil {
                 args[0] = value;
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
                 }
             }
         }
