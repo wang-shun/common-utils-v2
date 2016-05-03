@@ -87,6 +87,7 @@ public class ValidateParamsAspect extends BaseAspect {
                     LOGGER.error("Error:{}", be);
                     throw be;
                 } catch (Exception e) {
+                    LOGGER.error("Error:{}", e);
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
                         return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
                     } else {

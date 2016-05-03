@@ -154,6 +154,7 @@ public class BeanUtil {
                 try {
                     result = readMethod.invoke(bean, new Object[0]);
                 } catch (IllegalAccessException e) {
+                    LOGGER.error("BeanUtil Error:{}", e);
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
                     LOGGER.error("BeanUtil Error:{}", e);
