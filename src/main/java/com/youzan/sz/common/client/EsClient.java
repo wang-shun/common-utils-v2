@@ -43,7 +43,7 @@ public class EsClient {
      *
      * @param tableName  表名
      * @param searchable 查询条件
-     * @return 扁平的map, 由业务自行组装
+     * @return Page 对象
      */
     public static Page search(String tableName, Searchable searchable) {
         try {
@@ -63,6 +63,42 @@ public class EsClient {
                 throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), e.getMessage());
             }
         }
+    }
+
+    /**
+     * 搜索
+     *
+     * @param tableName  表名
+     * @param searchable 查询条件
+     * @return 扁平的map, 由业务自行组装
+     */
+    public static List<Map<String, Object>> searchListMap(String tableName, Searchable searchable) {
+        try {
+            Object build = searchable.build();
+            String url = getURL(tableName);
+            String result = HttpUtil.restPost(url, build);
+            List<Map<String, Object>> data = decode(result);
+            return data;
+        } catch (Exception e) {
+            LOGGER.error("Es seach Error:{}", e);
+            if (e instanceof IOException) {
+                throw new BusinessException((long) ResponseCode.DECODE_ERROR.getCode(), ResponseCode.DECODE_ERROR.getMessage());
+            } else {
+                throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 搜索
+     *
+     * @param tableName  表名
+     * @param searchable 查询条件
+     * @return 单个结果
+     */
+    public static Map<String, Object> searchMap(String tableName, Searchable searchable) {
+        List<Map<String, Object>> data = searchListMap(tableName, searchable);
+        return data.get(0);
     }
 
     private static String getURL(String tableName) {
