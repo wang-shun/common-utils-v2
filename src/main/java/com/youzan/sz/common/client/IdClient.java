@@ -11,7 +11,7 @@ public class IdClient extends Jedis {
     }
 
     public long getId(String key, String field) {
-        checkIsInMultiOrPipeline();
+//        checkIsInMultiOrPipeline(); //TODO 临时修改,兼容jedis 2.5.2
         client.hget(key, field);
         return client.getIntegerReply();
     }
