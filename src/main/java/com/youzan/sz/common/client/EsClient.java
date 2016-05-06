@@ -125,6 +125,7 @@ public class EsClient {
         OutHits hits = esResult.getHits();
         if (hits != null) {
             List<Map<String, Object>> result = decode(str);
+            page.setList(result);
             page.setTotal(esResult.getHits().getTotal());
         }
         return page;
