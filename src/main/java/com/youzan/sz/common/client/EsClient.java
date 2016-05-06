@@ -11,6 +11,7 @@ import com.youzan.sz.common.search.SearchItem;
 import com.youzan.sz.common.search.Searchable;
 import com.youzan.sz.common.search.es.decode.EsResult;
 import com.youzan.sz.common.search.es.decode.InHits;
+import com.youzan.sz.common.search.es.decode.OutHits;
 import com.youzan.sz.common.util.PropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,11 +51,8 @@ public class EsClient {
             Object build = searchable.build();
             String url = getURL(tableName);
             String result = HttpUtil.restPost(url, build);
-            List<Map<String, Object>> data = decode(result);
             Page page = searchable.getPage();
-            page.setTotal(data.size());
-            page.setList(data);
-            return page;
+            return decode(result, page);
         } catch (Exception e) {
             LOGGER.error("Es seach Error:{}", e);
             if (e instanceof IOException) {
@@ -77,8 +75,7 @@ public class EsClient {
             Object build = searchable.build();
             String url = getURL(tableName);
             String result = HttpUtil.restPost(url, build);
-            List<Map<String, Object>> data = decode(result);
-            return data;
+            return decode(result);
         } catch (Exception e) {
             LOGGER.error("Es seach Error:{}", e);
             if (e instanceof IOException) {
@@ -120,6 +117,17 @@ public class EsClient {
             }
         }
         return result;
+    }
+
+    private static Page decode(String str, Page page) throws IOException {
+        EsResult esResult = OBJECT_MAPPER.readValue(str, EsResult.class);
+        log(esResult);
+        OutHits hits = esResult.getHits();
+        if (hits != null) {
+            List<Map<String, Object>> result = decode(str);
+            page.setTotal(esResult.getHits().getTotal());
+        }
+        return page;
     }
 
     private static void log(EsResult esResult) {
