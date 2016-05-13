@@ -18,4 +18,5 @@ public @interface ValidateParams {
 
     String[] excludeProperties() default {};
 
+    String bid() default ""; //验证bid
 }

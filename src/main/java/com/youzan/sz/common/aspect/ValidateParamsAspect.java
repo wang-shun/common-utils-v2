@@ -10,6 +10,7 @@ import com.youzan.sz.common.model.BaseModel;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.SpringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -70,8 +71,18 @@ public class ValidateParamsAspect extends BaseAspect {
         Class[] classes = validateParamsAnnotation.paramClasses();
         Object[] args = pjp.getArgs();
         String[] excludeProperties = validateParamsAnnotation.excludeProperties();
+        boolean isCheckBid = StringUtils.isEmpty(validateParamsAnnotation.bid());
+        Object bid = null;
+        if(!isCheckBid){
+            bid = super.parseKey(validateParamsAnnotation.bid(), method, pjp.getArgs());
+        }
 
         try {
+
+            if(!isCheckBid && bid==null){
+                return new BaseResponse(ResponseCode.BID_NOT_NULL.getCode(), ResponseCode.BID_NOT_NULL.getMessage(), null);
+            }
+
             Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
             if (!constraintSet.isEmpty()) {
                 String errors = buildErrorMsg(constraintSet);
