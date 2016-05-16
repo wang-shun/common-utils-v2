@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by zefa on 16/5/16.
  */
 public class MapUtils {
-    private Long getLong(Map<String, Object> map, String key) {
+    public static Long getLong(Map<String, Object> map, String key) {
         Object obj = map.get(key);
         if (obj == null) {
             return null;
@@ -21,7 +21,7 @@ public class MapUtils {
         }
     }
 
-    private Long getLongOrDefault(Map<String, Object> map, String key, Long defaultValue) {
+    public static Long getLongOrDefault(Map<String, Object> map, String key, Long defaultValue) {
         Long val = getLong(map, key);
         if (val == null) {
             val = defaultValue;
@@ -29,7 +29,7 @@ public class MapUtils {
         return val;
     }
 
-    private Integer getInt(Map<String, Object> map, String key) {
+    public static Integer getInt(Map<String, Object> map, String key) {
         Object obj = map.get(key);
         if (obj == null) {
             return null;
@@ -39,7 +39,7 @@ public class MapUtils {
         }
     }
 
-    private Integer getIntOrDefault(Map<String, Object> map, String key, Integer defaultValue) {
+    public static Integer getIntOrDefault(Map<String, Object> map, String key, Integer defaultValue) {
         Integer val = getInt(map, key);
         if (val == null) {
             val = defaultValue;
@@ -47,7 +47,7 @@ public class MapUtils {
         return val;
     }
 
-    private String getString(Map<String, Object> map, String key) {
+    public static String getString(Map<String, Object> map, String key) {
         Object obj = map.get(key);
         if (obj == null) {
             return null;
@@ -56,7 +56,7 @@ public class MapUtils {
         }
     }
 
-    private String getStringOrDefault(Map<String, Object> map, String key, String defaultValue) {
+    public static String getStringOrDefault(Map<String, Object> map, String key, String defaultValue) {
         String str = getString(map, key);
         if (str == null) {
             str = defaultValue;
@@ -64,7 +64,7 @@ public class MapUtils {
         return str;
     }
 
-    private Date getDate(Map<String, Object> map, String key) {
+    public static Date getDate(Map<String, Object> map, String key) {
         Object obj = map.get(key);
         if (obj == null) {
             return null;
@@ -73,7 +73,7 @@ public class MapUtils {
         }
     }
 
-    private Date getDateOrDefault(Map<String, Object> map, String key, Date date) {
+    public static Date getDateOrDefault(Map<String, Object> map, String key, Date date) {
         Date d = getDate(map, key);
         if (d == null) {
             d = date;
