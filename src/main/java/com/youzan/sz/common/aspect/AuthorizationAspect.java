@@ -73,10 +73,10 @@ public class AuthorizationAspect extends BaseAspect {
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
                 } else {
-                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口,Exception:" + e.getMessage());
+                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口", e);
                 }
             } finally {
-                LOGGER.error("完成鉴权所用时间(ms):{}", System.currentTimeMillis() - beginTime);
+                LOGGER.info("完成鉴权所用时间(ms):{}", System.currentTimeMillis() - beginTime);
                 beginTime = System.currentTimeMillis();
             }
 
@@ -91,7 +91,7 @@ public class AuthorizationAspect extends BaseAspect {
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
                         return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
                     } else {
-                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常,Exception:" + e.getMessage());
+                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
                     }
                 }
             } else {
@@ -103,7 +103,7 @@ public class AuthorizationAspect extends BaseAspect {
                 }
             }
         } finally {
-            LOGGER.error("纯粹处理业务本身所用时间(ms):{}", System.currentTimeMillis() - beginTime);
+            LOGGER.info("纯粹处理业务本身所用时间(ms):{}", System.currentTimeMillis() - beginTime);
         }
     }
 
@@ -133,7 +133,7 @@ public class AuthorizationAspect extends BaseAspect {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("Exception:{}", e);
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), e.getMessage());
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "权限不足", e);
             }
             if (staffDTO == null) {
                 return false;
@@ -146,9 +146,9 @@ public class AuthorizationAspect extends BaseAspect {
             return false;
         } else {
             final StaffDTO finalStaffDTO = staffDTO;
-            return Arrays.stream(allowedRoles).anyMatch(roleEnum ->
-                    roleEnum.equals(RoleEnum.valueOf(finalStaffDTO.getRole()))
-            );
+            boolean success = Arrays.stream(allowedRoles).anyMatch(roleEnum ->
+                    roleEnum.equals(RoleEnum.valueOf(finalStaffDTO.getRole())));
+            return success;
         }
     }
 

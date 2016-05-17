@@ -10,7 +10,6 @@ import com.youzan.sz.common.model.BaseModel;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.SpringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -63,7 +62,6 @@ public class ValidateParamsAspect extends BaseAspect {
             validator = (Validator) SpringUtils.getBean("validator");
         }
 
-
         Method method = this.getMethod(pjp);
         ValidateParams validateParamsAnnotation = method.getAnnotation(ValidateParams.class);
         Class<?> returnType = method.getReturnType();
@@ -71,17 +69,8 @@ public class ValidateParamsAspect extends BaseAspect {
         Class[] classes = validateParamsAnnotation.paramClasses();
         Object[] args = pjp.getArgs();
         String[] excludeProperties = validateParamsAnnotation.excludeProperties();
-        boolean isCheckBid = StringUtils.isEmpty(validateParamsAnnotation.bid());
-        Object bid = null;
-        if(!isCheckBid){
-            bid = super.parseKey(validateParamsAnnotation.bid(), method, pjp.getArgs());
-        }
 
         try {
-
-            if(!isCheckBid && bid==null){
-                return new BaseResponse(ResponseCode.BID_NOT_NULL.getCode(), ResponseCode.BID_NOT_NULL.getMessage(), null);
-            }
 
             Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
             if (!constraintSet.isEmpty()) {
@@ -89,7 +78,7 @@ public class ValidateParamsAspect extends BaseAspect {
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
                 } else {
-                    throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:" + errors);
+                    throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:\t" + errors);
                 }
             } else {
                 try {
@@ -102,15 +91,15 @@ public class ValidateParamsAspect extends BaseAspect {
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
                         return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
                     } else {
-                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
+                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
                     }
                 }
             }
         } finally {
             if (BaseResponse.class.isAssignableFrom(returnType)) {
-                LOGGER.error("整个调用执行时间 (ms):{}", System.currentTimeMillis() - beginTime);
+                LOGGER.info("整个调用执行时间 (ms):{}", System.currentTimeMillis() - beginTime);
             } else {
-                LOGGER.error("调用ServiceImpl的方法所用时间 (ms):{}", System.currentTimeMillis() - beginTime);
+                LOGGER.info("调用ServiceImpl的方法所用时间 (ms):{}", System.currentTimeMillis() - beginTime);
             }
         }
     }
@@ -123,11 +112,15 @@ public class ValidateParamsAspect extends BaseAspect {
      */
 
     private String buildErrorMsg(Set<ConstraintViolation<Object>> constraintSet) {
-        StringBuilder sb = new StringBuilder();
-        for (ConstraintViolation<Object> constraint : constraintSet) {
-            sb.append(constraint.getPropertyPath()).append(" ：").append(constraint.getMessage()).append(",");
+        if (constraintSet != null && !constraintSet.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            constraintSet.forEach(c ->
+                    sb.append(c.getPropertyPath()).append(":").append(c.getMessage()).append(",")
+            );
+            return sb.deleteCharAt(sb.length() - 1).toString();
+        } else {
+            return "";
         }
-        return sb.deleteCharAt(sb.length() - 1).toString();
     }
 
     /**

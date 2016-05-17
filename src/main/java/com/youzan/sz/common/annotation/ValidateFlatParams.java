@@ -13,9 +13,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidateParams {
-
-    Class[] paramClasses() default {};
-
-    String[] excludeProperties() default {};
+public @interface ValidateFlatParams {
+    
 }
