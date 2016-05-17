@@ -98,7 +98,6 @@ public class BeanUtil {
                     descriptor.getWriteMethod().invoke(obj, args);
                 } catch (Exception e) {
                     LOGGER.error("BeanUtil Error:{}", e);
-                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
                 }
             }
         }

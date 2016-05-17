@@ -95,6 +95,9 @@ public class EsClient {
      */
     public static Map<String, Object> searchMap(String tableName, Searchable searchable) {
         List<Map<String, Object>> data = searchListMap(tableName, searchable);
+        if(data.size()==0){
+            return  null;
+        }
         return data.get(0);
     }
 
