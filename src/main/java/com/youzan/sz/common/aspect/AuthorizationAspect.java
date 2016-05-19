@@ -9,6 +9,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.oa.staff.api.StaffService;
 import com.youzan.sz.oa.staff.api.dto.StaffDTO;
+import com.youzan.sz.session.SessionTools;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -116,30 +117,14 @@ public class AuthorizationAspect extends BaseAspect {
             }
         }
 
-        StaffDTO staffDTO = staffService.getStaffByAdminId(adminId.toString());
-        if (staffDTO == null) {
-            Future<StaffDTO> future = RpcContext.getContext().getFuture();
-            try {
-                if (future != null) {
-                    staffDTO = future.get();
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                LOGGER.error("Exception:{}", e);
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "权限不足", e);
-            }
-            if (staffDTO == null) {
-                return false;
-            }
-        }
 
-        if (shopId != null && staffDTO.getShopId() != ((Long) shopId)) {
+        if (shopId != null && Long.valueOf(SessionTools.getInstance().get(SessionTools.SHOP_ID)) != ((Long) shopId)) {
             return false;
-        } else if (bid != null && staffDTO.getBid() != ((Long) bid)) {
+        } else if (bid != null && Long.valueOf(SessionTools.getInstance().get(SessionTools.BID))!= ((Long) bid)) {
             return false;
         } else {
-            final StaffDTO finalStaffDTO = staffDTO;
             boolean success = Arrays.stream(allowedRoles).anyMatch(roleEnum ->
-                    roleEnum.equals(RoleEnum.valueOf(finalStaffDTO.getRole())));
+                    roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(SessionTools.getInstance().get(SessionTools.ROLE)))));
             return success;
         }
     }
