@@ -118,9 +118,9 @@ public class AuthorizationAspect extends BaseAspect {
         }
 
 
-        if (shopId != null && Long.valueOf(SessionTools.getInstance().get(SessionTools.SHOP_ID)) != ((Long) shopId)) {
+        if (shopId != null && !SessionTools.getInstance().get(SessionTools.SHOP_ID).equalsIgnoreCase(String.valueOf(shopId))) {
             return false;
-        } else if (bid != null && Long.valueOf(SessionTools.getInstance().get(SessionTools.BID))!= ((Long) bid)) {
+        } else if (bid != null && !SessionTools.getInstance().get(SessionTools.BID).equalsIgnoreCase(String.valueOf(bid))) {
             return false;
         } else {
             boolean success = Arrays.stream(allowedRoles).anyMatch(roleEnum ->
