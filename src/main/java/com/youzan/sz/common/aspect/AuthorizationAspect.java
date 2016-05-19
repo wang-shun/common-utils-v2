@@ -48,7 +48,7 @@ public class AuthorizationAspect extends BaseAspect {
 
     //检验权限
     @Around("pointcut()")
-    public Object handle(ProceedingJoinPoint pjp) throws Throwable {
+    public Object handle(ProceedingJoinPoint pjp) {
         long beginTime = System.currentTimeMillis();
         try {
             //获取拦截到的方法及方法上的注解
@@ -86,7 +86,7 @@ public class AuthorizationAspect extends BaseAspect {
                     return pjp.proceed();
                 } catch (BusinessException be) {
                     throw be;
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     LOGGER.error("Exception:{}", e);
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
                         return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);

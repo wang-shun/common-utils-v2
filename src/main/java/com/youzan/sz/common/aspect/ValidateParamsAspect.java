@@ -54,7 +54,7 @@ public class ValidateParamsAspect extends BaseAspect {
 
     //检验内部使用传递过来的参数
     @Around("pointcut()")
-    public Object handle(ProceedingJoinPoint pjp) throws Throwable {
+    public Object handle(ProceedingJoinPoint pjp) {
 
         long beginTime = System.currentTimeMillis();
 
@@ -86,7 +86,7 @@ public class ValidateParamsAspect extends BaseAspect {
                 } catch (BusinessException be) {
                     LOGGER.error("Error:{}", be);
                     throw be;
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     LOGGER.error("Error:{}", e);
                     if (BaseResponse.class.isAssignableFrom(returnType)) {
                         return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);

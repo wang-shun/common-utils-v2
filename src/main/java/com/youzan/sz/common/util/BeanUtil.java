@@ -72,7 +72,7 @@ public class BeanUtil {
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
     public static <T> T transMap2Bean(Class<T> destinationClazz, Map map) {
-        if(map == null){
+        if (map == null) {
             return null;
         }
         BeanInfo beanInfo = null; // 获取类属性
@@ -82,7 +82,7 @@ public class BeanUtil {
             obj = destinationClazz.newInstance(); // 创建 JavaBean 对象
         } catch (Exception e) {
             LOGGER.error("BeanUtil Error:{}", e);
-            throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
+            throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常", e);
         }
 
         // 给 JavaBean 对象的属性赋值
@@ -94,15 +94,13 @@ public class BeanUtil {
             if (map.containsKey(propertyName)) {
                 // 下面一句可以 try 起来，这样当一个属性赋值失败的时候就不会影响其他属性赋值。
                 Object value = map.get(propertyName);
-
                 Object[] args = new Object[1];
                 args[0] = value;
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
-                }catch (IllegalArgumentException ex){
-                    LOGGER.error("BeanUtil Error:{}", "类型转换异常,请自行转换");
-                }
-                catch (Exception e) {
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.error("BeanUtil Error: 类型转换异常,请自行转换,{}", ex);
+                } catch (Exception e) {
                     LOGGER.error("BeanUtil Error:{}", e);
                 }
             }
@@ -140,8 +138,8 @@ public class BeanUtil {
      */
     public static <T> Map transBean2Map(T bean) {
         Class type = bean.getClass();
-        Map returnMap = new HashMap();
-        BeanInfo beanInfo = null;
+        Map<String, Object> returnMap = new HashMap<>();
+        BeanInfo beanInfo;
         try {
             beanInfo = Introspector.getBeanInfo(type);
         } catch (IntrospectionException e) {
