@@ -39,7 +39,6 @@ public class ValidateFlatParamsAspect extends BaseAspect {
 
     @Around("pointcut()")
     public Object handle(ProceedingJoinPoint pjp) {
-        long beginTime = System.currentTimeMillis();
 
         Method method = this.getMethod(pjp);
         if (validator == null) {
@@ -63,8 +62,6 @@ public class ValidateFlatParamsAspect extends BaseAspect {
             } catch (Throwable e) {
                 LOGGER.error("Error:{}", e);
                 throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
-            } finally {
-                LOGGER.info("整个调用执行时间 (ms):{}", System.currentTimeMillis() - beginTime);
             }
         }
     }

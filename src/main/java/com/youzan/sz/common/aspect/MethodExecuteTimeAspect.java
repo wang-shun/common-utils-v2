@@ -22,7 +22,8 @@ public class MethodExecuteTimeAspect extends BaseAspect {
         try {
             return pjp.proceed();
         } finally {
-            LOGGER.info("Method ({}.{}) Executed Time (ms):{}", method.getDeclaringClass().getCanonicalName(), method.getName(), System.currentTimeMillis() - beginTime);
+            LOGGER.info("Method {}.{} Executed Time (ms):{}", method.getDeclaringClass().getCanonicalName(),
+                    method.getName(), System.currentTimeMillis() - beginTime);
         }
     }
 

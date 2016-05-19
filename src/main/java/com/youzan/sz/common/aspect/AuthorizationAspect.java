@@ -49,61 +49,53 @@ public class AuthorizationAspect extends BaseAspect {
     //检验权限
     @Around("pointcut()")
     public Object handle(ProceedingJoinPoint pjp) {
-        long beginTime = System.currentTimeMillis();
+        //获取拦截到的方法及方法上的注解
+        Method method = this.getMethod(pjp);
+        Authorization authorization = method.getAnnotation(Authorization.class);
+        Class<?> returnType = method.getReturnType();
+
+        // 获取注解上传过来的参数
+        RoleEnum[] allowedRoles = authorization.allowedRoles();
+        Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
+        Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
+        Object bid = super.parseKey(authorization.bid(), method, pjp.getArgs());
+
+        // 鉴权
+        boolean allowAccess;
         try {
-            //获取拦截到的方法及方法上的注解
-            Method method = this.getMethod(pjp);
-            Authorization authorization = method.getAnnotation(Authorization.class);
-            Class<?> returnType = method.getReturnType();
+            allowAccess = this.allowAccess(allowedRoles, adminId, shopId, bid);
+        } catch (BusinessException be) {
+            throw be;
+        } catch (Exception e) {
+            LOGGER.error("Authorization Exception:{}", e);
+            if (BaseResponse.class.isAssignableFrom(returnType)) {
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+            } else {
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口", e);
+            }
+        }
 
-            // 获取注解上传过来的参数
-            RoleEnum[] allowedRoles = authorization.allowedRoles();
-            Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
-            Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
-            Object bid = super.parseKey(authorization.bid(), method, pjp.getArgs());
-
-            // 鉴权
-            boolean allowAccess;
+        if (allowAccess) {
+            // 通过鉴权,开始调用业务逻辑方法
             try {
-                allowAccess = this.allowAccess(allowedRoles, adminId, shopId, bid);
+                return pjp.proceed();
             } catch (BusinessException be) {
                 throw be;
-            } catch (Exception e) {
-                LOGGER.error("Authorization Exception:{}", e);
+            } catch (Throwable e) {
+                LOGGER.error("Exception:{}", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
-                    return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+                    return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
                 } else {
-                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口", e);
+                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
                 }
-            } finally {
-                LOGGER.info("完成鉴权所用时间(ms):{}", System.currentTimeMillis() - beginTime);
-                beginTime = System.currentTimeMillis();
             }
-
-            if (allowAccess) {
-                // 通过鉴权,开始调用业务逻辑方法
-                try {
-                    return pjp.proceed();
-                } catch (BusinessException be) {
-                    throw be;
-                } catch (Throwable e) {
-                    LOGGER.error("Exception:{}", e);
-                    if (BaseResponse.class.isAssignableFrom(returnType)) {
-                        return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
-                    } else {
-                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
-                    }
-                }
+        } else {
+            // 未通过鉴权
+            if (BaseResponse.class.isAssignableFrom(returnType)) {
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
             } else {
-                // 未通过鉴权
-                if (BaseResponse.class.isAssignableFrom(returnType)) {
-                    return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
-                } else {
-                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
-                }
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
             }
-        } finally {
-            LOGGER.info("纯粹处理业务本身所用时间(ms):{}", System.currentTimeMillis() - beginTime);
         }
     }
 
@@ -115,7 +107,7 @@ public class AuthorizationAspect extends BaseAspect {
      * @return
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object shopId, Object bid) {
-        LOGGER.info("ADMIN_ID:{}, SHOP_ID:{}", adminId, shopId);
+        LOGGER.info("Parameters: bid:{},adminId:{}, shopId:{}", bid, adminId, shopId);
 
         if (adminId == null) {
             adminId = DistributedContextTools.getAdminId();
