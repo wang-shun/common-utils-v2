@@ -96,7 +96,10 @@ public class BeanUtil {
                 args[0] = value;
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
-                } catch (Exception e) {
+                }catch (IllegalArgumentException ex){
+                    LOGGER.error("BeanUtil Error:{}", "类型转换异常,请自行转换");
+                }
+                catch (Exception e) {
                     LOGGER.error("BeanUtil Error:{}", e);
                 }
             }
