@@ -31,7 +31,8 @@ public class EsClient {
     private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "10.9.77.163");
     private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "9200");
     private static final String libname = "store";
-private static ObjectMapper om = new ObjectMapper();
+    private static ObjectMapper om = new ObjectMapper();
+
     static {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -50,7 +51,7 @@ private static ObjectMapper om = new ObjectMapper();
         try {
             Object build = searchable.build();
             String url = getURL(tableName);
-            LOGGER.debug("url : " + url + "  build: " + om.writeValueAsString(build) );
+            LOGGER.debug("url : " + url + "  build: " + om.writeValueAsString(build));
             String result = HttpUtil.restPost(url, build);
             LOGGER.debug("result : " + result);
             Page page = searchable.getPage();
