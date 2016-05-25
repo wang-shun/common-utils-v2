@@ -40,8 +40,10 @@ public class MethodExecuteTimeAspect extends BaseAspect {
         } finally {
             long executeTime = System.currentTimeMillis() - beginTime;
             if (executeTime > timeout) {
-                LOGGER.info("Method {}.{} Executed Time (ms):{}", method.getDeclaringClass().getCanonicalName(),
-                        method.getName(), executeTime);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Method {}.{} Executed Time (ms):{}", method.getDeclaringClass().getCanonicalName(),
+                            method.getName(), executeTime);
+                }
             }
         }
     }

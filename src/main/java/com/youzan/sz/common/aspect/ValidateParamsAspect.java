@@ -166,8 +166,9 @@ public class ValidateParamsAspect extends BaseAspect {
             }
         }
 
-        LOGGER.info("Parameters:{}", JSON.toJSONString(args));
-
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Parameters:{}", JSON.toJSONString(args));
+        }
         return constraintSet;
     }
 

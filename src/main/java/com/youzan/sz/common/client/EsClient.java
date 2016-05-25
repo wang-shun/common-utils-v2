@@ -27,10 +27,10 @@ import java.util.Map;
  */
 public class EsClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String propFileName = "application.properties";
+    private static final String propFileName = "/application.properties";
     private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "10.9.77.163");
     private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "9200");
-    private static final String libname = "store";
+    private static final String LIBNAME = "store";
 
     static {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -95,8 +95,8 @@ public class EsClient {
      */
     public static Map<String, Object> searchMap(String tableName, Searchable searchable) {
         List<Map<String, Object>> data = searchListMap(tableName, searchable);
-        if(data.size()==0){
-            return  null;
+        if (data.size() == 0) {
+            return null;
         }
         return data.get(0);
     }

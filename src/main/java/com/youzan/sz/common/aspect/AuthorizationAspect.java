@@ -1,6 +1,5 @@
 package com.youzan.sz.common.aspect;
 
-import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.Authorization;
@@ -8,7 +7,6 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.oa.staff.api.StaffService;
-import com.youzan.sz.oa.staff.api.dto.StaffDTO;
 import com.youzan.sz.session.SessionTools;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -22,8 +20,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * Created by YANG on 16/4/7.
@@ -108,7 +104,9 @@ public class AuthorizationAspect extends BaseAspect {
      * @return
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object shopId, Object bid) {
-        LOGGER.info("Parameters: bid:{},adminId:{}, shopId:{}", bid, adminId, shopId);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Parameters: bid:{},adminId:{}, shopId:{}", bid, adminId, shopId);
+        }
 
         if (adminId == null) {
             adminId = DistributedContextTools.getAdminId();
