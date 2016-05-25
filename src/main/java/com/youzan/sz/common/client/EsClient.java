@@ -77,7 +77,9 @@ public class EsClient {
         try {
             Object build = searchable.build();
             String url = getURL(tableName);
+            LOGGER.debug("url : " + url + "  build: " + om.writeValueAsString(build));
             String result = HttpUtil.restPost(url, build);
+            LOGGER.debug("result : " + result);
             return decode(result);
         } catch (Exception e) {
             LOGGER.error("Es seach Error:{}", e);
