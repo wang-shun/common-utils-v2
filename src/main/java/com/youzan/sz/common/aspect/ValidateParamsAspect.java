@@ -54,10 +54,7 @@ public class ValidateParamsAspect extends BaseAspect {
 
     //检验内部使用传递过来的参数
     @Around("pointcut()")
-    public Object handle(ProceedingJoinPoint pjp) throws Throwable {
-
-        long beginTime = System.currentTimeMillis();
-
+    public Object handle(ProceedingJoinPoint pjp) {
         if (validator == null) { //TODO Spring加载了两次该类，第一次注入了validator,第二次注入null，暂时采用这样的方式注入
             validator = (Validator) SpringUtils.getBean("validator");
         }
@@ -70,36 +67,27 @@ public class ValidateParamsAspect extends BaseAspect {
         Object[] args = pjp.getArgs();
         String[] excludeProperties = validateParamsAnnotation.excludeProperties();
 
-        try {
-
-            Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
-            if (!constraintSet.isEmpty()) {
-                String errors = buildErrorMsg(constraintSet);
-                if (BaseResponse.class.isAssignableFrom(returnType)) {
-                    return new BaseResponse(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
-                } else {
-                    throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:\t" + errors);
-                }
-            } else {
-                try {
-                    return pjp.proceed();
-                } catch (BusinessException be) {
-                    LOGGER.error("Error:{}", be);
-                    throw be;
-                } catch (Exception e) {
-                    LOGGER.error("Error:{}", e);
-                    if (BaseResponse.class.isAssignableFrom(returnType)) {
-                        return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
-                    } else {
-                        throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
-                    }
-                }
-            }
-        } finally {
+        Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
+        if (!constraintSet.isEmpty()) {
+            String errors = buildErrorMsg(constraintSet);
             if (BaseResponse.class.isAssignableFrom(returnType)) {
-                LOGGER.info("整个调用执行时间 (ms):{}", System.currentTimeMillis() - beginTime);
+                return new BaseResponse(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
             } else {
-                LOGGER.info("调用ServiceImpl的方法所用时间 (ms):{}", System.currentTimeMillis() - beginTime);
+                throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:\t" + errors);
+            }
+        } else {
+            try {
+                return pjp.proceed();
+            } catch (BusinessException be) {
+                LOGGER.error("Error:{}", be);
+                throw be;
+            } catch (Throwable e) {
+                LOGGER.error("Error:{}", e);
+                if (BaseResponse.class.isAssignableFrom(returnType)) {
+                    return new BaseResponse(ResponseCode.ERROR.getCode(), "系统异常", e);
+                } else {
+                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
+                }
             }
         }
     }
@@ -178,8 +166,9 @@ public class ValidateParamsAspect extends BaseAspect {
             }
         }
 
-        LOGGER.info("Parameters:{}", JSON.toJSONString(args));
-
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Parameters:{}", JSON.toJSONString(args));
+        }
         return constraintSet;
     }
 

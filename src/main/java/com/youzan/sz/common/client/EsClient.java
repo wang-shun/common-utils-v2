@@ -49,7 +49,6 @@ private static ObjectMapper om = new ObjectMapper();
     public static Page search(String tableName, Searchable searchable) {
         try {
             Object build = searchable.build();
-
             String url = getURL(tableName);
             LOGGER.debug("url : " + url + "  build: " + om.writeValueAsString(build) );
             String result = HttpUtil.restPost(url, build);
@@ -98,8 +97,8 @@ private static ObjectMapper om = new ObjectMapper();
      */
     public static Map<String, Object> searchMap(String tableName, Searchable searchable) {
         List<Map<String, Object>> data = searchListMap(tableName, searchable);
-        if(data.size()==0){
-            return  null;
+        if (data.size() == 0) {
+            return null;
         }
         return data.get(0);
     }
