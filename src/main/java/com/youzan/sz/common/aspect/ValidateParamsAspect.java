@@ -23,9 +23,8 @@ import javax.annotation.Resource;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Created with IntelliJ IDEA.
@@ -121,37 +120,14 @@ public class ValidateParamsAspect extends BaseAspect {
     private Set<ConstraintViolation<Object>> validate(Class[] classes, Object[] args, String[] excludeProperties) {
         Set<ConstraintViolation<Object>> constraintSet = new HashSet<ConstraintViolation<Object>>();
         for (Object obj : args) {
-            if (obj instanceof BaseModel) {
-                BaseModel baseModel = (BaseModel) obj;
-                if (baseModel.getAdminId() == null) {
-                    baseModel.setAdminId(DistributedContextTools.getAdminId());
-                }
-
-                if (Strings.isNullOrEmpty(baseModel.getRequestIp())) {
-                    baseModel.setRequestIp(DistributedContextTools.getRequestIp());
-                }
-            } else if (obj instanceof BaseDTO) {
-                BaseDTO baseDTO = (BaseDTO) obj;
-                if (baseDTO.getAdminId() == null) {
-                    baseDTO.setAdminId(DistributedContextTools.getAdminId());
-                }
-
-                if (Strings.isNullOrEmpty(baseDTO.getRequestIp())) {
-                    baseDTO.setRequestIp(DistributedContextTools.getRequestIp());
-                }
-
-            } else if (obj instanceof Collection) {
+            if (obj instanceof Collection) {
                 Collection collection = (Collection) obj;
-                for (Object object : collection) {
-                    constraintSet.addAll(validator.validate(object));
+                for (Object o : collection) {
+                    setContextArgs(o);
+                    constraintSet.addAll(doValidate(classes, o));
                 }
             } else {
-                for (Class clazz : classes) {
-                    if (clazz.equals(obj.getClass())) {
-                        constraintSet.addAll(validator.validate(obj));
-                        break;
-                    }
-                }
+                constraintSet.addAll(doValidate(classes, obj));
             }
         }
 
@@ -170,6 +146,48 @@ public class ValidateParamsAspect extends BaseAspect {
             LOGGER.info("Parameters:{}", JSON.toJSONString(args));
         }
         return constraintSet;
+    }
+
+    /** 检验
+     * @param classes
+     * @param obj
+     * @return
+     */
+    private Set<ConstraintViolation<Object>> doValidate(Class[] classes, Object obj) {
+        if (classes != null && classes.length > 0) {
+            boolean anyMatch = Arrays.stream(classes).anyMatch(Predicate.isEqual(obj.getClass()));
+            if (anyMatch) {
+                return validator.validate(obj);
+            }
+        }
+        return Collections.emptySet();
+    }
+
+    /**
+     * 给方法参数添加必要的上下文中的参数
+     *
+     * @param argument
+     */
+    private void setContextArgs(Object argument) {
+        if (argument instanceof BaseModel) {
+            BaseModel baseModel = (BaseModel) argument;
+            if (baseModel.getAdminId() == null) {
+                baseModel.setAdminId(DistributedContextTools.getAdminId());
+            }
+
+            if (Strings.isNullOrEmpty(baseModel.getRequestIp())) {
+                baseModel.setRequestIp(DistributedContextTools.getRequestIp());
+            }
+        } else if (argument instanceof BaseDTO) {
+            BaseDTO baseDTO = (BaseDTO) argument;
+            if (baseDTO.getAdminId() == null) {
+                baseDTO.setAdminId(DistributedContextTools.getAdminId());
+            }
+
+            if (Strings.isNullOrEmpty(baseDTO.getRequestIp())) {
+                baseDTO.setRequestIp(DistributedContextTools.getRequestIp());
+            }
+        }
     }
 
 }

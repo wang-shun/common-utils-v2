@@ -9,12 +9,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by zefa on 16/4/18.
  */
 public class PropertiesUtils {
     private static final ConcurrentHashMap<String, ConcurrentHashMap<String, String>> map = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Future<ConcurrentHashMap<String, String>>> MAP = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesUtils.class);
 
     /**
@@ -25,34 +29,50 @@ public class PropertiesUtils {
      * @return 配置值
      */
     public static String getProperty(String fileName, String propertiesKey) throws BusinessException {
-        //判断是否命中缓存,命中则从缓存中读取
-        if (map.get(fileName) == null) {
-            //未命中缓存则读取配置文件
-            Properties prop = new Properties();
 
-            InputStream inputStream = null;
-            try {
-                ConcurrentHashMap<String, String> propertiesMap = new ConcurrentHashMap<>();
-                inputStream = PropertiesUtils.class.getResourceAsStream(fileName);
-                prop.load(inputStream);
-                for (String key : prop.stringPropertyNames()) {
-                    propertiesMap.put(key, prop.getProperty(key));
-                }
-                map.put(fileName, propertiesMap);
-            } catch (Exception e) {
-                LOGGER.error("Read Property Exception:{}", e);
-                throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        LOGGER.error("Read Property Exception:{}", e);
+        Future<ConcurrentHashMap<String, String>> future = MAP.get(fileName);
+        //判断是否命中缓存,命中则从缓存中读取
+        if (future == null) {
+            // 未命中,由当前线程加载
+            FutureTask<ConcurrentHashMap<String, String>> futureTask = new FutureTask<>(() -> {
+                Properties prop = new Properties();
+                InputStream inputStream = null;
+                try {
+                    ConcurrentHashMap<String, String> propertiesMap = new ConcurrentHashMap<>();
+                    inputStream = PropertiesUtils.class.getResourceAsStream(fileName);
+                    prop.load(inputStream);
+                    for (String key : prop.stringPropertyNames()) {
+                        propertiesMap.put(key, prop.getProperty(key));
+                    }
+                    return propertiesMap;
+                } catch (Exception e) {
+                    LOGGER.error("Read Property Exception:{}", e);
+                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            LOGGER.error("Read Property Exception:{}", e);
+                        }
                     }
                 }
+            });
+
+            // 看是否由其他线程给先加载了该属性配置文件
+            future = MAP.putIfAbsent(fileName, futureTask);
+            if (future == null) { // 没人加载过,把自己放到MAP中,并执行
+                future = futureTask;
+                futureTask.run();
             }
         }
-        return map.get(fileName).get(propertiesKey);
+
+        try {
+            return future.get().get(propertiesKey);
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error("Read Property Exception:{}", e);
+            throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
+        }
     }
 
     /**
@@ -63,6 +83,7 @@ public class PropertiesUtils {
      * @param defaultValue   默认值
      * @return
      */
+
     public static String getProperty(String propertiesName, String propertiesKey, String defaultValue) {
         try {
             return getProperty(propertiesName, propertiesKey);
