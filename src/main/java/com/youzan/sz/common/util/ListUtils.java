@@ -8,29 +8,30 @@ import java.util.List;
  */
 public class ListUtils {
     /**
-     *
      * @param list
      * @return
      */
-    public static String list2String(List list){
-        String result = "";
-        for (Object object: list){
-            result += String.valueOf(object) + ",";
+    public static String list2String(List list) {
+        StringBuilder result = new StringBuilder();
+        for (Object object : list) {
+            result.append(String.valueOf(object));
+            result.append(",");
         }
-        if (result.length() > 0){
-            result = result.substring(0,result.length() - 1);
+        if (result.length() > 0) {
+            return result.substring(0, result.length() - 1);
         }
-        return result;
+        return result.toString();
     }
 
     /**
      * 比较两个list的不同之处
+     *
      * @param firstList
      * @param secondList
      * @param <E>
      * @return 第一个比第二个多的
      */
-    public static <E> List<E> compareTheDifferenceBetween2List(List<E> firstList, List<E> secondList){
+    public static <E> List<E> compareTheDifferenceBetween2List(List<E> firstList, List<E> secondList) {
         List<E> differenceList = new ArrayList<>(firstList);
         for (E elem : secondList) {
             if (firstList.contains(elem))
@@ -41,12 +42,13 @@ public class ListUtils {
 
     /**
      * 比较两个list的相同之处
+     *
      * @param firstList
      * @param secondList
      * @param <E>
      * @return
      */
-    public static <E> List<E> comparisonOfTheTwoListInTheSamePlace(List<E> firstList, List<E> secondList){
+    public static <E> List<E> comparisonOfTheTwoListInTheSamePlace(List<E> firstList, List<E> secondList) {
         List<E> differenceList = new ArrayList<>(firstList);
         for (E elem : secondList) {
             if (!firstList.contains(elem))
