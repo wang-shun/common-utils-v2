@@ -81,6 +81,19 @@ public class DateUtils {
     }
 
     /**
+     * 获取距离现在N小时 整点的时间戳
+     * @param apartHour 相隔小时，0=>当前，-1=>1小时前，1=>1小时后
+     * @return int
+     */
+    public static int timestampAtHour(int apartHour) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR, apartHour);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        return (int)(calendar.getTimeInMillis() / 1000);
+    }
+
+    /**
      * 根据yyyyMMdd类型字符串获取当前0点的时间戳
      * @param yyyyMMdd
      * @return int
@@ -111,5 +124,9 @@ public class DateUtils {
     {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
         return format.format(new Date(Long.valueOf(seconds + "000")));
+    }
+
+    public static void main(String[] args) {
+        System.out.println(timestampAtHour(0));
     }
 }
