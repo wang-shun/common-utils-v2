@@ -87,7 +87,7 @@ public class DateUtils {
      */
     public static int timestampAtHour(int apartHour) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR, apartHour);
+        calendar.add(Calendar.HOUR_OF_DAY, apartHour);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         return (int)(calendar.getTimeInMillis() / 1000);
@@ -124,9 +124,5 @@ public class DateUtils {
     {
         SimpleDateFormat format = new SimpleDateFormat(dateformat);
         return format.format(new Date(Long.valueOf(seconds + "000")));
-    }
-
-    public static void main(String[] args) {
-        System.out.println(timestampAtHour(0));
     }
 }
