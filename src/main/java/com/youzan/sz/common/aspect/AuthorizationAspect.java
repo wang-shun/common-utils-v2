@@ -1,12 +1,10 @@
 package com.youzan.sz.common.aspect;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
-import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.Authorization;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
-import com.youzan.sz.oa.staff.api.StaffService;
 import com.youzan.sz.session.SessionTools;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -17,7 +15,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -29,9 +26,6 @@ import java.util.Arrays;
 public class AuthorizationAspect extends BaseAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationAspect.class);
-
-    @Resource
-    private StaffService staffService;
 
     @Pointcut("@annotation(com.youzan.sz.common.annotation.Authorization)")
     public void pointcut() {
@@ -53,14 +47,15 @@ public class AuthorizationAspect extends BaseAspect {
 
         // 获取注解上传过来的参数
         RoleEnum[] allowedRoles = authorization.allowedRoles();
-        Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
-        Object shopId = super.parseKey(authorization.shopId(), method, pjp.getArgs());
-        Object bid = super.parseKey(authorization.bid(), method, pjp.getArgs());
+//        Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
+        Object[] args = pjp.getArgs();
+        Object shopId = super.parseKey(authorization.shopId(), method, args);
+        Object bid = super.parseKey(authorization.bid(), method, args);
 
         // 鉴权
         boolean allowAccess;
         try {
-            allowAccess = this.allowAccess(allowedRoles, adminId, shopId, bid);
+            allowAccess = this.allowAccess(allowedRoles, shopId, bid);
         } catch (BusinessException be) {
             throw be;
         } catch (Exception e) {
@@ -103,22 +98,14 @@ public class AuthorizationAspect extends BaseAspect {
      * @param allowedRoles
      * @return
      */
-    private boolean allowAccess(RoleEnum[] allowedRoles, Object adminId, Object shopId, Object bid) {
+    private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Parameters: bid:{},adminId:{}, shopId:{}", bid, adminId, shopId);
+            LOGGER.info("Parameters: bid:{}, shopId:{}", bid, shopId);
         }
 
-        if (adminId == null) {
-            adminId = DistributedContextTools.getAdminId();
-            if (adminId == null) {
-                return false;
-            }
-        }
-
-
-        if (shopId != null && !SessionTools.getInstance().get(SessionTools.SHOP_ID).equalsIgnoreCase(String.valueOf(shopId))) {
+        if (shopId != null && !String.valueOf(shopId).equals(SessionTools.getInstance().get(SessionTools.SHOP_ID))) {
             return false;
-        } else if (bid != null && !SessionTools.getInstance().get(SessionTools.BID).equalsIgnoreCase(String.valueOf(bid))) {
+        } else if (bid != null && !String.valueOf(bid).equals(SessionTools.getInstance().get(SessionTools.BID))) {
             return false;
         } else {
             boolean success = Arrays.stream(allowedRoles).anyMatch(roleEnum ->
