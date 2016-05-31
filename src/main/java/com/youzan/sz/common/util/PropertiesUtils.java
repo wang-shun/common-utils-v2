@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -17,8 +19,7 @@ import java.util.concurrent.FutureTask;
  * Created by zefa on 16/4/18.
  */
 public class PropertiesUtils {
-    private static final ConcurrentHashMap<String, ConcurrentHashMap<String, String>> map = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, Future<ConcurrentHashMap<String, String>>> MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Future<Map<String, String>>> MAP = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesUtils.class);
 
     /**
@@ -29,16 +30,16 @@ public class PropertiesUtils {
      * @return 配置值
      */
     public static String getProperty(String fileName, String propertiesKey) throws BusinessException {
+        Future<Map<String, String>> future = MAP.get(fileName);
 
-        Future<ConcurrentHashMap<String, String>> future = MAP.get(fileName);
         //判断是否命中缓存,命中则从缓存中读取
         if (future == null) {
             // 未命中,由当前线程加载
-            FutureTask<ConcurrentHashMap<String, String>> futureTask = new FutureTask<>(() -> {
+            FutureTask<Map<String, String>> futureTask = new FutureTask<>(() -> {
                 Properties prop = new Properties();
                 InputStream inputStream = null;
                 try {
-                    ConcurrentHashMap<String, String> propertiesMap = new ConcurrentHashMap<>();
+                    Map<String, String> propertiesMap = new HashMap<>();
                     inputStream = PropertiesUtils.class.getResourceAsStream(fileName);
                     prop.load(inputStream);
                     for (String key : prop.stringPropertyNames()) {
