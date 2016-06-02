@@ -67,6 +67,28 @@ public class DateUtils {
     }
 
     /**
+     * 获取距离今天N月
+     * @param month 相隔月数，0=>当月，-7=>7月前，2=>2月后
+     * @return Date
+     */
+    public static Date addMonth(int month) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, month);
+        return calendar.getTime();
+    }
+
+    /**
+     * 获取距离今天N天
+     * @param day 相隔月数，0=>当天，-7=>7天前，2=>2天后
+     * @return Date
+     */
+    public static Date addDay(int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, day);
+        return calendar.getTime();
+    }
+
+    /**
      * 获取距离今天N天 凌晨的时间戳
      * @param apartDay 相隔天数，0=>当天，-7=>7天前，2=>2天后
      * @return int
