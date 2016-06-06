@@ -12,6 +12,8 @@ import java.util.GregorianCalendar;
  * Created by zefa on 16/5/30.
  */
 public class DateUtils {
+
+    private final static SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * 获取按月起止时间戳
      *  -1 表示 上一月
@@ -163,7 +165,51 @@ public class DateUtils {
         return format.format(new Date(Long.valueOf(seconds + "000")));
     }
 
-    public static void main(String[] args) {
-        System.out.println(timestampAtHour(-24));
+
+    public static String date2String(Date date,String format){
+        SimpleDateFormat simpleDateFormat  = new SimpleDateFormat(format);
+        return simpleDateFormat.format(date);
     }
+    public static String date2String(Date date){
+        return sf.format(date);
+    }
+
+    public static Date string2Date(String date,String format) throws ParseException {
+        SimpleDateFormat simpleDateFormat  = new SimpleDateFormat(format);
+        return simpleDateFormat.parse(date);
+    }
+    public static Date string2Date(String date) throws ParseException {
+        return sf.parse(date);
+    }
+
+    public static boolean isSameDay (Date date1,Date date2){
+        if(date1 == null || date2 == null ){
+            return false;
+        }
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(date1);
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTime(date2);
+        if( calendar1.get(Calendar.DAY_OF_YEAR) == calendar2.get(Calendar.DAY_OF_YEAR) ) {
+            return true;
+        }
+        return false;
+    }
+    public static void main(String[] args) {
+        //System.out.println(timestampAtHour(-24));
+        try{
+            System.out.println("-----");
+            Date now = string2Date("2012-12-21 15:12:12");
+            System.out.println(now);
+            System.out.println(string2Date("2012-12-21","yyyy-MM-dd"));
+
+            System.out.println(isSameDay(new Date(),string2Date("2016-06-07","yyyy-MM-dd")));
+        }catch (ParseException e){
+            
+        }
+
+    }
+
+
+
 }
