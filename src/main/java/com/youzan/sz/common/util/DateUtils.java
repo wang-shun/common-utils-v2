@@ -163,23 +163,54 @@ public class DateUtils {
         return format.format(new Date(Long.valueOf(seconds + "000")));
     }
 
-
+    /**
+     * 按照指定格式 格式化时间
+     * @param date
+     * @param format
+     * @return
+     */
     public static String date2String(Date date,String format){
         SimpleDateFormat simpleDateFormat  = new SimpleDateFormat(format);
         return simpleDateFormat.format(date);
     }
+
+    /**
+     * 按照默认的格式 格式化时间
+     * @param date
+     * @return
+     */
     public static String date2String(Date date){
         return sf.format(date);
     }
 
+    /**
+     * 将字符串时间转化为指定格式的Date类型
+     * @param date
+     * @param format
+     * @return
+     * @throws ParseException
+     */
     public static Date string2Date(String date,String format) throws ParseException {
         SimpleDateFormat simpleDateFormat  = new SimpleDateFormat(format);
         return simpleDateFormat.parse(date);
     }
+
+    /**
+     * 将字符串转化为默认格式的Date类型
+     * @param date
+     * @return
+     * @throws ParseException
+     */
     public static Date string2Date(String date) throws ParseException {
         return sf.parse(date);
     }
 
+    /**
+     * 判断是否为同一天,是返回true,否返回false
+     * @param date1
+     * @param date2
+     * @return
+     */
     public static boolean isSameDay (Date date1,Date date2){
         if(date1 == null || date2 == null ){
             return false;
@@ -243,7 +274,7 @@ public class DateUtils {
     }
 
     /**
-     *
+     *初始化当天 时分秒为 00:00:00
      */
     private static void initCurDataZero(Calendar calendar){
         calendar.set(Calendar.HOUR,0);
@@ -251,6 +282,9 @@ public class DateUtils {
         calendar.set(Calendar.MILLISECOND,0);
         calendar.set(Calendar.SECOND,0);
     }
+    /**
+     *获取开始时间和截至时间之间的每一天
+     */
     public static List<Date> daysBetweenStartDateAndEndDate(Date startDate,Date endDate){
 
         Calendar calendarStart = Calendar.getInstance();
