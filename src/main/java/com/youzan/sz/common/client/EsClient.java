@@ -12,15 +12,13 @@ import com.youzan.sz.common.search.Searchable;
 import com.youzan.sz.common.search.es.decode.EsResult;
 import com.youzan.sz.common.search.es.decode.InHits;
 import com.youzan.sz.common.search.es.decode.OutHits;
+import com.youzan.sz.common.task.es.EsLinkTask;
 import com.youzan.sz.common.util.PropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zefa on 16/4/20.
@@ -149,6 +147,15 @@ public class EsClient {
 
     private static void log(EsResult esResult) {
         //// TODO: 16/4/21 log 
+    }
+
+    public static void runEsLinkTask() {
+        System.out.println("runEsLinkTask running...");
+        Timer timer = new Timer();
+        timer.schedule(
+                new EsLinkTask(),  //需要注册的定时类
+                1000,             //最开始先延迟1秒的时间
+                1000*60*60);            //每隔10秒的时间调用一次
     }
 
     public static void main(String[] args) {
