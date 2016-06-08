@@ -4,9 +4,7 @@ import com.youzan.sz.common.model.TimeRangeBean;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 /**
  * Created by zefa on 16/5/30.
@@ -165,23 +163,54 @@ public class DateUtils {
         return format.format(new Date(Long.valueOf(seconds + "000")));
     }
 
-
+    /**
+     * 按照指定格式 格式化时间
+     * @param date
+     * @param format
+     * @return
+     */
     public static String date2String(Date date,String format){
         SimpleDateFormat simpleDateFormat  = new SimpleDateFormat(format);
         return simpleDateFormat.format(date);
     }
+
+    /**
+     * 按照默认的格式 格式化时间
+     * @param date
+     * @return
+     */
     public static String date2String(Date date){
         return sf.format(date);
     }
 
+    /**
+     * 将字符串时间转化为指定格式的Date类型
+     * @param date
+     * @param format
+     * @return
+     * @throws ParseException
+     */
     public static Date string2Date(String date,String format) throws ParseException {
         SimpleDateFormat simpleDateFormat  = new SimpleDateFormat(format);
         return simpleDateFormat.parse(date);
     }
+
+    /**
+     * 将字符串转化为默认格式的Date类型
+     * @param date
+     * @return
+     * @throws ParseException
+     */
     public static Date string2Date(String date) throws ParseException {
         return sf.parse(date);
     }
 
+    /**
+     * 判断是否为同一天,是返回true,否返回false
+     * @param date1
+     * @param date2
+     * @return
+     */
     public static boolean isSameDay (Date date1,Date date2){
         if(date1 == null || date2 == null ){
             return false;
@@ -195,18 +224,96 @@ public class DateUtils {
         }
         return false;
     }
+    /**
+     * 获取指定时间上一个月的天日期列表
+     * @param date
+     * @return
+     */
+    public static List<Date> previousMonthDays (Date date){
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(date);
+        int month = calendar1.get(Calendar.MONTH);
+        calendar1.set(Calendar.MONTH,month-1);
+
+        List<Date> dates = new ArrayList<>();
+        for(int i = calendar1.getMinimum(Calendar.DAY_OF_MONTH);i <= calendar1.getMaximum(Calendar.DAY_OF_MONTH);i++){
+            calendar1.set(Calendar.DAY_OF_MONTH,i);
+            dates.add(calendar1.getTime());
+        }
+        return dates;
+    }
+
+    /**
+     * 获取当前时间的小时
+     * @param date
+     * @return
+     */
+    public static int hourOfDate(Date date){
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(date);
+        return calendar1.get(Calendar.HOUR_OF_DAY);
+    }
+
+    /**
+     * 获取当前时间的小时
+     * @param date
+     * @return
+     */
+    public static List<Date> hoursOfDate(Date date){
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(date);
+        calendar1.set(Calendar.MINUTE,0);
+        calendar1.set(Calendar.MILLISECOND,0);
+        calendar1.set(Calendar.SECOND,0);
+        List<Date> dates = new ArrayList<>();
+        for(int i = calendar1.getMinimum(Calendar.HOUR_OF_DAY);i<= calendar1.getMaximum(Calendar.HOUR_OF_DAY);i++){
+            calendar1.set(Calendar.HOUR_OF_DAY,i);
+            dates.add(calendar1.getTime());
+        }
+        return dates;
+    }
+
+    /**
+     *初始化当天 时分秒为 00:00:00
+     */
+    private static void initCurDataZero(Calendar calendar){
+        calendar.set(Calendar.HOUR,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        calendar.set(Calendar.SECOND,0);
+    }
+    /**
+     *获取开始时间和截至时间之间的每一天
+     */
+    public static List<Date> daysBetweenStartDateAndEndDate(Date startDate,Date endDate){
+
+        Calendar calendarStart = Calendar.getInstance();
+        calendarStart.setTime(startDate);
+        initCurDataZero(calendarStart);
+
+        Calendar calendarEnd = Calendar.getInstance();
+        calendarEnd.setTime(endDate);
+        initCurDataZero(calendarEnd);
+
+        List<Date> dates = new ArrayList<>();
+
+        calendarStart.get(Calendar.DAY_OF_YEAR);
+        for(;calendarStart.getTimeInMillis()<= calendarEnd.getTimeInMillis();){
+            dates.add(calendarStart.getTime());
+            calendarStart.add(Calendar.DAY_OF_YEAR,+1);
+        }
+        return dates;
+    }
     public static void main(String[] args) {
         //System.out.println(timestampAtHour(-24));
-        try{
-            System.out.println("-----");
-            Date now = string2Date("2012-12-21 15:12:12");
-            System.out.println(now);
-            System.out.println(string2Date("2012-12-21","yyyy-MM-dd"));
 
-            System.out.println(isSameDay(new Date(),string2Date("2016-06-07","yyyy-MM-dd")));
-        }catch (ParseException e){
-            
-        }
+        List<Date> list = previousMonthDays(new Date());
+        System.out.println(list);
+    try{
+        System.out.println(daysBetweenStartDateAndEndDate(string2Date("2015-12-21 00:00:00"),string2Date("2016-01-20 12:00:00")));
+    }catch (ParseException e){
+
+    }
 
     }
 
