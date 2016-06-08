@@ -51,9 +51,13 @@ public class EsClient {
         try {
             Object build = searchable.build();
             String url = getURL(tableName);
-            LOGGER.debug("url : " + url + "  build: " + om.writeValueAsString(build));
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("url : " + url + "  build: " + om.writeValueAsString(build));
+            }
             String result = HttpUtil.restPost(url, build);
-            LOGGER.debug("result : " + result);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("result : " + result);
+            }
             Page page = searchable.getPage();
             return decode(result, page);
         } catch (Exception e) {
@@ -77,9 +81,13 @@ public class EsClient {
         try {
             Object build = searchable.build();
             String url = getURL(tableName);
-            LOGGER.debug("url : " + url + "  build: " + om.writeValueAsString(build));
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("url : " + url + "  build: " + om.writeValueAsString(build));
+            }
             String result = HttpUtil.restPost(url, build);
-            LOGGER.debug("result : " + result);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("result : " + result);
+            }
             return decode(result);
         } catch (Exception e) {
             LOGGER.error("Es seach Error:{}", e);
