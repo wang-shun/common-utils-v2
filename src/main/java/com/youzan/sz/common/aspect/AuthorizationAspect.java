@@ -61,9 +61,9 @@ public class AuthorizationAspect extends BaseAspect {
         } catch (Exception e) {
             LOGGER.error("Authorization Exception:{}", e);
             if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
             } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口", e);
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", e);
             }
         }
 
@@ -84,9 +84,9 @@ public class AuthorizationAspect extends BaseAspect {
         } else {
             // 未通过鉴权
             if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "无权访问", null);
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
             } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问该接口");
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问");
             }
         }
     }
@@ -100,7 +100,7 @@ public class AuthorizationAspect extends BaseAspect {
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Parameters: bid:{}, shopId:{}", bid, shopId);
+            LOGGER.info("Parameters: bid:{}, shopId:{}, role:{}", bid, shopId, SessionTools.getInstance().get(SessionTools.ROLE));
         }
 
         if (shopId != null && !String.valueOf(shopId).equals(SessionTools.getInstance().get(SessionTools.SHOP_ID))) {
@@ -108,9 +108,8 @@ public class AuthorizationAspect extends BaseAspect {
         } else if (bid != null && !String.valueOf(bid).equals(SessionTools.getInstance().get(SessionTools.BID))) {
             return false;
         } else {
-            boolean success = Arrays.stream(allowedRoles).anyMatch(roleEnum ->
+            return Arrays.stream(allowedRoles).anyMatch(roleEnum ->
                     roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(SessionTools.getInstance().get(SessionTools.ROLE)))));
-            return success;
         }
     }
 

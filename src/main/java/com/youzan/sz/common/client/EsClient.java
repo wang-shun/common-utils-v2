@@ -28,7 +28,7 @@ public class EsClient {
     private static final String propFileName = "/application.properties";
     private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "esclient.host", "10.9.77.163");
     private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "esclient.port", "9200");
-    private static final String libname = "store";
+    private static final String LIB_NAME = "store";
     private static ObjectMapper om = new ObjectMapper();
 
     static {
@@ -45,7 +45,7 @@ public class EsClient {
      * @param searchable 查询条件
      * @return Page 对象
      */
-    public static Page search(String tableName, Searchable searchable) {
+    public static Page<Map<String, Object>> search(String tableName, Searchable searchable) {
         try {
             Object build = searchable.build();
             String url = getURL(tableName);
@@ -53,10 +53,12 @@ public class EsClient {
                 LOGGER.info("url : " + url + "  build: " + om.writeValueAsString(build));
             }
             String result = HttpUtil.restPost(url, build);
+
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("result : " + result);
             }
-            Page page = searchable.getPage();
+
+            Page<Map<String, Object>> page = searchable.getPage();
             return decode(result, page);
         } catch (Exception e) {
             LOGGER.error("Es seach Error:{}", e);
@@ -118,7 +120,6 @@ public class EsClient {
 
     private static List<Map<String, Object>> decode(String str) throws IOException {
         EsResult esResult = OBJECT_MAPPER.readValue(str, EsResult.class);
-        log(esResult);
         List<InHits> hits = esResult.getHits().getHits();
         List<Map<String, Object>> result = new ArrayList<>();
         if (hits != null) {
@@ -133,9 +134,8 @@ public class EsClient {
         return result;
     }
 
-    private static Page decode(String str, Page page) throws IOException {
+    private static Page<Map<String, Object>> decode(String str, Page<Map<String, Object>> page) throws IOException {
         EsResult esResult = OBJECT_MAPPER.readValue(str, EsResult.class);
-        log(esResult);
         OutHits hits = esResult.getHits();
         if (hits != null) {
             List<Map<String, Object>> result = decode(str);
@@ -145,17 +145,13 @@ public class EsClient {
         return page;
     }
 
-    private static void log(EsResult esResult) {
-        //// TODO: 16/4/21 log 
-    }
-
     public static void runEsLinkTask() {
         System.out.println("runEsLinkTask running...");
         Timer timer = new Timer();
         timer.schedule(
                 new EsLinkTask(),  //需要注册的定时类
                 1000,             //最开始先延迟1秒的时间
-                1000*60*60);            //每隔10秒的时间调用一次
+                1000 * 60 * 60);            //每隔10秒的时间调用一次
     }
 
     public static void main(String[] args) {
