@@ -159,6 +159,6 @@ public class EsClient {
         searchable.addAnd(SearchItem.eq("status", "0"));
         searchable.addAnd(SearchItem.like("yzAccount", "1"));
         Page page = EsClient.search("shop_staff_v1", searchable);
-        System.out.println(page.getlist().toString());
+        System.out.println(page.getList().toString());
     }
 }

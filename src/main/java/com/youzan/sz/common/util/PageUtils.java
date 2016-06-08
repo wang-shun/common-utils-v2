@@ -13,7 +13,7 @@ public class PageUtils {
     public static void paging(Page page){
         int pageNo = page.getPage();
         int size = page.getSize();
-        List list = page.getlist();
+        List list = page.getList();
         page.setTotal(list.size());
         int start = (pageNo - 1) * size;
         int end = start + size;
@@ -36,6 +36,6 @@ public class PageUtils {
         Page page = new Page(11,10);
         page.setList(list);
         PageUtils.paging(page);
-        System.out.println(page.getlist().toString());
+        System.out.println(page.getList().toString());
     }
 }
