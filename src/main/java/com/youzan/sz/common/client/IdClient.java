@@ -17,7 +17,13 @@ public class IdClient extends Jedis {
     }
     public static void main(String[] args) throws Throwable {
         IdClient j = new IdClient("192.168.66.202", 6000);
-        System.out.println(j.getId("snowflake", "dft"));
-        System.out.println(j.getId("step","bug"));
+//        System.out.println(j.getId("snowflake", "dft"));
+        for(int i = 0 ; i < 100 ; i++){
+            System.out.println("bug:" + j.getId("step","bug"));
+            for(int k = 0 ; k < 5; k++){
+                System.out.println("dft:" + j.getId("step", "dft"));
+            }
+        }
+
     }
 }

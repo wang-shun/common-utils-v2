@@ -1,6 +1,9 @@
 package com.youzan.sz.common.util;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -21,6 +24,38 @@ public class ListUtils {
             return result.substring(0, result.length() - 1);
         }
         return result.toString();
+    }
+
+    public static String join(Iterator iterator, String separator) {
+
+        // handle null, zero and one elements before building a buffer
+        if (iterator == null) {
+            return null;
+        }
+        if (!iterator.hasNext()) {
+            return "";
+        }
+        Object first = iterator.next();
+        if (!iterator.hasNext()) {
+            return ObjectUtils.toString(first);
+        }
+
+        // two or more elements
+        StringBuffer buf = new StringBuffer(256);
+        if (first != null) {
+            buf.append(first);
+        }
+
+        while (iterator.hasNext()) {
+            if (separator != null) {
+                buf.append(separator);
+            }
+            Object obj = iterator.next();
+            if (obj != null) {
+                buf.append(obj);
+            }
+        }
+        return buf.toString();
     }
 
     /**

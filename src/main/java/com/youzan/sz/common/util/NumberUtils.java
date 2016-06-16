@@ -95,7 +95,7 @@ public class NumberUtils {
     }
 
 
-    public static void main(String args[]) {
+//    public static void main(String args[]) {
 //        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
 //        System.out.println(NumberTypes.SKU.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKU));
 //        System.out.println(NumberTypes.SELL.getName() + ":" + NumberUtils.initNumber(NumberTypes.SELL));
@@ -116,9 +116,9 @@ public class NumberUtils {
 //        System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
 //        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
 //        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
-        System.out.println("批量方法");
-        NumberUtils.testBatch(NumberTypes.SELL, 10);
-    }
+//        System.out.println("批量方法");
+//        NumberUtils.testBatch(NumberTypes.SELL, 10);
+//    }
 
     public static void testBatch(NumberTypes numberType, int num) {
         List<String> ids = batchInitNumber(numberType, num);
@@ -126,5 +126,15 @@ public class NumberUtils {
         for (String str : ids) {
             System.out.println(str);
         }
+    }
+
+    public static void main(String[] args) throws Throwable {
+        for(int i = 0 ; i < 100 ; i++){
+            System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
+            for(int k = 0 ; k < 5; k++){
+                System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
+            }
+        }
+
     }
 }
