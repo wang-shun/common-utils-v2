@@ -3,6 +3,7 @@ package com.youzan.sz.common.util;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -16,7 +17,7 @@ public class JsonUtils {
     }
 
 
-    public static <T> ArrayList<T> json2ListBean(String jsonStr, Class<T> elementClasses) throws Throwable {
+    public static <T> ArrayList<T> json2ListBean(String jsonStr, Class<T> elementClasses) throws IOException {
         return mapper.readValue(jsonStr, getCollectionType(ArrayList.class, elementClasses));
     }
 }
