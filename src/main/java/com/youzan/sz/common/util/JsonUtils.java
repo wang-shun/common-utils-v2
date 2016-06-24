@@ -1,5 +1,6 @@
 package com.youzan.sz.common.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,5 +20,9 @@ public class JsonUtils {
 
     public static <T> ArrayList<T> json2ListBean(String jsonStr, Class<T> elementClasses) throws IOException {
         return mapper.readValue(jsonStr, getCollectionType(ArrayList.class, elementClasses));
+    }
+
+    public static String bean2Json(Object object) throws JsonProcessingException {
+        return mapper.writeValueAsString(object);
     }
 }
