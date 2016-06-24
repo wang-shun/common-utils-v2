@@ -45,6 +45,7 @@ public class PaginationInterceptor implements Interceptor {
         final Object parameter = queryArgs[PARAMETER_INDEX];
         final Object objBounds = queryArgs[ROWBOUNDS_INDEX];
         if (objBounds == null) {
+            queryArgs[ROWBOUNDS_INDEX] = new RowBounds();
             return;
         }
 
