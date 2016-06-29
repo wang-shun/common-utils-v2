@@ -25,4 +25,8 @@ public class JsonUtils {
     public static String bean2Json(Object object) throws JsonProcessingException {
         return mapper.writeValueAsString(object);
     }
+
+    public static <T> T json2Bean(String jsonStr, Class<T> elementClasses) throws IOException {
+        return mapper.readValue(jsonStr, elementClasses);
+    }
 }
