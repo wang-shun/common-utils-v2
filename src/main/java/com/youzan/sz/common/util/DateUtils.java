@@ -11,6 +11,10 @@ import java.util.*;
  */
 public class DateUtils {
 
+    private DateUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
     private final static SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * 获取按月起止时间戳

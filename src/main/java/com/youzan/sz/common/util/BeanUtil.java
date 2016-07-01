@@ -25,6 +25,10 @@ public class BeanUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeanUtil.class);
 
+    private BeanUtil() {
+        throw new IllegalAccessError("Utility class");
+    }
+
     public static <T> T copyProperty(Object source, Class<T> destinationClazz) {
 
         if (source == null) {
