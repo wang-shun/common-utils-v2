@@ -52,7 +52,8 @@ public class HttpUtil {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
         if (params != null && params.size() > 0) {
-            List<BasicNameValuePair> pairs = params.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+            List<BasicNameValuePair> pairs = params.entrySet().stream().map(entry ->
+                    new BasicNameValuePair(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()))).collect(Collectors.toList());
             httpPost.setEntity(new UrlEncodedFormEntity(pairs, Charset.forName(charset)));
         }
         CloseableHttpResponse response = httpClient.execute(httpPost);
