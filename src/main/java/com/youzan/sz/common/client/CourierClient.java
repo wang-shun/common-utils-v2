@@ -79,7 +79,7 @@ public class CourierClient {
         params.put("title", content);
         params.put("badge", "1");
         params.put("uri", uri);
-        param.putAll(params);
+        params.putAll(param);
         Map<String, String> receiverMap = buildReceiverMap(deviceType,deviceId);
         MessageContext messageContext = new MessageContext(templateName, params);
         Recipient recipient = new Recipient("", JsonUtils.bean2Json(receiverMap), MsgChannel.appPush);
