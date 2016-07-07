@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Created by zefa on 16/7/5.
  */
-public class CourierClient {
+public final class CourierClient {
     private static CourierClient instance = null;
     private static boolean isInit = true;
 
@@ -29,7 +29,7 @@ public class CourierClient {
     private static final String ANDROID_PUSH = "gpns";
 
     public static CourierClient getInstance() {
-        // 判断session服务是否已经已经具备使用条件了
+        // 判断push服务是否已经已经具备使用条件了
         if (!isInit) {
             LOGGER.warn("the push service not ready, so can not use!");
             return null;
@@ -63,15 +63,16 @@ public class CourierClient {
 
     /**
      * 推送单个设备
-     * @param content 推送内容
-     * @param title 标题
-     * @param uri 业务类型,与app约定
-     * @param deviceType 设备类型
-     * @param deviceId 设备编号
+     *
+     * @param content      推送内容
+     * @param title        标题
+     * @param uri          业务类型,与app约定
+     * @param deviceType   设备类型
+     * @param deviceId     设备编号
      * @param templateName 模板名称(消息组注册)
-     * @param param 详情(与app约定好的json)
+     * @param param        详情(与app约定好的json)
      */
-    public void singlePush( String content, String title, String uri, DeviceType deviceType, String deviceId, String templateName, Map<String,String> param){
+    public void singlePush(String content, String title, String uri, DeviceType deviceType, String deviceId, String templateName, Map<String, String> param) {
         Map<String, String> params = new HashMap<>();
         params.put("app", Common.APPNAME);
         params.put("role", "device");
@@ -80,21 +81,21 @@ public class CourierClient {
         params.put("badge", "1");
         params.put("uri", uri);
         params.putAll(param);
-        Map<String, String> receiverMap = buildReceiverMap(deviceType,deviceId);
+        Map<String, String> receiverMap = buildReceiverMap(deviceType, deviceId);
         MessageContext messageContext = new MessageContext(templateName, params);
         Recipient recipient = new Recipient("", JsonUtils.bean2Json(receiverMap), MsgChannel.appPush);
         pushService.sendMessage(messageContext, recipient);
     }
 
-    private Map<String, String> buildReceiverMap(DeviceType deviceType, String deviceId){
+    private Map<String, String> buildReceiverMap(DeviceType deviceType, String deviceId) {
         Map<String, String> receiverMap = new HashMap<>();
         receiverMap.put("token", deviceId);
         receiverMap.put("type", getReceiverType(deviceType));
         return receiverMap;
     }
 
-    private String getReceiverType(DeviceType deviceType){
-        switch (deviceType){
+    private String getReceiverType(DeviceType deviceType) {
+        switch (deviceType) {
             case IPAD:
                 return IOS_PUSH;
             case POS:
