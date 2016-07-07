@@ -12,4 +12,8 @@ public class ResponseUtils {
 
     public static final ResponseBoolean TRUE = new ResponseBoolean(Boolean.TRUE);
     public static final ResponseBoolean FALSE = new ResponseBoolean(Boolean.FALSE);
+
+    public static ResponseBoolean getResponseBoolean(boolean result){
+        return result ? TRUE : FALSE;
+    }
 }
