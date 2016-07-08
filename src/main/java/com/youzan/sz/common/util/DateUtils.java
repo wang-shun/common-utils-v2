@@ -11,6 +11,8 @@ import java.util.*;
  */
 public class DateUtils {
 
+    public static final String DATE_FORMAT_MDYHMS = "MM/dd/yyyy hh:mm:ss.SSSa";
+
     private DateUtils() {
         throw new IllegalAccessError("Utility class");
     }
