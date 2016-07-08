@@ -84,8 +84,8 @@ public final class CourierClient {
         Map<String, String> receiverMap = buildReceiverMap(deviceType, deviceId);
         MessageContext messageContext = new MessageContext(templateName, params);
         Recipient recipient = new Recipient("", JsonUtils.bean2Json(receiverMap), MsgChannel.appPush);
-        pushService.sendMessage(messageContext, recipient);
         LOGGER.info("给 "+ deviceId +" 设备发送了一条推送 templateName:" + templateName + " param:" + param.toString());
+        pushService.sendMessage(messageContext, recipient);
     }
 
     private Map<String, String> buildReceiverMap(DeviceType deviceType, String deviceId) {
