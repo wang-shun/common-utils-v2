@@ -68,11 +68,11 @@ public final class CourierClient {
      * @param title        标题
      * @param uri          业务类型,与app约定
      * @param deviceType   设备类型
-     * @param deviceId     设备编号
+     * @param pushId     设备编号
      * @param templateName 模板名称(消息组注册)
      * @param param        详情(与app约定好的json)
      */
-    public void singlePush(String content, String title, String uri, DeviceType deviceType, String deviceId, String templateName, Map<String, String> param) {
+    public void singlePush(String content, String title, String uri, DeviceType deviceType, String pushId, String templateName, Map<String, String> param) {
         Map<String, String> params = new HashMap<>();
         params.put("app", Common.APPNAME);
         params.put("role", "device");
@@ -81,16 +81,16 @@ public final class CourierClient {
         params.put("badge", "1");
         params.put("uri", uri);
         params.putAll(param);
-        Map<String, String> receiverMap = buildReceiverMap(deviceType, deviceId);
+        Map<String, String> receiverMap = buildReceiverMap(deviceType, pushId);
         MessageContext messageContext = new MessageContext(templateName, params);
         Recipient recipient = new Recipient("", JsonUtils.bean2Json(receiverMap), MsgChannel.appPush);
-        LOGGER.info("给 "+ deviceId +" 设备发送了一条推送 templateName:" + templateName + " param:" + param.toString());
+        LOGGER.info("给 "+ pushId +" 设备发送了一条推送 templateName:" + templateName + " param:" + param.toString());
         pushService.sendMessage(messageContext, recipient);
     }
 
-    private Map<String, String> buildReceiverMap(DeviceType deviceType, String deviceId) {
+    private Map<String, String> buildReceiverMap(DeviceType deviceType, String pushId) {
         Map<String, String> receiverMap = new HashMap<>();
-        receiverMap.put("token", deviceId);
+        receiverMap.put("token", pushId);
         receiverMap.put("type", getReceiverType(deviceType));
         return receiverMap;
     }
