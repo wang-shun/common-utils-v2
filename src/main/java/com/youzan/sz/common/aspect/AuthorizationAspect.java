@@ -101,14 +101,14 @@ public class AuthorizationAspect extends BaseAspect {
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
-            if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId))) {//店铺不存在或者不相等
+            if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId.toString()))) {//店铺不存在或者不相等
                 LOGGER.error("shopId 验证不通过.当前shopId:{},需要shopId:{}", userShopId, shopId);
                 return false;
             }
         }
         if (bid != null) {//bid不为空,需要进行bid判断
             String userBid = SessionTools.getInstance().get(SessionTools.BID);
-            if (!(StringUtil.isNoneEmpty(userBid) && userBid.equals(bid))) {
+            if (!(StringUtil.isNoneEmpty(userBid) && userBid.equals(bid.toString()))) {
                 LOGGER.error("bid 验证不通过.当前bid:{},需要bid:{}", userBid, bid);
                 return false;
             }
@@ -125,5 +125,4 @@ public class AuthorizationAspect extends BaseAspect {
         }
         return true;
     }
-
 }
