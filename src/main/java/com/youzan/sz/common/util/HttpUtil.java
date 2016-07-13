@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Kid on 16/6/1.
  */
-public class HttpUtil {
+public final class HttpUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtil.class);
     private static HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
     private static final String UTF8 = "UTF-8";
