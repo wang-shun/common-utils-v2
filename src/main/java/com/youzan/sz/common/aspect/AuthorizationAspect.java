@@ -1,11 +1,13 @@
 package com.youzan.sz.common.aspect;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.annotation.Authorization;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.session.SessionTools;
+import org.apache.commons.lang3.ObjectUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -31,7 +33,6 @@ public class AuthorizationAspect extends BaseAspect {
     public void pointcut() {
     }
 
-
     @Before("pointcut()")
     public void before(JoinPoint joinPoint) {
         //TODO 不知道原因，有@Before Advisor，@Around Advisor 才会执行
@@ -47,7 +48,7 @@ public class AuthorizationAspect extends BaseAspect {
 
         // 获取注解上传过来的参数
         RoleEnum[] allowedRoles = authorization.allowedRoles();
-//        Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
+        //        Object adminId = super.parseKey(authorization.adminId(), method, pjp.getArgs());
         Object[] args = pjp.getArgs();
         Object shopId = super.parseKey(authorization.shopId(), method, args);
         Object bid = super.parseKey(authorization.bid(), method, args);
@@ -91,7 +92,6 @@ public class AuthorizationAspect extends BaseAspect {
         }
     }
 
-
     /**
      * 是否允许访问
      *
@@ -99,19 +99,31 @@ public class AuthorizationAspect extends BaseAspect {
      * @return
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Parameters: bid:{}, shopId:{}, role:{}", bid, shopId, SessionTools.getInstance().get(SessionTools.ROLE));
+        if (shopId != null) {//shopId不为空,需要进行shopId判断
+            String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
+            if (!(StringUtil.isEmpty(userShopId) || !userShopId.equals(shopId))) {//店铺不存在或者不相等
+                LOGGER.error("shopId 验证不通过.当前shopId:{},需要shopId:{}", userShopId, shopId);
+                return false;
+            }
         }
+        if (bid != null) {//bid不为空,需要进行bid判断
+            String userBid = SessionTools.getInstance().get(SessionTools.BID);
+            if (!(StringUtil.isNoneEmpty(userBid) && userBid.equals(bid))) {
+                LOGGER.error("bid 验证不通过.当前bid:{},需要bid:{}", userBid, bid);
+                return false;
+            }
+        }
+        if (allowedRoles != null && allowedRoles.length > 0) {
+            String roles = SessionTools.getInstance().get(SessionTools.ROLE);
+            if (StringUtil.isEmpty(roles) || !Arrays.stream(allowedRoles)
+                .anyMatch(roleEnum -> roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(roles))))) {
+                LOGGER.error("roles验证不通过,当前roles:{},需要roles:{}", roles, allowedRoles);
+                return false;
 
-        if (shopId != null && !String.valueOf(shopId).equals(SessionTools.getInstance().get(SessionTools.SHOP_ID))) {
-            return false;
-        } else if (bid != null && !String.valueOf(bid).equals(SessionTools.getInstance().get(SessionTools.BID))) {
-            return false;
-        } else {
-            return Arrays.stream(allowedRoles).anyMatch(roleEnum ->
-                    roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(SessionTools.getInstance().get(SessionTools.ROLE)))));
+            }
+
         }
+        return true;
     }
-
 
 }
