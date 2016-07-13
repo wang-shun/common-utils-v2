@@ -101,7 +101,7 @@ public class AuthorizationAspect extends BaseAspect {
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
-            if (!(StringUtil.isEmpty(userShopId) || !userShopId.equals(shopId))) {//店铺不存在或者不相等
+            if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId))) {//店铺不存在或者不相等
                 LOGGER.error("shopId 验证不通过.当前shopId:{},需要shopId:{}", userShopId, shopId);
                 return false;
             }
