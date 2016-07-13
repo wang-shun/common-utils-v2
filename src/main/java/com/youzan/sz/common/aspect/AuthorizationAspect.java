@@ -1,13 +1,16 @@
 package com.youzan.sz.common.aspect;
 
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.Authorization;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.session.SessionTools;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.logging.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -121,7 +124,9 @@ public class AuthorizationAspect extends BaseAspect {
                 return false;
 
             }
-
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{}:鉴权成功", DistributedContextTools.getAdminId());
         }
         return true;
     }
