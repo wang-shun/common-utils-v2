@@ -2,6 +2,7 @@ package com.youzan.sz.common.aspect;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.Authorization;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -99,6 +100,9 @@ public class AuthorizationAspect extends BaseAspect {
      * @return
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
+        if(LOGGER.isInfoEnabled()){
+            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", DistributedContextTools.getAdminId(),SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
+        }
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
             if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId))) {//店铺不存在或者不相等
