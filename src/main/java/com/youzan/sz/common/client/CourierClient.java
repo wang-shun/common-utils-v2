@@ -22,9 +22,7 @@ import java.util.Map;
 public final class CourierClient {
     private static CourierClient instance = null;
     private static boolean isInit = true;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CourierClient.class);
-
     private static final String IOS_PUSH = "apns";
     private static final String ANDROID_PUSH = "gpns";
 
@@ -68,7 +66,7 @@ public final class CourierClient {
      * @param title        标题
      * @param uri          业务类型,与app约定
      * @param deviceType   设备类型
-     * @param pushId     设备编号
+     * @param pushId       设备编号
      * @param templateName 模板名称(消息组注册)
      * @param param        详情(与app约定好的json)
      */
@@ -84,8 +82,14 @@ public final class CourierClient {
         Map<String, String> receiverMap = buildReceiverMap(deviceType, pushId);
         MessageContext messageContext = new MessageContext(templateName, params);
         Recipient recipient = new Recipient("", JsonUtils.bean2Json(receiverMap), MsgChannel.appPush);
-        LOGGER.info("给 "+ pushId +" 设备发送了一条推送 templateName:" + templateName + " param:" + param.toString());
-        pushService.sendMessage(messageContext, recipient);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("给 {} 设备发送一条推送,templateName: {}, 参数:{}", pushId, templateName, JsonUtils.bean2Json(params));
+        }
+        String response = pushService.sendMessage(messageContext, recipient);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("App推送消息结果:{}", response);
+        }
     }
 
     private Map<String, String> buildReceiverMap(DeviceType deviceType, String pushId) {

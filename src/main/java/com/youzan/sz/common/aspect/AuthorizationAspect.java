@@ -1,5 +1,6 @@
 package com.youzan.sz.common.aspect;
 
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
@@ -9,6 +10,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.session.SessionTools;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.logging.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -105,14 +107,14 @@ public class AuthorizationAspect extends BaseAspect {
         }
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
-            if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId))) {//店铺不存在或者不相等
+            if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId.toString()))) {//店铺不存在或者不相等
                 LOGGER.error("shopId 验证不通过.当前shopId:{},需要shopId:{}", userShopId, shopId);
                 return false;
             }
         }
         if (bid != null) {//bid不为空,需要进行bid判断
             String userBid = SessionTools.getInstance().get(SessionTools.BID);
-            if (!(StringUtil.isNoneEmpty(userBid) && userBid.equals(bid))) {
+            if (!(StringUtil.isNoneEmpty(userBid) && userBid.equals(bid.toString()))) {
                 LOGGER.error("bid 验证不通过.当前bid:{},需要bid:{}", userBid, bid);
                 return false;
             }
@@ -125,9 +127,10 @@ public class AuthorizationAspect extends BaseAspect {
                 return false;
 
             }
-
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{}:鉴权成功", DistributedContextTools.getAdminId());
         }
         return true;
     }
-
 }
