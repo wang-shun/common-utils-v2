@@ -140,7 +140,7 @@ public class BeanUtil {
      * @throws IllegalAccessException    如果实例化 JavaBean 失败
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
-    public static <T> Map transBean2Map(T bean) {
+    public static  Map<String,Object> transBean2Map(Object bean) {
         Class type = bean.getClass();
         Map<String, Object> returnMap = new HashMap<>();
         BeanInfo beanInfo;
