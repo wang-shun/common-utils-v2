@@ -140,7 +140,7 @@ public class NSQclient {
                 final Consumer consumer = new ConsumerImplV2(config, (message) -> {
                     LOGGER.info("消费者:{}获取了消息:{},内容:{}", config.getConsumerName(), message.getReadableContent());
                     String msg=message.getReadableContent();
-                    callback.callbakc(JSON.parseObject(msg,clazz));
+                    callback.callback(JSON.parseObject(msg,clazz));
                     // 设置了不合法(经过多久后)下次消费
                     try {
                         message.setNextConsumingInSecond(null);
