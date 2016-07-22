@@ -26,4 +26,5 @@ public class ConfigsUtils {
 
     public final static String CONFIG_APP_FILE_PATH      = CONFIG_DIR_PATH + File.separator + APP_PROPERTIES_FILE_NAME;
     public final static String CONFIG_BASE_FILE_PATH     = CONFIG_DIR_PATH + File.separator + BASE_PROPERTIES_FILE_NAME;
+    public final static String CONFIG_ENV_FILE_PATH     = CONFIG_DIR_PATH + File.separator + ENV_PROPERTIES_FILE_NAME;
 }
