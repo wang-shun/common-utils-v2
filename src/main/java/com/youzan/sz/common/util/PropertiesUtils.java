@@ -5,6 +5,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class PropertiesUtils {
                 InputStream inputStream = null;
                 try {
                     Map<String, String> propertiesMap = new HashMap<>();
-                    inputStream = PropertiesUtils.class.getResourceAsStream(fileName);
+                    inputStream =  new FileInputStream(fileName);
                     prop.load(inputStream);
                     for (String key : prop.stringPropertyNames()) {
                         propertiesMap.put(key, prop.getProperty(key));

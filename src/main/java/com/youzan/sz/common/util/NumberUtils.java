@@ -12,9 +12,8 @@ import java.util.UUID;
  * Created by zefa on 16/4/9.
  */
 public class NumberUtils {
-    private static final String propFileName = "/application.properties";
-    private static final String idClientHost = PropertiesUtils.getProperty(propFileName, "idclient.host", "192.168.66.202");
-    private static final String idClientPort = PropertiesUtils.getProperty(propFileName, "idclient.port", "6000");
+    private static final String idClientHost = PropertiesUtils.getProperty(ConfigsUtils.ENV_PROPERTIES_FILE_NAME, "idclient.host", "192.168.66.202");
+    private static final String idClientPort = PropertiesUtils.getProperty(ConfigsUtils.ENV_PROPERTIES_FILE_NAME, "idclient.port", "6000");
 
     /**
      * 获取订单 ID

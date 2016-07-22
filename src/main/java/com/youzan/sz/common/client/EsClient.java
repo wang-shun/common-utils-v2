@@ -13,6 +13,7 @@ import com.youzan.sz.common.search.es.decode.EsResult;
 import com.youzan.sz.common.search.es.decode.InHits;
 import com.youzan.sz.common.search.es.decode.OutHits;
 import com.youzan.sz.common.task.es.EsLinkTask;
+import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.PropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,8 @@ import java.util.*;
  */
 public class EsClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String propFileName = "/application.properties";
-    private static final String EsClientHost = PropertiesUtils.getProperty(propFileName, "esclient.host", "10.9.77.163");
-    private static final String EsClientPort = PropertiesUtils.getProperty(propFileName, "esclient.port", "9200");
+    private static final String EsClientHost = PropertiesUtils.getProperty(ConfigsUtils.ENV_PROPERTIES_FILE_NAME, "esclient.host", "10.9.77.163");
+    private static final String EsClientPort = PropertiesUtils.getProperty(ConfigsUtils.ENV_PROPERTIES_FILE_NAME, "esclient.port", "9200");
     private static final String LIB_NAME = "store";
     private static ObjectMapper om = new ObjectMapper();
 
