@@ -47,7 +47,7 @@ public final class HttpUtil {
      * @return
      * @throws IOException
      */
-    public static String post(boolean isHttps, String url, Map<String, String> params, String charset) throws IOException {
+    public static String post(boolean isHttps, String url, Map<String, Object> params, String charset) throws IOException {
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
@@ -69,7 +69,7 @@ public final class HttpUtil {
      * @return
      * @throws IOException
      */
-    public static String postUsingUTF8(boolean isHttps, String url, Map<String, String> params) throws IOException {
+    public static String postUsingUTF8(boolean isHttps, String url, Map<String, Object> params) throws IOException {
         return post(isHttps, url, params, UTF8);
     }
 
