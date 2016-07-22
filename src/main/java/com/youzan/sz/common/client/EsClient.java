@@ -26,8 +26,8 @@ import java.util.*;
  */
 public class EsClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String EsClientHost = PropertiesUtils.getProperty(ConfigsUtils.ENV_PROPERTIES_FILE_NAME, "esclient.host", "10.9.77.163");
-    private static final String EsClientPort = PropertiesUtils.getProperty(ConfigsUtils.ENV_PROPERTIES_FILE_NAME, "esclient.port", "9200");
+    private static final String EsClientHost = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "esclient.host", "10.9.77.163");
+    private static final String EsClientPort = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "esclient.port", "9200");
     private static final String LIB_NAME = "store";
     private static ObjectMapper om = new ObjectMapper();
 
