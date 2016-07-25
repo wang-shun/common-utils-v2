@@ -68,11 +68,14 @@ public class AuthorizationAspect extends BaseAspect {
         } catch (BusinessException be) {
             throw be;
         } catch (Exception e) {
+            allowAccess = false;
             LOGGER.error("Authorization Exception:{}", e);
-            if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
-            } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", e);
+            if(!ignoreAuthFailed) {
+                if (BaseResponse.class.isAssignableFrom(returnType)) {
+                    return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
+                } else {
+                    throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", e);
+                }
             }
         }
 
