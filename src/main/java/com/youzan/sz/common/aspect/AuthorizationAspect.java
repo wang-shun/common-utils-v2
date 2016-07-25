@@ -1,6 +1,5 @@
 package com.youzan.sz.common.aspect;
 
-import com.alibaba.dubbo.rpc.RpcContext;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
@@ -9,8 +8,6 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.enums.RoleEnum;
 import com.youzan.sz.session.SessionTools;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.logging.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -29,8 +26,16 @@ import java.util.Arrays;
 
 @Aspect
 public class AuthorizationAspect extends BaseAspect {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationAspect.class);
+    private boolean ignoreAuthFailed = false;
+
+    public boolean isIgnoreAuthFailed() {
+        return ignoreAuthFailed;
+    }
+
+    public void setIgnoreAuthFailed(boolean ignoreAuthFailed) {
+        this.ignoreAuthFailed = ignoreAuthFailed;
+    }
 
     @Pointcut("@annotation(com.youzan.sz.common.annotation.Authorization)")
     public void pointcut() {
@@ -71,7 +76,7 @@ public class AuthorizationAspect extends BaseAspect {
             }
         }
 
-        if (allowAccess) {
+        if (allowAccess || ignoreAuthFailed) {
             // 通过鉴权,开始调用业务逻辑方法
             try {
                 return pjp.proceed();
@@ -102,8 +107,8 @@ public class AuthorizationAspect extends BaseAspect {
      * @return
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
-        if(LOGGER.isInfoEnabled()){
-            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", DistributedContextTools.getAdminId(),SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", DistributedContextTools.getAdminId(), SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
         }
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
@@ -122,7 +127,7 @@ public class AuthorizationAspect extends BaseAspect {
         if (allowedRoles != null && allowedRoles.length > 0) {
             String roles = SessionTools.getInstance().get(SessionTools.ROLE);
             if (StringUtil.isEmpty(roles) || !Arrays.stream(allowedRoles)
-                .anyMatch(roleEnum -> roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(roles))))) {
+                    .anyMatch(roleEnum -> roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(roles))))) {
                 LOGGER.error("roles验证不通过,当前roles:{},需要roles:{}", roles, allowedRoles);
                 return false;
 
