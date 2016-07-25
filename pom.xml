@@ -12,14 +12,9 @@
 
     <groupId>com.youzan.sz</groupId>
     <artifactId>common-utils</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <dependencies>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>dubbo</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
@@ -98,6 +93,10 @@
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>portal-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
         </dependency>
 
     </dependencies>
