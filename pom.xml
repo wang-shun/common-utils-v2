@@ -12,7 +12,7 @@
 
     <groupId>com.youzan.sz</groupId>
     <artifactId>common-utils</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -58,11 +58,11 @@
             <groupId>com.youzan.platform</groupId>
             <artifactId>bootstrap</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.youzan.sz</groupId>
-            <artifactId>distributedCallTools</artifactId>
-        </dependency>
+        <!--&lt;!&ndash;-->
+        <!--<dependency>-->
+        <!--<groupId>com.youzan.sz</groupId>-->
+        <!--<artifactId>distributedCallTools</artifactId>-->
+        <!--</dependency>&ndash;&gt;-->
 
         <dependency>
             <groupId>com.youzan.sz</groupId>
