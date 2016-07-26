@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.extension.SPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +29,11 @@ import com.youzan.sz.session.SessionTools;
  * @author dft
  */
 @Activate(group = { Constants.PROVIDER }, order = -90000)
+@SPI("web_kernel")
 public class DistributedCoreWebFilter implements Filter {
 
-    private static final Logger              LOGGER      = LoggerFactory.getLogger(
-            com.youzan.sz.DistributedCallTools.DistributedCoreWebFilter.class);
+    private static final Logger              LOGGER      = LoggerFactory
+        .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreWebFilter.class);
     private static final ObjectMapper        om          = new ObjectMapper();
     private static final Map<String, Method> methodCache = new HashMap<>();
 
@@ -46,7 +48,7 @@ public class DistributedCoreWebFilter implements Filter {
             // 尝试获取账户服务
             staffService = SpringUtils.getBean(StaffService.class);
         } catch (Throwable e) {
-            LOGGER.info("", e);
+            LOGGER.warn("get the StaffService fail,if donn't need this,just ignore!");
         }
     }
 
@@ -95,7 +97,7 @@ public class DistributedCoreWebFilter implements Filter {
                 Class<?> interface1 = invoker.getInterface();
                 int inputParamCount = readValue.isArray() ? readValue.size() : 1;
                 Method method = getMethod(m, inputParamCount, interface1);
-                LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(),argsTmp);
+                LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
                 if (null == method) {
                     throw new BusinessException((long) ResponseCode.METHOD_NOT_FOUND.getCode(),
                         "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:"
@@ -135,7 +137,7 @@ public class DistributedCoreWebFilter implements Filter {
             throw new RuntimeException(e);
         }
         Result result = invoker.invoke(inv);
-        if(LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.info("result {}", JsonUtils.bean2Json(result.getValue()));
         }
         return result;

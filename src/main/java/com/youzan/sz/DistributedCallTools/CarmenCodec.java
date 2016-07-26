@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.extension.SPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.monitor.HeathCheck;
 
+@SPI("dubbo")
 public class CarmenCodec implements Codec2 {
     private static final Logger       LOGGER           = LoggerFactory.getLogger(
             com.youzan.sz.DistributedCallTools.CarmenCodec.class);

@@ -1,5 +1,11 @@
 package com.youzan.sz.common.client;
 
+import java.io.IOException;
+import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CaseFormat;
@@ -15,11 +21,6 @@ import com.youzan.sz.common.search.es.decode.OutHits;
 import com.youzan.sz.common.task.es.EsLinkTask;
 import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.PropertiesUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.*;
 
 /**
  * Created by zefa on 16/4/20.

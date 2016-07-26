@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  *
  * Created by zhanguo on 16/7/21.
@@ -12,19 +14,18 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public abstract class BaseApp {
 
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+    protected Logger                              logger             = LoggerFactory.getLogger(getClass());
+    private static ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+        "classpath:config-spring.xml");
 
     private void initSpring() {
         // 启动Spring
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-            "classpath:config-spring.xml");
         applicationContext.start();
     }
 
     protected String getProjectName() {
         return this.getClass().getSimpleName();
     }
-
 
     protected void start() {
         preTask();
@@ -44,6 +45,17 @@ public abstract class BaseApp {
 
     protected void preTask() {
         initSpring();
+        //等待spring启动完毕.后面拿不到bean
+        //        logger.info("wait spring running,applicatContext is running:{}", applicationContext.isRunning());
+        //        logger.info("wait spring active,applicatContext is active:{}", applicationContext.isActive());
+        //        while (!applicationContext.isRunning()) {
+        //            try {
+        //                TimeUnit.MILLISECONDS.sleep(100L);
+        //            } catch (InterruptedException e) {
+        //                logger.error("start sleep error", e);
+        //            }
+        //        }
+        //        logger.info("spring初始化完毕,开始执行其他初始化操作");
         InitDistributedTools.init();//启动心跳
     }
 

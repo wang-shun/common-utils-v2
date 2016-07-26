@@ -27,10 +27,10 @@ public class DubboUtils {
         // 服务实现
         // 服务提供者暴露服务配置
         ServiceConfig<T> service = new ServiceConfig<T>(); // 此实例很重，封装了与注册中心的连接，请自行缓存，否则可能造成内存和连接泄漏
-        service.setApplication(application);
-        registry = SpringUtils.getBean(RegistryConfig.class);
         application = SpringUtils.getBean(ApplicationConfig.class);
+        registry = SpringUtils.getBean(RegistryConfig.class);
         protocol = SpringUtils.getBean(ProtocolConfig.class);
+        service.setApplication(application);
         service.setRegistry(registry); // 多个注册中心可以用setRegistries()
         service.setProtocol(protocol); // 多个协议可以用setProtocols()
         service.setInterface(HeathCheck.class);

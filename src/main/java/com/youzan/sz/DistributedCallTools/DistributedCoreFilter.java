@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.dubbo.common.extension.SPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,7 @@ import com.youzan.sz.common.util.JsonUtils;
  *
  */
 @Activate(group = { Constants.PROVIDER, Constants.CONSUMER }, order = -100000)
+@SPI("kernel")
 public class DistributedCoreFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
