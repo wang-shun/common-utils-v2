@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class ConfigsUtils {
     /**配置文件夹绝对路径*/
-    public final static String CONFIG_DIR_PATH           = System.getProperty("props.path");
+    public final static String CONFIG_DIR_PATH           = System.getProperty("props.path","");
     /**与环境相关文件名*/
     public final static String ENV_PROPERTIES_FILE_NAME  = "config-env.properties";
     /**业务配置文件名*/

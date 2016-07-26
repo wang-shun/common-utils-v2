@@ -1,5 +1,6 @@
 package com.youzan.sz.common.util;
 
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -8,7 +9,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -19,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.KeyManagementException;
@@ -98,6 +104,44 @@ public final class HttpUtil {
         return EntityUtils.toString(entity, Charset.forName(charset));
     }
 
+    /**
+     * 上传文件 utf-8
+     * @param isHttps
+     * @param url
+     * @param filePath
+     * @return
+     * @throws IOException
+     */
+    public static String uploadFile(boolean isHttps, String url,String filePath) throws IOException{
+        CloseableHttpClient httpclient = buildHttpClient(isHttps);
+        try {
+            HttpPost httppost = new HttpPost(url);
+
+            FileBody bin = new FileBody(new File(filePath));
+            StringBody comment = new StringBody("a binary file", ContentType.APPLICATION_OCTET_STREAM);
+            HttpEntity reqEntity = MultipartEntityBuilder.create()
+                    .addPart("bin", bin)
+                    .addPart("comment", comment)
+                    .build();
+
+
+            httppost.setEntity(reqEntity);
+            CloseableHttpResponse response = httpclient.execute(httppost);
+            try {
+                LOGGER.debug(response.getStatusLine().toString());
+                HttpEntity resEntity = response.getEntity();
+                String result = EntityUtils.toString(resEntity, Consts.UTF_8);
+                LOGGER.debug("uploadFile get result=>"+result);
+                return result;
+            } finally {
+                response.close();
+            }
+        } finally {
+            httpclient.close();
+        }
+
+
+    }
     /**
      * 使用UTF8 POST
      *
