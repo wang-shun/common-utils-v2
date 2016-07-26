@@ -105,7 +105,7 @@ public final class HttpUtil {
     }
 
     /**
-     * 上传文件
+     * 上传文件 utf-8
      * @param isHttps
      * @param url
      * @param filePath
