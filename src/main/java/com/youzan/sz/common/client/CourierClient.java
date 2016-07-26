@@ -85,7 +85,13 @@ public final class CourierClient {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("给 {} 设备发送一条推送,templateName: {}, 参数:{}", pushId, templateName, JsonUtils.bean2Json(params));
         }
-        String response = pushService.sendMessage(messageContext, recipient);
+        String response = "";
+        try {
+            pushService.sendMessage(messageContext, recipient);
+        }catch (Exception e){
+                LOGGER.error("推送信息给设备出现问题:{}",e);
+            throw new BusinessException((long) ResponseCode.PUSH_DEVICE_INFO.getCode(),ResponseCode.PUSH_DEVICE_INFO.getMessage(),e);
+        }
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("App推送消息结果:{}", response);
