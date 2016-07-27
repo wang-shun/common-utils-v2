@@ -3,7 +3,6 @@ package com.youzan.sz.common.util;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -17,7 +16,6 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -30,9 +28,7 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by Kid on 16/6/1.
@@ -58,9 +54,9 @@ public final class HttpUtil {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
         if (params != null && params.size() > 0) {
-            List<BasicNameValuePair> pairs = params.entrySet().stream().map(entry ->
-                    new BasicNameValuePair(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()))).collect(Collectors.toList());
-            httpPost.setEntity(new UrlEncodedFormEntity(pairs, Charset.forName(charset)));
+            StringEntity entity = new StringEntity(JsonUtils.bean2Json(params), charset);
+            entity.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+            httpPost.setEntity(entity);
         }
         CloseableHttpResponse response = httpClient.execute(httpPost);
         return EntityUtils.toString(response.getEntity(), Charset.forName(charset));
@@ -106,13 +102,14 @@ public final class HttpUtil {
 
     /**
      * 上传文件 utf-8
+     *
      * @param isHttps
      * @param url
      * @param filePath
      * @return
      * @throws IOException
      */
-    public static String uploadFile(boolean isHttps, String url,String filePath) throws IOException{
+    public static String uploadFile(boolean isHttps, String url, String filePath) throws IOException {
         CloseableHttpClient httpclient = buildHttpClient(isHttps);
         try {
             HttpPost httppost = new HttpPost(url);
@@ -131,7 +128,7 @@ public final class HttpUtil {
                 LOGGER.debug(response.getStatusLine().toString());
                 HttpEntity resEntity = response.getEntity();
                 String result = EntityUtils.toString(resEntity, Consts.UTF_8);
-                LOGGER.debug("uploadFile get result=>"+result);
+                LOGGER.debug("uploadFile get result=>" + result);
                 return result;
             } finally {
                 response.close();
@@ -142,6 +139,7 @@ public final class HttpUtil {
 
 
     }
+
     /**
      * 使用UTF8 POST
      *
