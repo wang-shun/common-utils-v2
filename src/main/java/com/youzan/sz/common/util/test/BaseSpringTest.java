@@ -28,7 +28,7 @@ import com.youzan.sz.common.util.FileUtils;
 @SuppressWarnings("SpringContextConfigurationInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:config-spring.xml")
-public abstract class BaseSpringTest<T extends BaseSpringTest> extends BaseTest {
+public abstract class BaseSpringTest extends BaseTest {
     private final static Logger       LOGGER           = LoggerFactory.getLogger(BaseSpringTest.class);
 
     protected static SpringTestConfig springTestConfig = null;
@@ -92,16 +92,28 @@ public abstract class BaseSpringTest<T extends BaseSpringTest> extends BaseTest 
         String getPropertyName();
     }
 
-    static class DefaultSpringTestConfig implements SpringTestConfig {
+    public static class DefaultSpringTestConfig implements SpringTestConfig {
+        private String defaultProfileProperty = "dev.properties";
+        private String appSimpleName          = getAppSimpleName(getClass().getClassLoader().getResource("").getFile());
+
+        public DefaultSpringTestConfig setSimpleAppName(String appSimpleName) {
+            this.appSimpleName = appSimpleName;
+            return this;
+        }
+
+        public DefaultSpringTestConfig setProperty(String propertyFileName) {
+            this.defaultProfileProperty = propertyFileName;
+            return this;
+        }
 
         @Override
         public String getPropertyName() {
-            return "dev.properties";
+            return defaultProfileProperty;
         }
 
         /**获得应用简称*/
         public String getAppSimpleName() {
-            return getAppSimpleName(getClass().getClassLoader().getResource("").getFile());
+            return appSimpleName;
         }
 
         private static String getAppSimpleName(String filePath) {
