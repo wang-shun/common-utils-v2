@@ -45,18 +45,6 @@ public abstract class BaseApp {
 
     protected void preTask() {
         initSpring();
-        //等待spring启动完毕.后面拿不到bean
-        //        logger.info("wait spring running,applicatContext is running:{}", applicationContext.isRunning());
-        //        logger.info("wait spring active,applicatContext is active:{}", applicationContext.isActive());
-        //        while (!applicationContext.isRunning()) {
-        //            try {
-        //                TimeUnit.MILLISECONDS.sleep(100L);
-        //            } catch (InterruptedException e) {
-        //                logger.error("start sleep error", e);
-        //            }
-        //        }
-        //        logger.info("spring初始化完毕,开始执行其他初始化操作");
-        InitDistributedTools.init();//启动心跳
     }
 
     protected abstract void doTask();
