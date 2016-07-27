@@ -32,8 +32,8 @@ import com.youzan.sz.common.util.JsonUtils;
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
+    private static final Logger LOGGER = LoggerFactory
+        .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
 
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
@@ -51,14 +51,17 @@ public class DistributedCoreFilter implements Filter {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse(be.getCode().intValue(), getThrowableStr(invoke.getException()),
                     invoke.getValue());
+                LOGGER.error("rpc invoke exception:{}", invoke.getException().getMessage());
+
             } else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
                 br = new BaseResponse(be.getCode().intValue(), getThrowableStr(be), invoke.getValue());
+                LOGGER.error("rpc invoke exception:{}", invoke.getException().getMessage());
             } else {
                 br = new BaseResponse(ResponseCode.ERROR.getCode(), getThrowableStr(invoke.getException()),
                     invoke.getValue());
+                LOGGER.error("rpc invoke exception:", invoke.getException());
             }
-            LOGGER.error("rpc invoke exception:", invoke.getException());
             // 变更处理后需要清空原有的异常信息
             rpcResult.setException(null);
             rpcResult.setValue(br);
@@ -143,7 +146,7 @@ public class DistributedCoreFilter implements Filter {
                         // 保存过滤掉系统参数后的结果
                         inv.getArguments()[1] = types.toArray(new String[0]);
                         inv.getArguments()[2] = args.toArray();
-                        LOGGER.debug("core filter:methodName[{}],inArgs:{}", inv.getMethodName(),argsTmp);
+                        LOGGER.debug("core filter:methodName[{}],inArgs:{}", inv.getMethodName(), argsTmp);
 
                         invoke = invoker.invoke(inv);
                         if (invoke.hasException()) {
@@ -216,7 +219,7 @@ public class DistributedCoreFilter implements Filter {
                 if (invoke.hasException()) {
                     isSucess = false;
                 }
-                if(LOGGER.isDebugEnabled()){
+                if (LOGGER.isDebugEnabled()) {
                     LOGGER.info("outArgs[{}]", JsonUtils.bean2Json(invoke.getValue()));
                 }
                 return invoke;
