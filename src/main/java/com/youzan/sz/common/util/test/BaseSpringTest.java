@@ -28,32 +28,35 @@ import com.youzan.sz.common.util.FileUtils;
 @SuppressWarnings("SpringContextConfigurationInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:config-spring.xml")
-public abstract class BaseSpringTest extends BaseTest {
-    private final static Logger LOGGER = LoggerFactory.getLogger(BaseSpringTest.class);
+public abstract class BaseSpringTest<T extends BaseSpringTest> extends BaseTest {
+    private final static Logger       LOGGER           = LoggerFactory.getLogger(BaseSpringTest.class);
+
+    protected static SpringTestConfig springTestConfig = null;
 
     @BeforeClass
     public static void initClass() {
         try {
+            if (springTestConfig == null) {//如果没有配置,则使用默认的
+                springTestConfig = new DefaultSpringTestConfig();
+            }
 
             URL classPathURL = BaseSpringTest.class.getClassLoader().getResource("");
             String classPath = classPathURL.getFile();
             LOGGER.info("current classPath path:{}", classPath);
-            String relativePath = "../../../" + getAppSimpleName() + "-deploy/src/main/resources/";
+            String relativePath = "../../../" + springTestConfig.getAppSimpleName() + "-deploy/src/main/resources/";
             String newResourcePath = new URL(classPathURL, relativePath).getFile();
+
             //覆盖系统变量,这样才能找到新的配置文件
             System.setProperty("props.path", newResourcePath);
+
             //使用filter值覆盖env里面的值;
-            cpProperties(newResourcePath + File.separator + "filters" + File.separator + "dev.properties",
+            cpProperties(
+                newResourcePath + File.separator + "filters" + File.separator + springTestConfig.getPropertyName(),
                 newResourcePath + File.separator + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
 
             //递归resourc文件
             relativePath = "../../src/main/resources/";
             newResourcePath = new URL(classPathURL, relativePath).getFile();
-            //配置文件放置到classpath中
-            //        cpXmlFileToClsPath(newResourcePath, classPath);
-            //dal直接完全复制文件夹
-            LOGGER.info("开始复制配置XML,from {} To {}", relativePath, classPath);
-
             FileUtils.copyDirectiory(newResourcePath, classPath);
         } catch (MalformedURLException e) {
             LOGGER.error("file init fail", e);
@@ -61,7 +64,7 @@ public abstract class BaseSpringTest extends BaseTest {
 
     }
 
-    public static void cpProperties(String srcFilePath, String targetFilePath) {
+    private static void cpProperties(String srcFilePath, String targetFilePath) {
         LOGGER.info("start move properties,srcPath:{},targetPath:{}", srcFilePath, targetFilePath);
 
         Properties keyValues = PropertyFileUtils.getKeyValues(srcFilePath);
@@ -79,24 +82,37 @@ public abstract class BaseSpringTest extends BaseTest {
         }
     }
 
-    /**获得应用简称*/
-    public static String getAppSimpleName() {
-        return getAppSimpleName(BaseSpringTest.class.getClassLoader().getResource("").getFile());
+    /**一般的测试场景不需要关心以下代码
+     * 在测试类的无参构造器中可以调用一个实现方法,从而可以替换不同的配置文件.例如单元测试QA环境
+     * 
+     * */
+    interface SpringTestConfig {
+        String getAppSimpleName();
+
+        String getPropertyName();
     }
 
-    public static String getAppSimpleName(String filePath) {
-        String[] pathArray = filePath.split(File.separator);
-        for (int i = pathArray.length - 1; i > 0; i--) {
-            if (pathArray[i].startsWith(pathArray[i - 1] + "-")) {//项目模块以"-"分割
-                return pathArray[i - 1];
-            }
+    static class DefaultSpringTestConfig implements SpringTestConfig {
+
+        @Override
+        public String getPropertyName() {
+            return "dev.properties";
         }
-        LOGGER.error("未能识别项目名字,请覆盖获取项目名字方法");
-        return null;
-    }
 
-    //    public static void main(String[] args) {
-    //        String file = "/Users/vincentbu/IdeaProjects/goods/goods-core/target/test-classes";
-    //        System.out.println(getAppSimpleName(file));
-    //    }
+        /**获得应用简称*/
+        public String getAppSimpleName() {
+            return getAppSimpleName(getClass().getClassLoader().getResource("").getFile());
+        }
+
+        private static String getAppSimpleName(String filePath) {
+            String[] pathArray = filePath.split(File.separator);
+            for (int i = pathArray.length - 1; i > 0; i--) {
+                if (pathArray[i].startsWith(pathArray[i - 1] + "-")) {//项目模块以"-"分割
+                    return pathArray[i - 1];
+                }
+            }
+            LOGGER.error("未能识别项目名字,请覆盖获取项目名字方法");
+            return null;
+        }
+    }
 }
