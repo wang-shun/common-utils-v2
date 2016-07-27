@@ -3,7 +3,6 @@ package com.youzan.sz.common.util;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -17,7 +16,6 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -30,9 +28,7 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by Kid on 16/6/1.
@@ -53,15 +49,22 @@ public final class HttpUtil {
      * @return
      * @throws IOException
      */
-    public static String post(boolean isHttps, String url, Map<String, ?> params, String charset) throws IOException {
+    public static String post(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params, String charset) throws IOException {
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
         if (params != null && params.size() > 0) {
-            List<BasicNameValuePair> pairs = params.entrySet().stream().map(entry ->
-                    new BasicNameValuePair(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()))).collect(Collectors.toList());
-            httpPost.setEntity(new UrlEncodedFormEntity(pairs, Charset.forName(charset)));
+            StringEntity entity = new StringEntity(JsonUtils.bean2Json(params), charset);
+            entity.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+            httpPost.setEntity(entity);
         }
+
+        if (headers != null && headers.size() > 0) {
+            headers.entrySet().stream().forEach(e -> {
+                httpPost.setHeader(e.getKey(), e.getValue());
+            });
+        }
+
         CloseableHttpResponse response = httpClient.execute(httpPost);
         return EntityUtils.toString(response.getEntity(), Charset.forName(charset));
     }
@@ -76,9 +79,22 @@ public final class HttpUtil {
      * @throws IOException
      */
     public static String postUsingUTF8(boolean isHttps, String url, Map<String, ?> params) throws IOException {
-        return post(isHttps, url, params, UTF8);
+        return post(isHttps, null, url, params, UTF8);
     }
 
+
+    /**
+     * 使用UTF8 POST
+     *
+     * @param isHttps
+     * @param url
+     * @param params
+     * @return
+     * @throws IOException
+     */
+    public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params) throws IOException {
+        return post(isHttps, headers, url, params, UTF8);
+    }
 
     /**
      * HTTP POST
@@ -91,12 +107,18 @@ public final class HttpUtil {
      * @throws IOException
      */
 
-    public static String post(boolean isHttps, String url, String params, String charset) throws IOException {
+    public static String post(boolean isHttps, Map<String, String> headers, String url, String params, String charset) throws IOException {
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
         if (params != null && !params.equals("")) {
             httpPost.setEntity(new StringEntity(params, charset));
+        }
+
+        if (headers != null && headers.size() > 0) {
+            headers.entrySet().stream().forEach(e -> {
+                httpPost.setHeader(e.getKey(), e.getValue());
+            });
         }
 
         CloseableHttpResponse response = httpClient.execute(httpPost);
@@ -106,13 +128,14 @@ public final class HttpUtil {
 
     /**
      * 上传文件 utf-8
+     *
      * @param isHttps
      * @param url
      * @param filePath
      * @return
      * @throws IOException
      */
-    public static String uploadFile(boolean isHttps, String url,String filePath) throws IOException{
+    public static String uploadFile(boolean isHttps, String url, String filePath) throws IOException {
         CloseableHttpClient httpclient = buildHttpClient(isHttps);
         try {
             HttpPost httppost = new HttpPost(url);
@@ -131,7 +154,7 @@ public final class HttpUtil {
                 LOGGER.debug(response.getStatusLine().toString());
                 HttpEntity resEntity = response.getEntity();
                 String result = EntityUtils.toString(resEntity, Consts.UTF_8);
-                LOGGER.debug("uploadFile get result=>"+result);
+                LOGGER.debug("uploadFile get result=>" + result);
                 return result;
             } finally {
                 response.close();
@@ -142,6 +165,7 @@ public final class HttpUtil {
 
 
     }
+
     /**
      * 使用UTF8 POST
      *
@@ -152,7 +176,20 @@ public final class HttpUtil {
      * @throws IOException
      */
     public static String postUsingUTF8(boolean isHttps, String url, String params) throws IOException {
-        return post(isHttps, url, params, UTF8);
+        return post(isHttps, null, url, params, UTF8);
+    }
+
+    /**
+     * 使用UTF8 POST
+     *
+     * @param isHttps
+     * @param url
+     * @param params
+     * @return
+     * @throws IOException
+     */
+    public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, String params) throws IOException {
+        return post(isHttps, headers, url, params, UTF8);
     }
 
     /**
@@ -165,10 +202,17 @@ public final class HttpUtil {
      * @throws IOException
      */
 
-    public static String get(boolean isHttps, String url, String charset) throws IOException {
+    public static String get(boolean isHttps, Map<String, String> headers, String url, String charset) throws IOException {
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setConfig(buildRequestConfig());
+
+        if (headers != null && headers.size() > 0) {
+            headers.entrySet().stream().forEach(e -> {
+                httpGet.setHeader(e.getKey(), e.getValue());
+            });
+        }
+
         CloseableHttpResponse response = httpClient.execute(httpGet);
         HttpEntity entity = response.getEntity();
         return EntityUtils.toString(entity, Charset.forName(charset));
@@ -184,7 +228,19 @@ public final class HttpUtil {
      * @throws IOException
      */
     public static String getUsingUTF8(boolean isHttps, String url) throws IOException {
-        return get(isHttps, url, UTF8);
+        return get(isHttps, null, url, UTF8);
+    }
+
+    /**
+     * 使用UTF8 GET
+     *
+     * @param isHttps
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public static String getUsingUTF8(boolean isHttps, Map<String, String> headers, String url) throws IOException {
+        return get(isHttps, headers, url, UTF8);
     }
 
 
