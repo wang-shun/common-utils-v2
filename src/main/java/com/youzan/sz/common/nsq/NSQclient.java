@@ -10,25 +10,26 @@ import com.youzan.nsq.client.exception.NSQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by jinxiaofei on 16/7/20.
  */
 public class NSQclient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NSQclient.class);
+    private static final Logger LOGGER                          = LoggerFactory.getLogger(NSQclient.class);
     /**
      * 默认的线程池大小
      */
-    private static final int DEFAULT_POOLSIZE4IO = 1;
+    private static final int    DEFAULT_POOLSIZE4IO             = 1;
     /**
      * 默认的完成时间
      * Perform one action during specified timeout
      */
-    private static final int DEFAULT_TIMEOUT_SECONDS = 1;
+    private static final int    DEFAULT_TIMEOUT_SECONDS         = 1;
     /**
      * 默认的消息发送超时时间
      */
-    private static final int DEFAULT_MSG_TIMEOUT_MILLSECONDS = 60 * 1000;
-
+    private static final int    DEFAULT_MSG_TIMEOUT_MILLSECONDS = (int) TimeUnit.MINUTES.toMillis(1);
 
     /**
      * 根据配置来注册消息
@@ -59,12 +60,10 @@ public class NSQclient {
                         producer.close();
                     }
 
-
                 }
             });
         }
     }
-
 
     /**
      * @param topic
@@ -97,7 +96,8 @@ public class NSQclient {
      * @param callback
      * @param clazz
      */
-    public static void listener(String topic, String lookup, ConsumerCallback callback, String consumerName, Class<? extends NSQmsgBean> clazz) {
+    public static void listener(String topic, String lookup, ConsumerCallback callback, String consumerName,
+                                Class<? extends NSQmsgBean> clazz) {
         //String lookup=PropertiesUtils.getProperty("","");
         if (lookup == null || lookup.isEmpty()) {
             LOGGER.error("can't read NSQ address,please check the properties file path is success?");
@@ -135,17 +135,17 @@ public class NSQclient {
         /**
          * 消费需要放在自己的线程处理;
          */
-        new Thread(()->{
+        new Thread(() -> {
             try {
                 final Consumer consumer = new ConsumerImplV2(config, (message) -> {
                     LOGGER.info("消费者:{}获取了消息:{},内容:{}", config.getConsumerName(), message.getReadableContent());
-                        String msg=message.getReadableContent();
-                        callback.callback(JSON.parseObject(msg,clazz));
-                        // 设置了不合法(经过多久后)下次消费
-                        try {
-                            message.setNextConsumingInSecond(null);
-                        } catch (NSQException e) {
-                            e.printStackTrace();
+                    String msg = message.getReadableContent();
+                    callback.callback(JSON.parseObject(msg, clazz));
+                    // 设置了不合法(经过多久后)下次消费
+                    try {
+                        message.setNextConsumingInSecond(null);
+                    } catch (NSQException e) {
+                        e.printStackTrace();
                     }
                 });
                 consumer.start();
@@ -161,10 +161,8 @@ public class NSQclient {
                             consumer.close();
                         }
 
-
                     }
                 });
-
 
             } catch (NSQException e) {
                 LOGGER.error("发送消息队列,出现错误,topic:{},Exception:{}", config.getTopic(), e);
@@ -172,7 +170,6 @@ public class NSQclient {
                 e.printStackTrace();
             }
         }).start();
-
 
     }
 }
