@@ -5,5 +5,5 @@ package com.youzan.sz.common.nsq;
  */
 @FunctionalInterface
 public interface ConsumerCallback {
-    <T extends NSQmsgBean> void callback(T message);
+    public <T extends NsqMessage> void callback(T message);
 }

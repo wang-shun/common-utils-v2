@@ -54,8 +54,8 @@ public final class CourierClient {
     private CourierClient() {
         // 依赖的服务不存在，则session服务不具备使用条件，不能使用
         if (null == pushService) {
-            throw new BusinessException((long) ResponseCode.SESSION_SERVICE_NOT_EXIST.getCode(),
-                    ResponseCode.SESSION_SERVICE_NOT_EXIST.getMessage());
+            throw new BusinessException((long) ResponseCode.PUSH_SERVICE_NOT_EXIST.getCode(),
+                    ResponseCode.PUSH_SERVICE_NOT_EXIST.getMessage());
         }
     }
 
