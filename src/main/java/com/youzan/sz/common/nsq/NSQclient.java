@@ -11,7 +11,6 @@ import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.common.util.PropertiesUtils;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +120,6 @@ public class NSQclient {
 
     private static Consumer newConsumer(NSQConfig config, ConsumerCallback callback, Class<? extends NsqMessage> clazz) {
         return new ConsumerImplV2(config, (message) -> {
-//            Assert.assertNotNull(message);
             callback.callback(decode(message.getReadableContent(), clazz));
             LOGGER.info("消费者获取了消息:{},内容:{}", message, message.getReadableContent());
             try {
