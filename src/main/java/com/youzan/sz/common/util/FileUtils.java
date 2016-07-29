@@ -1,12 +1,18 @@
 package com.youzan.sz.common.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  *
  * Created by zhanguo on 16/7/27.
  */
 public class FileUtils {
+    private final static Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
 
     // 复制文件 
     public static void copyFile(File sourceFile, File targetFile) {
@@ -60,4 +66,34 @@ public class FileUtils {
             }
         }
     }
+
+    public static void deleteFile(String filePath) {
+        if (!new File(filePath).exists()) {
+            LOGGER.info("file:{} is empty,skip delete", filePath);
+            return;
+        }
+
+        Path directory = Paths.get(filePath);
+        try {
+            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+            });
+        } catch (IOException e) {
+            LOGGER.error("删除文件:{}失败", filePath, e);
+        }
+        LOGGER.info("delete file:{}", filePath);
+
+    }
+
 }

@@ -90,12 +90,14 @@
             <groupId>com.youzan.sz</groupId>
             <artifactId>portal-service</artifactId>
         </dependency>
+        <!--有赞基础服务START-->
+        <dependency>
+            <groupId>com.youzan</groupId>
+            <artifactId>NSQ-Client</artifactId>
+            <version>2.1.0715-RELEASE</version>
+        </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>com.alibaba</groupId>-->
-        <!--<artifactId>dubbo</artifactId>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
+        <!--有赞基础服务END-->
 
 
         <dependency>

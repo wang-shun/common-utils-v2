@@ -1,17 +1,11 @@
 package com.youzan.sz.common.util.test;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.youzan.sz.common.util.PropertiesUtils;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,114 +19,48 @@ import com.youzan.sz.common.util.FileUtils;
  * 如果需要测试远程service,{@link BaseIntTest}
  *
  */
-
-public abstract class BaseSpringTest extends BaseTest {
+@RunWith(ExtendedSpringJUnit4ClassRunner.class) public abstract class BaseSpringTest extends BaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BaseSpringTest.class);
 
     public static void initWithProfile(EnvProfile envProfile) {
         try {
             SpringTestConfig springTestConfig = envProfile.getSpringTestConfig();
             URL classPathURL = BaseSpringTest.class.getClassLoader().getResource("");
-            String classPath = classPathURL.getFile();
+            final String classPath = classPathURL.getFile();
             LOGGER.info("current classPath :{}", classPath);
+
+            //删除历史配置文件(class文件不删除,IDE会自动编译更新)
+            String[] dirtyFileList = new File(classPath).list((dir, name) -> !name.startsWith("com"));
+            for (String dirtyFile : dirtyFileList) {
+                FileUtils.deleteFile(dirtyFile);
+            }
+
+            //复制deploy配置文件
             String relativePath = "../../../" + springTestConfig.getAppSimpleName() + "-deploy/src/main/resources/";
             String oldPropertiesPath = new URL(classPathURL, relativePath).getFile();
-            //递归resourc文件
             FileUtils.copyDirectiory(oldPropertiesPath, classPath);
 
-            //覆盖系统变量,这样才能找到新的配置文件
-            System.setProperty("props.path", classPath);
-
-            //复制
+            //复制当前测试类配置文件
             String oldConfigRelative = "../../src/main/resources/";
             String oldConfigPath = new URL(classPathURL, oldConfigRelative).getFile();
             FileUtils.copyDirectiory(oldConfigPath, classPath);
 
             //使用filter值覆盖env里面的值;
-            cpProperties(classPath + File.separator + "filters" + File.separator + springTestConfig.getPropertyName(),
-                classPath + File.separator + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
+            cpProperties(classPath + "filters" + File.separator + springTestConfig.getPropertyName(),
+                    classPath + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
+
             //移除filter文件
-
-            String[] list = new File(classPath).list();
-            for (String fileName : list) {
-                if (fileName.equalsIgnoreCase("filters") && new File(fileName).isDirectory()) {
-                    new File(fileName).deleteOnExit();
-                    break;
-                }
+            String[] list = new File(classPath).list((dir, name) -> name.equalsIgnoreCase("filters"));
+            for (String filterFilePath : list) {
+                FileUtils.deleteFile(filterFilePath);
             }
-            //使用配置文件的值,覆盖logback里面的引用
 
-            replaceXML(classPath, classPath + File.separator + "logback.xml");
-
-        } catch (MalformedURLException e) {
+            //删除脏文件(如果由于没有删除,会造成logback报错)
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtils.deleteFile(classPathURL.getFile())));
+        } catch (Exception e) {
             LOGGER.error("file init fail", e);
         }
-    }
 
-    private static void replaceXML(String classPath, String xmlFilePath) {
-        File xmlFile = new File(xmlFilePath);
-        List<String> lines = null;
-
-        try {
-            lines = Files.readAllLines(xmlFile.toPath(), Charset.defaultCharset());
-        } catch (IOException e) {
-            LOGGER.error("", e);
-        }
-        if (lines != null) {
-            boolean isReplace = false;
-            List<String> newLines = new ArrayList<>(lines.size());
-            for (String line : lines) {
-                boolean isLineReplace = false;
-                int startIndex = line.indexOf("${");
-                if (startIndex > 0) {
-                    int endIndex = line.indexOf("}", startIndex);
-                    String key = line.substring(startIndex, endIndex);
-                    LOGGER.info("get key:{}", key);
-                    Object propertyValue = getPropertyValue(classPath, key);
-                    if (propertyValue != null) {
-                        line = line.replace("${" + key + "}", propertyValue.toString());
-                        LOGGER.info("update key:{} to value{}", key, propertyValue);
-                        newLines.add(line);
-                        isLineReplace = true;
-                        isReplace = true;
-                    }
-                }
-                if (!isLineReplace) {
-                    newLines.add(line);
-                }
-
-            }
-            if (isReplace) {
-                xmlFile.deleteOnExit();
-                try {
-                    Files.write(xmlFile.toPath(), lines, Charset.defaultCharset());
-                } catch (IOException e) {
-                    LOGGER.error("写入新的loggback失败", e);
-                }
-            }
-        }
-
-    }
-
-    private static Object getPropertyValue(String classPath, String key) {
-        LOGGER.info("search value of key({}) ", key);
-
-        String[] propertyFileList = new File(classPath).list((dir, name) -> name.endsWith(".properties"));
-        for (String propertyFilePath : propertyFileList) {
-            Properties keyValues = PropertyFileUtils.getKeyValues(propertyFilePath);
-            if (keyValues.get(key) != null) {
-                return keyValues.get(key);
-            }
-            if (keyValues.get(key.trim()) != null) {
-                return keyValues.get(key.trim());
-            }
-
-        }
-        return null;
-    }
-
-    public EnvProfile getEnvProfile() {
-        return getClass().getAnnotation(TestProfile.class).value();
     }
 
     private static void cpProperties(String srcFilePath, String targetFilePath) {
@@ -145,16 +73,15 @@ public abstract class BaseSpringTest extends BaseTest {
         for (Map.Entry<Object, Object> objectObjectEntry : keyValues.entrySet()) {
 
             PropertyFileUtils.update(targetFilePath, objectObjectEntry.getKey().toString(),
-                objectObjectEntry.getValue() == null ? "" : String.valueOf(objectObjectEntry.getValue()));
+                    objectObjectEntry.getValue() == null ? "" : String.valueOf(objectObjectEntry.getValue()));
 
             LOGGER.info("移动:{}属性(key={},value={})到:{}", srcFilePath, objectObjectEntry.getKey(),
-                objectObjectEntry.getValue(), targetFilePath);
+                    objectObjectEntry.getValue(), targetFilePath);
 
         }
     }
 
     /**一般的测试场景不需要关心以下代码
-     * 在测试类的无参构造器中可以调用一个实现方法,从而可以替换不同的配置文件.例如单元测试QA环境
      *
      * */
     interface SpringTestConfig {
@@ -182,8 +109,7 @@ public abstract class BaseSpringTest extends BaseTest {
             return this;
         }
 
-        @Override
-        public String getPropertyName() {
+        @Override public String getPropertyName() {
             return defaultProfileProperty;
         }
 

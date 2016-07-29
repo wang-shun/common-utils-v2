@@ -8,13 +8,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  *
  * Created by zhanguo on 16/7/27.
- * 单元测试专用
- * 如果需要测试远程service,{@link BaseIntTest}
+ * 单元测试专用,如果需要不同测试环境需要继承不同父类.see{@link BaseSpringDevTest}
  *
  */
 
 @SuppressWarnings("SpringContextConfigurationInspection")
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:config-spring.xml")
 @TestProfile(EnvProfile.QA)
 public abstract class BaseSpringQATest extends BaseSpringTest {
