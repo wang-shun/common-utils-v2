@@ -18,30 +18,40 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jinxiaofei on 16/7/20.
+ * 为了方便双方使用,消息体类(继承与NsqMessage)请写在jar包中
+ * <p>
+ * 本客户端依赖配置明细 : nsq.host:
  */
 public class NSQclient {
-    private static final Logger LOGGER                          = LoggerFactory.getLogger(NSQclient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NSQclient.class);
     /**
      * 默认的线程池大小
      */
-    private static final int    DEFAULT_POOLSIZE4IO             = 1;
+    private static final int DEFAULT_POOLSIZE4IO = 1;
     /**
      * 默认的完成时间
      * Perform one action during specified timeout
      */
-    private static final int    DEFAULT_TIMEOUT_SECONDS         = 1;
+    private static final int DEFAULT_TIMEOUT_SECONDS = 1;
     /**
      * 默认的消息发送超时时间
      */
-    private static final int    DEFAULT_MSG_TIMEOUT_MILLSECONDS = (int) TimeUnit.MINUTES.toMillis(1);
+    private static final int DEFAULT_MSG_TIMEOUT_MILLSECONDS = (int) TimeUnit.MINUTES.toMillis(1);
 
     /**
      * 集群(多)地址
      */
-    private static final String LOOKUP = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,"nsq.host");
+    private static final String LOOKUP = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.host");
 
-    public <T extends NsqMessage> void releaseMessage(String topic, T messageBean){
-        publish(topic,messageBean.encode());
+    /**
+     * 发布消息
+     *
+     * @param topic
+     * @param messageBean
+     * @param <T>
+     */
+    public <T extends NsqMessage> void releaseMessage(String topic, T messageBean) {
+        publish(topic, messageBean.encode());
     }
 
     private void publish(String topic, byte[] message) {
