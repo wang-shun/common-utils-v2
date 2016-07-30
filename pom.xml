@@ -55,11 +55,6 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>com.youzan</groupId>
-            <artifactId>nsq-client</artifactId>
-            <version>2.0.0615-RELEASE</version>
-        </dependency>
 
         <dependency>
             <groupId>com.youzan.sz</groupId>
@@ -70,6 +65,12 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-pool2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -87,6 +88,12 @@
             <groupId>com.youzan.sz</groupId>
             <artifactId>configCenter-client</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.youzan</groupId>
+                    <artifactId>nsq-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.youzan.sz</groupId>
@@ -100,7 +107,6 @@
         <dependency>
             <groupId>com.youzan</groupId>
             <artifactId>NSQ-Client</artifactId>
-            <version>2.1.0715-RELEASE</version>
         </dependency>
 
         <!--有赞基础服务END-->
@@ -340,6 +346,13 @@
             <artifactId>httpmime</artifactId>
         </dependency>
 
+        <!--工具START-->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <!--工具END-->
+
         <!---测试start-->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -350,6 +363,23 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <scope>test</scope>
         </dependency>
         <!---测试end-->
 
