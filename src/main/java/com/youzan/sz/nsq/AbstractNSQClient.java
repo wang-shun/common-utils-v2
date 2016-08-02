@@ -3,6 +3,7 @@ package com.youzan.sz.nsq;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
 
     protected static final String                    DEFAULT_LOOKUP = PropertiesUtils
         .getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.host", "nsq-qa.s.qima-inc.com:4161");
+    /**连接超时时间*/
     protected NSQCodec                               nsqCodec;
     private AbstractNSQClientInitializer             nsqClientInitializer;
 
@@ -35,6 +37,17 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
             logger.debug("nsq is null,use default set:{}", DEFAULT_LOOKUP);
             nsqClientInitializer.getNsqConfig().setLookupAddresses(DEFAULT_LOOKUP);
         }
+        Integer connectionTimeout = Integer.valueOf(PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
+            "nsq_connection_timeout_second", String.valueOf(TimeUnit.SECONDS.toMillis(2))));
+        nsqClientInitializer.getNsqConfig().setConnectTimeoutInMillisecond(connectionTimeout);
+        //
+        // 设置Netty里的ThreadPoolSize(带默认值): 1Thread-to-1IOThread, 使用BlockingIO
+        nsqClientInitializer.getNsqConfig().setThreadPoolSize4IO(2);
+        // 设置timeout(带默认值): 一次IO来回+本机执行了返回给client code完成的消耗时间
+        nsqClientInitializer.getNsqConfig().setTimeoutInSecond(3);
+        // 设置message中client-server之间可以的timeout(带默认值)
+        nsqClientInitializer.getNsqConfig().setMsgTimeoutInMillisecond(60 * 1000);
+
         return this;
     }
 

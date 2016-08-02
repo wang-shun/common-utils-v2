@@ -58,8 +58,7 @@ public class DistributedCoreFilter implements Filter {
                 br = new BaseResponse(be.getCode().intValue(), getThrowableStr(be), invoke.getValue());
                 LOGGER.error("rpc invoke exception:{}", invoke.getException().getMessage());
             } else {
-                br = new BaseResponse(ResponseCode.ERROR.getCode(), getThrowableStr(invoke.getException()),
-                    invoke.getValue());
+                br = new BaseResponse(ResponseCode.ERROR.getCode(), null, invoke.getValue());
                 LOGGER.error("rpc invoke exception:", invoke.getException());
             }
             // 变更处理后需要清空原有的异常信息

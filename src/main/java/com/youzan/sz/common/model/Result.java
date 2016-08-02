@@ -5,16 +5,16 @@ package com.youzan.sz.common.model;
  * Created by zhanguo on 16/7/29.
  */
 public class Result {
-    private Integer ret; //0成功,1失败;
+    private Integer code;
     private Object  data;
     private String  msg;
 
-    public int getRet() {
-        return ret;
+    public Integer getCode() {
+        return code;
     }
 
-    public void setRet(int ret) {
-        this.ret = ret;
+    public void setCode(Integer code) {
+        this.code = code;
     }
 
     public Object getData() {
@@ -33,8 +33,12 @@ public class Result {
         this.msg = msg;
     }
 
+    /**
+     *code存在,且不为0时算作失败.其他条件都是成功
+     * */
     public boolean isSucc() {
-        return ret == null || ret.intValue() == 0;
+        return !(code != null && Integer.valueOf(0).equals(code));
+
     }
 
 }
