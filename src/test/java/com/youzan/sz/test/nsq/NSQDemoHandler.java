@@ -1,9 +1,7 @@
 package com.youzan.sz.test.nsq;
 
 import com.alibaba.fastjson.JSON;
-import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.nsq.AbstractNSQHandler;
-import com.youzan.sz.test.nsq.json.DemoStoreMsg;
 import com.youzan.sz.test.nsq.protobuf.NSQProtoMsg;
 
 /**

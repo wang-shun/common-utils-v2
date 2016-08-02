@@ -2,6 +2,7 @@ package com.youzan.sz.test.nsq;
 
 import com.youzan.sz.nsq.*;
 import com.youzan.sz.test.nsq.protobuf.NSQProtoMsg;
+
 import com.youzan.sz.test.nsq.json.DemoStoreMsg;
 
 /**
