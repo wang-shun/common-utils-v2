@@ -37,7 +37,7 @@ public final class HttpUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtil.class);
     private static HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
     private static final String UTF8 = "UTF-8";
-    private static final int TIME_OUT = 5000;
+    private static final int TIME_OUT = 3000;
 
     /**
      * HTTP POST
