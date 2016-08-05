@@ -1,12 +1,14 @@
 package com.youzan.sz.common.model;
 
+import java.io.Serializable;
+
 /**
  *
  * Created by zhanguo on 16/7/29.
  */
-public class Result {
+public class Result<T> implements Serializable {
     private Integer code;
-    private Object  data;
+    private T       data;
     private String  msg;
 
     public Integer getCode() {
@@ -17,11 +19,11 @@ public class Result {
         this.code = code;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
     }
 
@@ -37,7 +39,7 @@ public class Result {
      *code存在,且不为0时算作失败.其他条件都是成功
      * */
     public boolean isSucc() {
-        return !(code != null && Integer.valueOf(0).equals(code));
+        return code == null || Integer.valueOf(0).equals(code);
 
     }
 

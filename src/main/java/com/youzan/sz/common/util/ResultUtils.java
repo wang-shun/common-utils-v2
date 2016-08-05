@@ -22,4 +22,13 @@ public class ResultUtils {
         return result;
     }
 
+    public static Result getFailResult(ResponseCode responseCode, String msg) {
+        Result failResult = getFailResult(responseCode);
+        if (msg == null || msg.isEmpty()) {
+            return failResult;
+        }
+        failResult.setMsg(msg);
+        return failResult;
+    }
+
 }

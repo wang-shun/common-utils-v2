@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.sz.common.model.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,16 +27,25 @@ public class PhpUtils {
      * 直接返回通过json解析数据为bean
      * @param url 请求url
      *            @param params get请求的heade参数,不需要encoding
-     * 
+     *
      * @throws com.youzan.platform.bootstrap.exception.BusinessException 连接错误,解码错误
      * */
-    public static Result getResult(String url, Map<String, String> params) {
+    public static <T> Result<T> getResult(String url, Map<String, String> params, Class<T> targetClass) {
         String resp = get(url, params);
         if (resp == null) {
             return null;
         }
         try {
-            return JsonUtils.json2Bean(resp, Result.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            //            Result<T> result = objectMapper.readValue(resp, new TypeReference<Result<T>>() {
+            //            });
+
+            JavaType type = objectMapper.getTypeFactory().constructParametricType(Result.class, targetClass);
+            Result<T> result = objectMapper.readValue(resp, type);
+            return result;
+            //            Result<UserDetailDto> result = new ObjectMapper().readValue(src, new TypeReference<Result<UserDetailDto>>() {
+            //            });
         } catch (Exception e) {
             LOGGER.error("get url({}) json response parse error", url, e);
             throw ResponseCode.ERROR.getBusinessException();
@@ -40,7 +53,7 @@ public class PhpUtils {
     }
 
     /**
-     * 
+     *
      * */
     //    public static <T> T getJsonResponse(String url, Map<String, String> params, Class<T> responseClass) {
     //        Result result = getResult(url, params);
@@ -53,7 +66,6 @@ public class PhpUtils {
     //
     //
     //    }
-
     public static String get(String url, Map<String, String> params) {
         String response = null;
         try {
