@@ -97,12 +97,12 @@ public class DistributedCoreWebFilter implements Filter {
                 Class<?> interface1 = invoker.getInterface();
                 int inputParamCount = readValue.isArray() ? readValue.size() : 1;
                 Method method = getMethod(m, inputParamCount, interface1);
-                LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
                 if (null == method) {
                     throw new BusinessException((long) ResponseCode.METHOD_NOT_FOUND.getCode(),
                         "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:"
                                                                                                 + inputParamCount);
                 }
+                LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
                 if (method.getAnnotation(WithoutLogging.class) == null) {
                     Map<String, String> map = loadSession();
                     //除了不需要session的方法,其他方法都要做登录状态检测.
