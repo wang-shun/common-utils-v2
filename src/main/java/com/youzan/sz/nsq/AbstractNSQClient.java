@@ -38,7 +38,7 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
             nsqClientInitializer.getNsqConfig().setLookupAddresses(DEFAULT_LOOKUP);
         }
         Integer connectionTimeout = Integer.valueOf(PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
-            "nsq_connection_timeout_second", String.valueOf(TimeUnit.SECONDS.toMillis(2))));
+            "nsq.connection.timeout.sec", String.valueOf(TimeUnit.SECONDS.toMillis(10))));
         nsqClientInitializer.getNsqConfig().setConnectTimeoutInMillisecond(connectionTimeout);
         //
         // 设置Netty里的ThreadPoolSize(带默认值): 1Thread-to-1IOThread, 使用BlockingIO

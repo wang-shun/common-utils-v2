@@ -91,6 +91,11 @@ public class PropertiesUtils {
         String property;
         try {
             property = getProperty(propertiesName, propertiesKey);
+            if (property == null) {
+                LOGGER.error("load property({}) is null,use default value:{}", propertiesName, defaultValue);
+
+                return defaultValue;
+            }
         } catch (Throwable e) {
             LOGGER.error("load property({}) error,use default value:{}", propertiesName, defaultValue);
             property = defaultValue;
