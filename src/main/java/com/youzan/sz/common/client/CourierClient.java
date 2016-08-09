@@ -30,7 +30,8 @@ public final class CourierClient {
         // 判断push服务是否已经已经具备使用条件了
         if (!isInit) {
             LOGGER.warn("the push service not ready, so can not use!");
-            return null;
+            throw new BusinessException((long) ResponseCode.PUSH_SERVICE_NOT_EXIST.getCode(),
+                    ResponseCode.PUSH_SERVICE_NOT_EXIST.getMessage());
         }
         if (null == instance) {
             synchronized (CourierClient.class) {
