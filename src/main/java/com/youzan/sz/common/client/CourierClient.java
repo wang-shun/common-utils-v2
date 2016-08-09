@@ -20,7 +20,7 @@ import java.util.Map;
  * Created by zefa on 16/7/5.
  */
 public final class CourierClient {
-    private static CourierClient instance = null;
+    private static volatile CourierClient instance = null;
     private static boolean isInit = true;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourierClient.class);
     private static final String IOS_PUSH = "apns";
@@ -43,7 +43,6 @@ public final class CourierClient {
                         throw e;
                     }
                 }
-
             }
         }
         return instance;
