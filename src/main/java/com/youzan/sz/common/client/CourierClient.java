@@ -37,9 +37,10 @@ public final class CourierClient {
                 if (null == instance) {
                     try {
                         instance = new CourierClient();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (BusinessException e) {
+                        LOGGER.error("推送异常:{}", e);
                         isInit = false;
+                        throw e;
                     }
                 }
 
@@ -88,9 +89,9 @@ public final class CourierClient {
         String response = "";
         try {
             pushService.sendMessage(messageContext, recipient);
-        }catch (Exception e){
-                LOGGER.error("推送信息给设备出现问题:{}",e);
-            throw new BusinessException((long) ResponseCode.PUSH_DEVICE_INFO.getCode(),ResponseCode.PUSH_DEVICE_INFO.getMessage(),e);
+        } catch (Exception e) {
+            LOGGER.error("推送信息给设备出现问题:{}", e);
+            throw new BusinessException((long) ResponseCode.PUSH_DEVICE_INFO.getCode(), ResponseCode.PUSH_DEVICE_INFO.getMessage(), e);
         }
 
         if (LOGGER.isInfoEnabled()) {
