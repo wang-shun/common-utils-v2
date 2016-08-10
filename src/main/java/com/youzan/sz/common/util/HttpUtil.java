@@ -37,7 +37,7 @@ public final class HttpUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtil.class);
     private static HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
     private static final String UTF8 = "UTF-8";
-    private static final int TIME_OUT = 5000;
+    private static final int TIME_OUT = 3000;
 
     /**
      * HTTP POST
@@ -136,34 +136,27 @@ public final class HttpUtil {
      * @throws IOException
      */
     public static String uploadFile(boolean isHttps, String url, String filePath) throws IOException {
-        CloseableHttpClient httpclient = buildHttpClient(isHttps);
-        try {
-            HttpPost httppost = new HttpPost(url);
-
-            FileBody bin = new FileBody(new File(filePath));
-            StringBody comment = new StringBody("a binary file", ContentType.APPLICATION_OCTET_STREAM);
-            HttpEntity reqEntity = MultipartEntityBuilder.create()
-                    .addPart("bin", bin)
-                    .addPart("comment", comment)
-                    .build();
+        CloseableHttpClient httpClient = buildHttpClient(isHttps);
+        HttpPost httpPost = new HttpPost(url);
+        FileBody bin = new FileBody(new File(filePath));
+        StringBody comment = new StringBody("a binary file", ContentType.APPLICATION_OCTET_STREAM);
+        HttpEntity reqEntity = MultipartEntityBuilder.create()
+                .addPart("bin", bin)
+                .addPart("comment", comment)
+                .build();
 
 
-            httppost.setEntity(reqEntity);
-            CloseableHttpResponse response = httpclient.execute(httppost);
-            try {
-                LOGGER.debug(response.getStatusLine().toString());
-                HttpEntity resEntity = response.getEntity();
-                String result = EntityUtils.toString(resEntity, Consts.UTF_8);
-                LOGGER.debug("uploadFile get result=>" + result);
-                return result;
-            } finally {
-                response.close();
-            }
-        } finally {
-            httpclient.close();
+        httpPost.setEntity(reqEntity);
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(response.getStatusLine().toString());
         }
-
-
+        HttpEntity resEntity = response.getEntity();
+        String result = EntityUtils.toString(resEntity, Consts.UTF_8);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("uploadFile get result=>" + result);
+        }
+        return result;
     }
 
     /**
@@ -256,14 +249,15 @@ public final class HttpUtil {
      */
 
     private static CloseableHttpClient buildHttpClient(boolean isHttps) {
-        CloseableHttpClient httpClient;
         if (isHttps) {
-            httpClient = createSSLClient();
+            return createSSLClient();
         } else {
-            httpClient = HttpClients.custom().setConnectionManager(connManager).build();
+            return createHttpClient();
         }
+    }
 
-        return httpClient;
+    private static CloseableHttpClient createHttpClient() {
+        return HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).build();
     }
 
     /**
@@ -279,10 +273,10 @@ public final class HttpUtil {
                 LOGGER.warn("HTTPS SSL 证书未去认证,直接返回的通过认证");
             }
             SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(e);
-            return HttpClients.custom().setSSLSocketFactory(sslsf).setConnectionManager(connManager).build();
+            return HttpClients.custom().setSSLSocketFactory(sslsf).setConnectionManager(connManager).setConnectionManagerShared(true).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             LOGGER.error("Exception", e);
-            return HttpClients.custom().setConnectionManager(connManager).build();
+            return createHttpClient();
         }
     }
 

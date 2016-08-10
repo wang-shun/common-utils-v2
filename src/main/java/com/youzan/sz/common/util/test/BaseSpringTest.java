@@ -19,7 +19,8 @@ import com.youzan.sz.common.util.FileUtils;
  * 如果需要测试远程service,{@link BaseIntTest}
  *
  */
-@RunWith(ExtendedSpringJUnit4ClassRunner.class) public abstract class BaseSpringTest extends BaseTest {
+@RunWith(ExtendedSpringJUnit4ClassRunner.class)
+public abstract class BaseSpringTest extends BaseTest {
     private final static Logger LOGGER = LoggerFactory.getLogger(BaseSpringTest.class);
 
     public static void initWithProfile(EnvProfile envProfile) {
@@ -47,7 +48,7 @@ import com.youzan.sz.common.util.FileUtils;
 
             //使用filter值覆盖env里面的值;
             cpProperties(classPath + "filters" + File.separator + springTestConfig.getPropertyName(),
-                    classPath + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
+                classPath + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
 
             //移除filter文件
             String[] list = new File(classPath).list((dir, name) -> name.equalsIgnoreCase("filters"));
@@ -73,10 +74,10 @@ import com.youzan.sz.common.util.FileUtils;
         for (Map.Entry<Object, Object> objectObjectEntry : keyValues.entrySet()) {
 
             PropertyFileUtils.update(targetFilePath, objectObjectEntry.getKey().toString(),
-                    objectObjectEntry.getValue() == null ? "" : String.valueOf(objectObjectEntry.getValue()));
+                objectObjectEntry.getValue() == null ? "" : String.valueOf(objectObjectEntry.getValue()));
 
             LOGGER.info("移动:{}属性(key={},value={})到:{}", srcFilePath, objectObjectEntry.getKey(),
-                    objectObjectEntry.getValue(), targetFilePath);
+                objectObjectEntry.getValue(), targetFilePath);
 
         }
     }
@@ -97,7 +98,7 @@ import com.youzan.sz.common.util.FileUtils;
 
     public static class DefaultSpringTestConfig implements SpringTestConfig {
         private String defaultProfileProperty = "dev.properties";
-        private String appSimpleName          = getAppSimpleName(getClass().getClassLoader().getResource("").getFile());
+        private String appSimpleName          = null;
 
         public DefaultSpringTestConfig setSimpleAppName(String appSimpleName) {
             this.appSimpleName = appSimpleName;
@@ -109,12 +110,16 @@ import com.youzan.sz.common.util.FileUtils;
             return this;
         }
 
-        @Override public String getPropertyName() {
+        @Override
+        public String getPropertyName() {
             return defaultProfileProperty;
         }
 
         /**获得应用简称*/
         public String getAppSimpleName() {
+            if (appSimpleName == null) {
+                this.appSimpleName = getAppSimpleName(getClass().getClassLoader().getResource("").getFile());
+            }
             return appSimpleName;
         }
 
