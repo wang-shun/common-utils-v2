@@ -1,0 +1,7 @@
+package com.youzan.sz.test.nsq.protobuf;
+
+message NSQDemoProtoReq {
+    required int32 sex = 1;
+    required string name = 2;
+    repeated int64 shopId = 3;
+}

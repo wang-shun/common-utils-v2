@@ -20,8 +20,9 @@ import java.util.concurrent.FutureTask;
  * Created by zefa on 16/4/18.
  */
 public class PropertiesUtils {
-    private static final ConcurrentHashMap<String, Future<Map<String, String>>> MAP = new ConcurrentHashMap<>();
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesUtils.class);
+    private static final ConcurrentHashMap<String, Future<Map<String, String>>> MAP    = new ConcurrentHashMap<>();
+    private static final Logger                                                 LOGGER = LoggerFactory
+        .getLogger(PropertiesUtils.class);
 
     /**
      * 获取配置
@@ -41,7 +42,7 @@ public class PropertiesUtils {
                 InputStream inputStream = null;
                 try {
                     Map<String, String> propertiesMap = new HashMap<>();
-                    inputStream =  new FileInputStream(fileName);
+                    inputStream = new FileInputStream(fileName);
                     prop.load(inputStream);
                     for (String key : prop.stringPropertyNames()) {
                         propertiesMap.put(key, prop.getProperty(key));
@@ -87,10 +88,18 @@ public class PropertiesUtils {
      */
 
     public static String getProperty(String propertiesName, String propertiesKey, String defaultValue) {
+        String property;
         try {
-            return getProperty(propertiesName, propertiesKey);
-        } catch (BusinessException e) {
-            return defaultValue;
+            property = getProperty(propertiesName, propertiesKey);
+            if (property == null) {
+                LOGGER.error("load property({}) is null,use default value:{}", propertiesName, defaultValue);
+
+                return defaultValue;
+            }
+        } catch (Throwable e) {
+            LOGGER.error("load property({}) error,use default value:{}", propertiesName, defaultValue);
+            property = defaultValue;
         }
+        return property;
     }
 }
