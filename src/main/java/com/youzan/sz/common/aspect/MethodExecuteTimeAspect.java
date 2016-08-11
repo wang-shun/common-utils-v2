@@ -1,6 +1,7 @@
 package com.youzan.sz.common.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +10,7 @@ import java.lang.reflect.Method;
 /**
  * Created by Kid on 16/5/17.
  */
-
+@Aspect
 public class MethodExecuteTimeAspect extends BaseAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodExecuteTimeAspect.class);
 
