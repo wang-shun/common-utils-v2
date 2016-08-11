@@ -45,6 +45,7 @@ public abstract class BaseApp {
 
     protected void preTask() {
         initSpring();
+        InitDistributedTools.init();//启动心跳
     }
 
     protected abstract void doTask();
