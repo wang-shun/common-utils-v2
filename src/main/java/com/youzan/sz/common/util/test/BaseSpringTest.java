@@ -49,7 +49,7 @@ public abstract class BaseSpringTest extends BaseTest {
             cpProperties(classPath + "filters" + File.separator + springTestConfig.getPropertyName(),
                 classPath + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
             cpProperties(classPath + "filters" + File.separator + springTestConfig.getPropertyName(),
-                    classPath + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
+                    classPath + ConfigsUtils.CONTAINER_PROPERTIES_FILE_NAME);
             //移除filter文件
             String[] list = new File(classPath).list((dir, name) -> name.equalsIgnoreCase("filters"));
             for (String filterFilePath : list) {
