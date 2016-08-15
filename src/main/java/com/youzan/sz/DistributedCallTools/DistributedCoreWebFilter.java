@@ -134,6 +134,7 @@ public class DistributedCoreWebFilter implements Filter {
 
             } while (false);
         } catch (Throwable e) {
+            LOGGER.error("distributed  error", e);
             throw new RuntimeException(e);
         }
         Result result = invoker.invoke(inv);
