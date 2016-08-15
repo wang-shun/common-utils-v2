@@ -1,11 +1,10 @@
 package com.youzan.sz.common.util;
 
-import com.youzan.sz.init.InitDistributedTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.concurrent.TimeUnit;
+import com.youzan.sz.init.InitDistributedTools;
 
 /**
  *
@@ -45,6 +44,7 @@ public abstract class BaseApp {
 
     protected void preTask() {
         initSpring();
+        InitDistributedTools.init();//启动心跳
     }
 
     protected abstract void doTask();
