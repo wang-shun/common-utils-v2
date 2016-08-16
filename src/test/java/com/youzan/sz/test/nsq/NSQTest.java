@@ -22,7 +22,7 @@ import com.youzan.sz.common.util.test.BaseJavaTest;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
+ *@TODO NSQ:是否支持一对多,消息过期的方式,自带版本的管理
  * Created by zhanguo on 16/7/29.
  */
 @RunWith(PowerMockRunner.class)
@@ -45,7 +45,6 @@ public class NSQTest extends BaseJavaTest {
 
     @Test
     public void testStringPub() {
-
         DemoPubNsq demoPubNsq = new DemoPubNsq();
         demoPubNsq.register();
 

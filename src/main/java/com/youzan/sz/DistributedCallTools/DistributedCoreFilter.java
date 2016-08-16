@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.common.extension.SPI;
+import com.youzan.sz.common.exceptions.BizException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,10 @@ public class DistributedCoreFilter implements Filter {
         BaseResponse br = null;
         // 对于异常信息，统一进行包装
         if (invoke.hasException()) {
-            if (invoke.getException() instanceof BusinessException) {
+            if (invoke.getException() instanceof BizException) {
+                BizException be = (BizException) invoke.getException();
+                br = new BaseResponse(be.getCode().intValue(), be.getMessage(), be.getData());
+            } else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse(be.getCode().intValue(), getThrowableStr(invoke.getException()),
                     invoke.getValue());

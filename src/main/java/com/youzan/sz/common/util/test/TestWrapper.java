@@ -24,9 +24,9 @@ public class TestWrapper implements TestLoggable {
         Object result = null;
         try {
             result = testTask.doTask();
-            getLogger().info("\n");
+            System.out.println();
             getLogger().info("result:{}", JsonUtils.bean2Json(result));
-            getLogger().info("\n");
+            System.out.println();
 
         } catch (Exception e) {
             getLogger().error("doTask error", e);
@@ -50,9 +50,9 @@ public class TestWrapper implements TestLoggable {
             line1.append("#");
         }
         String line2 = line.insert(lenSharp() / 2, "  START  ").toString();
-        getLogger().info(line1.toString());
-        getLogger().info(line2);
-        getLogger().info("");
+        System.out.println(line1.toString());
+        System.out.println(line2);
+        System.out.println("");
     }
 
     void prettyEnd() {
@@ -66,8 +66,8 @@ public class TestWrapper implements TestLoggable {
             line2.append("#");
         }
         StringBuilder line1 = line.insert(lenSharp() / 2, "   END   ");
-        getLogger().info(line.toString());
-        getLogger().info(line2.toString());
+        System.out.println(line.toString());
+        System.out.println(line2.toString());
     }
 
     //#号的个数
