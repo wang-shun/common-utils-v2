@@ -103,9 +103,9 @@ public class DistributedContextTools {
      * */
 	public static void clear() {
         Long adminId = getAdminId();
-        LOGGER.debug("开始清除{}请求参数",adminId);
+        LOGGER.info("开始清除{}请求参数",adminId);
 		context.clear();
-        LOGGER.debug("结束清除{}请求参数", adminId);
+        LOGGER.info("结束清除{}请求参数", adminId);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -116,7 +116,7 @@ public class DistributedContextTools {
 	public static Long getAdminId() {
 		String s = get(AdminId.class.getCanonicalName());
 		if(null == s){
-			LOGGER.error("not get adminId");
+			LOGGER.warn("not get adminId");
 			return 0L;
 		}
 		return Long.valueOf(s);
@@ -125,7 +125,7 @@ public class DistributedContextTools {
 	public static Long getKdtId() {
 		String kdtStr = get(KdtId.class.getCanonicalName());
         if(kdtStr==null||kdtStr.length()==0){
-            LOGGER.error("not get ktdId");
+            LOGGER.warn("not get ktdId");
             return null;
         }
 		return Long.valueOf(kdtStr);
@@ -145,7 +145,7 @@ public class DistributedContextTools {
 
 	public static <T> void set(Class<?> key, T value) {
         if(LOGGER.isDebugEnabled()){
-            LOGGER.debug("set distribution key:{},value:{}",key.getSimpleName(),value);
+            LOGGER.info("set distribution key:{},value:{}",key.getSimpleName(),value);
         }
 		context.put(key.getCanonicalName(), value);
 	}
