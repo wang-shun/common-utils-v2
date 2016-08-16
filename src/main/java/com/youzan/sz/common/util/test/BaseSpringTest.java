@@ -1,16 +1,15 @@
 package com.youzan.sz.common.util.test;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Map;
-import java.util.Properties;
-
+import com.youzan.sz.common.util.ConfigsUtils;
+import com.youzan.sz.common.util.FileUtils;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.youzan.sz.common.util.ConfigsUtils;
-import com.youzan.sz.common.util.FileUtils;
+import java.io.File;
+import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -49,7 +48,8 @@ public abstract class BaseSpringTest extends BaseTest {
             //使用filter值覆盖env里面的值;
             cpProperties(classPath + "filters" + File.separator + springTestConfig.getPropertyName(),
                 classPath + ConfigsUtils.ENV_PROPERTIES_FILE_NAME);
-
+            cpProperties(classPath + "filters" + File.separator + springTestConfig.getPropertyName(),
+                    classPath + ConfigsUtils.CONTAINER_PROPERTIES_FILE_NAME);
             //移除filter文件
             String[] list = new File(classPath).list((dir, name) -> name.equalsIgnoreCase("filters"));
             for (String filterFilePath : list) {
@@ -65,8 +65,11 @@ public abstract class BaseSpringTest extends BaseTest {
     }
 
     private static void cpProperties(String srcFilePath, String targetFilePath) {
-        LOGGER.info("start move properties,srcPath:{},targetPath:{}", srcFilePath, targetFilePath);
+        LOGGER.info("start move properties,srcPath:{},ttPath:{}", srcFilePath, targetFilePath);
 
+        if(!new File(targetFilePath).exists()){
+            return;
+        }
         Properties keyValues = PropertyFileUtils.getKeyValues(srcFilePath);
         if (keyValues == null) {
             return;

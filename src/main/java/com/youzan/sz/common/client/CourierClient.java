@@ -20,7 +20,7 @@ import java.util.Map;
  * Created by zefa on 16/7/5.
  */
 public final class CourierClient {
-    private static CourierClient instance = null;
+    private static volatile CourierClient instance = null;
     private static boolean isInit = true;
     private static final Logger LOGGER = LoggerFactory.getLogger(CourierClient.class);
     private static final String IOS_PUSH = "apns";
@@ -30,19 +30,20 @@ public final class CourierClient {
         // 判断push服务是否已经已经具备使用条件了
         if (!isInit) {
             LOGGER.warn("the push service not ready, so can not use!");
-            return null;
+            throw new BusinessException((long) ResponseCode.PUSH_SERVICE_NOT_EXIST.getCode(),
+                    ResponseCode.PUSH_SERVICE_NOT_EXIST.getMessage());
         }
         if (null == instance) {
             synchronized (CourierClient.class) {
                 if (null == instance) {
                     try {
                         instance = new CourierClient();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (BusinessException e) {
+                        LOGGER.error("推送异常:{}", e);
                         isInit = false;
+                        throw e;
                     }
                 }
-
             }
         }
         return instance;
@@ -88,9 +89,9 @@ public final class CourierClient {
         String response = "";
         try {
             pushService.sendMessage(messageContext, recipient);
-        }catch (Exception e){
-                LOGGER.error("推送信息给设备出现问题:{}",e);
-            throw new BusinessException((long) ResponseCode.PUSH_DEVICE_INFO.getCode(),ResponseCode.PUSH_DEVICE_INFO.getMessage(),e);
+        } catch (Exception e) {
+            LOGGER.error("推送信息给设备出现问题:{}", e);
+            throw new BusinessException((long) ResponseCode.PUSH_DEVICE_INFO.getCode(), ResponseCode.PUSH_DEVICE_INFO.getMessage(), e);
         }
 
         if (LOGGER.isInfoEnabled()) {
