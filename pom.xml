@@ -103,6 +103,13 @@
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>portal-service</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>common-utils</artifactId>
+                    <groupId>com.youzan.sz</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--有赞基础服务START-->
         <dependency>
