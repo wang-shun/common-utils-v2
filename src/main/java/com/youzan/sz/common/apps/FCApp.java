@@ -1,5 +1,7 @@
 package com.youzan.sz.common.apps;
 
+import com.youzan.sz.common.enums.AppEnum;
+
 /**
  *
  * Created by zhanguo on 16/8/18.
@@ -7,7 +9,7 @@ package com.youzan.sz.common.apps;
  */
 public interface FCApp extends SSApp {
     @Override
-    default APP_ENUM getAPP() {
-        return APP_ENUM.FC;
+    default AppEnum getAPP() {
+        return AppEnum.FC;
     }
 }

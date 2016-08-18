@@ -1,12 +1,14 @@
-package com.youzan.sz.common.base.simple;
+package com.youzan.sz.common.web.base.simple;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import com.youzan.sz.oa.shop.ShopService;
 import org.springframework.stereotype.Service;
 
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
@@ -39,10 +41,12 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
                         if (fieldInstance == null) {
                             logger.warn("field({}) is null", field.getName());
                         } else {
-                            if (SERVICE_MAP.containsKey(fieldInstance.getAPP())) {
-                                SERVICE_MAP.get(fieldInstance.getAPP()).add(fieldInstance);
+                            List<IAPP> serviceList = SERVICE_MAP.get(fieldInstance.getAPP());
+                            if (serviceList == null) {
+                                serviceList = new ArrayList<>();
                             }
-                            //                            SERVICE_MAP.put(fieldInstance.getAPP(), fieldInstance);
+                            serviceList.add(fieldInstance);
+                            SERVICE_MAP.put(fieldInstance.getAPP(), serviceList);
 
                         }
                     } catch (IllegalAccessException e) {
@@ -51,7 +55,6 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
                 }
             }
         }
-
     }
 
     protected <T> T getService(Class<T> clazz) {
@@ -60,10 +63,16 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
         if (appByAid == null) {//登陆时候必须指定一个应用类型
             logger.error("未获取到appId,数据异常");
         }
-        final List<IAPP> iapp = SERVICE_MAP.get(appByAid);
-        if (iapp == null) {
+        final List<IAPP> appServiceList = SERVICE_MAP.get(appByAid);
+        if (appServiceList == null) {
             logger.info("未找到应用({})的service,使用通用service", appByAid.getDesc());
         }
+        for (IAPP service : appServiceList) {
+            if (service.getClass().isAssignableFrom(clazz)) {
+                return (T) service;
+            }
+        }
+        logger.error("未找到支持此应用({})的服务({})", appByAid.getDesc(), clazz.getCanonicalName());
         return null;
     }
 }
