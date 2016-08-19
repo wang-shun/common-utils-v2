@@ -50,13 +50,11 @@
             <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
-                    <groupId>com.youzan.sz</groupId>
                     <artifactId>common-utils</artifactId>
+                    <groupId>com.youzan.sz</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
-
-
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>
@@ -103,6 +101,12 @@
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>portal-service</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>common-utils</artifactId>
+                    <groupId>com.youzan.sz</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--有赞基础服务START-->
         <dependency>

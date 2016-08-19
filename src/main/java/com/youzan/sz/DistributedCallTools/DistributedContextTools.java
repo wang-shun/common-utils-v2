@@ -146,12 +146,12 @@ public class DistributedContextTools {
     }
 
     //获取应用id
-    public static Long getAId() {
+    public static Integer getAId() {
         final String aid = get(AId.class.getCanonicalName());
         if (aid == null || aid.length() == 0) {
             LOGGER.warn("not get aid");
         }
-        return Long.valueOf(aid);
+        return Integer.valueOf(aid);
     }
 
     //获取应用id
@@ -165,7 +165,7 @@ public class DistributedContextTools {
 
     //获取应用id
     public static Long getBId() {
-        final Long bid = get(ShopId.class.getCanonicalName());
+        final Long bid = get(BId.class.getCanonicalName());
         if (bid == null || bid == 0) {
             LOGGER.warn("not get bid");
         }

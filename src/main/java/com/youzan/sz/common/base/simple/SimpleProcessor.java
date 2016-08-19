@@ -19,9 +19,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
  */
 public abstract class SimpleProcessor<T extends BasePO<ID>, ID extends Serializable> extends BaseProcessor {
 
-
-
-    protected int save(T t) {
+    public int save(T t) {
         if (t.getId() == null) {
             return getDao().insert(t);
         } else {

@@ -31,8 +31,7 @@ public class SessionTools {
     public static final String                        SHOP_ICON   = "shopIcon";
     public static final String                        KDT_ID      = "kdtId";
     public static final String                        LOGINDEVICE = "loginDevice";
-    public static final String                        bid         = "bid";        //商家id
-    public static final String                        aid         = "aid";        //应用id
+    public static final String                        AID         = "aid";        //应用id
 
     private static com.youzan.sz.session.SessionTools instance    = null;
     private static Object                             initMutex   = new Object();

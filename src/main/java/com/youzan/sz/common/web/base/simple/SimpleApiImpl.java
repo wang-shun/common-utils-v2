@@ -65,7 +65,7 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
     }
 
     protected <T> T getService(Class<T> clazz) {
-        final String aId = DistributedContextTools.getAId();
+        final Integer aId = DistributedContextTools.getAId();
         final AppEnum appByAid = AppEnum.getAppByAid(aId);
         if (appByAid == null) {//登陆时候必须指定一个应用类型
             logger.error("未获取到appId,数据异常");

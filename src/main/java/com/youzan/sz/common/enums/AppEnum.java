@@ -8,26 +8,26 @@ import java.util.Map;
  * Created by zhanguo on 16/8/18.
  */
 public enum AppEnum {
-                     FC(1L, "fc", "免费收银"), //freeCheckout
-                     SS(2L, "ss", "超级门店"), //super store
-                     FSS(3L, "fss", "超级门店免费版"); //free super store
-    private String                    desc;
-    private Long                      aid;
-    private String                    shortName;
-    private static Map<Long, AppEnum> AID_MAPS = new HashMap<>();
+                     FC(1, "fc", "免费收银"), //freeCheckout
+                     SS(2, "ss", "超级门店"), //super store
+                     FSS(3, "fss", "超级门店免费版"); //free super store
+    private Integer                      aid;
+    private String                       shortName;
+    private String                       desc;
+    private static Map<Integer, AppEnum> AID_MAPS = new HashMap<>();
     static {
         for (AppEnum AppEnum : AID_MAPS.values()) {
             AID_MAPS.put(AppEnum.aid, AppEnum);
         }
     }
 
-    AppEnum(String desc, Long aid, String shortName) {
-        this.desc = desc;
+    AppEnum(Integer aid, String shortName, String desc) {
         this.aid = aid;
         this.shortName = shortName;
+        this.desc = desc;
     }
 
-    public static AppEnum getAppByAid(String aId) {
+    public static AppEnum getAppByAid(Integer aId) {
         return AID_MAPS.get(aId);
     }
 
@@ -35,7 +35,7 @@ public enum AppEnum {
         return desc;
     }
 
-    public Long getAid() {
+    public Integer getAid() {
         return aid;
     }
 
