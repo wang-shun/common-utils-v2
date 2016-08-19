@@ -10,7 +10,7 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 
 public class DistributedContextTools {
     private final static Logger LOGGER = LoggerFactory
-            .getLogger(com.youzan.sz.DistributedCallTools.DistributedContextTools.class);
+        .getLogger(com.youzan.sz.DistributedCallTools.DistributedContextTools.class);
 
     public static class DistributedParamManager {
 
@@ -23,6 +23,18 @@ public class DistributedContextTools {
         public static class AId extends DistributedParam {
             public static String getName() {
                 return "distributed.app_id";
+            }
+        }
+
+        public static class BId extends DistributedParam {
+            public static String getName() {
+                return "distributed.bid";
+            }
+        }
+
+        public static class ShopId extends DistributedParam {
+            public static String getName() {
+                return "distributed.shop_id";
             }
         }
 
@@ -66,6 +78,8 @@ public class DistributedContextTools {
             cache.put(DeviceId.getName(), DeviceId.class);
             cache.put(DeviceType.getName(), DeviceType.class);
             cache.put(AId.getName(), AId.class);
+            cache.put(ShopId.getName(), ShopId.class);
+            cache.put(BId.getName(), BId.class);
 
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
@@ -74,6 +88,9 @@ public class DistributedContextTools {
             cache.put(DeviceId.class.getCanonicalName(), DeviceId.class);
             cache.put(DeviceType.class.getCanonicalName(), DeviceType.class);
             cache.put(AId.class.getCanonicalName(), AId.class);
+            cache.put(ShopId.class.getCanonicalName(), ShopId.class);
+            cache.put(BId.class.getCanonicalName(), BId.class);
+
         }
 
         public static Class<?> get(Class<?> param) {
@@ -105,7 +122,8 @@ public class DistributedContextTools {
         LOGGER.debug("结束清除{}请求参数", adminId);
     }
 
-    @SuppressWarnings("unchecked") public static <T> T get(String key) {
+    @SuppressWarnings("unchecked")
+    public static <T> T get(String key) {
         return (T) context.get(key);
     }
 
@@ -128,13 +146,30 @@ public class DistributedContextTools {
     }
 
     //获取应用id
-    public static String getAId() {
+    public static Long getAId() {
         final String aid = get(AId.class.getCanonicalName());
         if (aid == null || aid.length() == 0) {
             LOGGER.warn("not get aid");
         }
-        return aid;
+        return Long.valueOf(aid);
+    }
 
+    //获取应用id
+    public static Long getShopId() {
+        final Long shopId = get(ShopId.class.getCanonicalName());
+        if (shopId == null || shopId == 0) {
+            LOGGER.warn("not get shopId");
+        }
+        return shopId;
+    }
+
+    //获取应用id
+    public static Long getBId() {
+        final Long bid = get(ShopId.class.getCanonicalName());
+        if (bid == null || bid == 0) {
+            LOGGER.warn("not get bid");
+        }
+        return bid;
     }
 
     public static String getRequestIp() {

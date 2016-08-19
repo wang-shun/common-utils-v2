@@ -5,9 +5,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
+import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.common.enums.LogBizType;
+import com.youzan.sz.common.exceptions.BizException;
+import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.shop.ShopService;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +28,8 @@ import com.youzan.sz.common.model.base.BaseApiImpl;
  */
 @Service
 public abstract class SimpleApiImpl extends BaseApiImpl {
-    private final static Map<AppEnum, List<IAPP>> SERVICE_MAP = new HashMap<>();
+    private final static Map<AppEnum, List<IAPP>> SERVICE_MAP  = new HashMap<>();
+    private final static ExecutorService          LOG_EXECUTOR = Executors.newFixedThreadPool(2);
 
     @PostConstruct
     public void registerService() {
@@ -74,5 +81,41 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
         }
         logger.error("未找到支持此应用({})的服务({})", appByAid.getDesc(), clazz.getCanonicalName());
         return null;
+    }
+
+    public String getDeviceId() {
+        final String deviceId = DistributedContextTools.getDeviceId();
+        if (StringUtil.isEmpty(deviceId)) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少deviceId");
+        }
+        return deviceId;
+    }
+
+    public Long getAdminId() {
+        final Long adminId = DistributedContextTools.getAdminId();
+        if (adminId == null || adminId == 0) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少adminId");
+        }
+        return adminId;
+    }
+
+    public Long getBId() {
+        final Long bid = DistributedContextTools.getKdtId();
+        if (bid == null || bid == 0) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少bid");
+        }
+        return bid;
+    }
+
+    protected void asyncLog(LogBizType logBizType) {
+        final Long adminId = getAdminId();
+        final Long bId = getBId();
+        final String deviceId = getDeviceId();
+        LOG_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                logger.debug("保存{}日志", logBizType.getDesc());
+            }
+        });
     }
 }

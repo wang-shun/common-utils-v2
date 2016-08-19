@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.youzan.sz.common.exceptions.BizException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,45 +19,47 @@ import com.youzan.sz.portal.session.service.SessionService;
 
 public class SessionTools {
 
+    public static final String                        SESSION     = "session";
+    public static final String                        ADMINID     = "adminId";
+    public static final String                        BID         = "bid";
+    public static final String                        SHOP_ID     = "shopId";
+    public static final String                        YZ_ACCOUNT  = "yzAcc";
+    public static final String                        ROLE        = "role";
+    public static final String                        STAFF_NAME  = "staffName";
+    public static final String                        STAFF_NO    = "staffNo";
+    public static final String                        STAFF_ID    = "staffId";
+    public static final String                        SHOP_ICON   = "shopIcon";
+    public static final String                        KDT_ID      = "kdtId";
+    public static final String                        LOGINDEVICE = "loginDevice";
+    public static final String                        bid         = "bid";        //商家id
+    public static final String                        aid         = "aid";        //应用id
 
-    public static final String    SESSION     = "session";
-    public static final String    ADMINID     = "adminId";
-    public static final String    BID         = "bid";
-    public static final String    SHOP_ID     = "shopId";
-    public static final String    YZ_ACCOUNT  = "yzAcc";
-    public static final String    ROLE        = "role";
-    public static final String    STAFF_NAME  = "staffName";
-    public static final String    STAFF_NO    = "staffNo";
-    public static final String    STAFF_ID    = "staffId";
-    public static final String    SHOP_ICON   = "shopIcon";
-    public static final String    KDT_ID      = "kdtId";
-    public static final String    LOGINDEVICE = "loginDevice";
+    private static com.youzan.sz.session.SessionTools instance    = null;
+    private static Object                             initMutex   = new Object();
 
-    private static com.youzan.sz.session.SessionTools instance  = null;
-    private static Object                             initMutex = new Object();
-
-    private static final Logger   LOGGER      = LoggerFactory.getLogger(com.youzan.sz.session.SessionTools.class);
-    private static SessionService sessionService;
-
+    private static final Logger                       LOGGER      = LoggerFactory
+        .getLogger(com.youzan.sz.session.SessionTools.class);
+    private static SessionService                     sessionService;
 
     public static void init() {
         synchronized (initMutex) {
-            if(sessionService!=null){
+            if (sessionService != null) {
                 return;
             }
             sessionService = SpringUtils.getBean(SessionService.class);
-            if(sessionService==null){
+            if (sessionService == null) {
                 LOGGER.warn("sessionService 还未初始化,无法使用");
                 return;
             }
-            instance=new com.youzan.sz.session.SessionTools();
+            instance = new com.youzan.sz.session.SessionTools();
         }
     }
+
     /**
      * 考虑到性能原因,这里不做可见性检查,因为只有刚开始启动时,可能出现可见性问题,稍微晚一会儿获取到sessionService也可以;
      * */
     public static com.youzan.sz.session.SessionTools getInstance() {
-        if(sessionService==null){
+        if (sessionService == null) {
             init();
         }
         return instance;
@@ -100,13 +103,8 @@ public class SessionTools {
     public Map<String, String> getLocalSession() {
         Map<String, String> session = DistributedContextTools.get(SESSION);
         if (session == null) {
-            synchronized (com.youzan.sz.session.SessionTools.class) {
-                session = DistributedContextTools.get(SESSION);
-                if (session == null) {
-                    session = sessionService.loadSession();
-                    DistributedContextTools.set(SESSION, session);
-                }
-            }
+            session = sessionService.loadSession();
+            DistributedContextTools.set(SESSION, session);
         }
         return session;
     }
@@ -118,8 +116,8 @@ public class SessionTools {
      * @param value
      */
     public void set(String key, String value) {
-        if(StringUtils.isEmpty(value)){
-            throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), ResponseCode.PARAMETER_ERROR.getMessage());
+        if (StringUtils.isEmpty(value)) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR);
         }
         sessionService.set(key, value);
         getLocalSession().put(key, value);
@@ -156,7 +154,7 @@ public class SessionTools {
         Map<String, String> session = getLocalSession();
         if (StringUtils.isNotEmpty(session.get(LOGINDEVICE))) {
             return JsonUtils.json2ListBean(session.get(LOGINDEVICE), DeviceDTO.class).stream()
-                    .filter(deviceDTO -> deviceDTO.getType() == deviceType).collect(Collectors.toList());
+                .filter(deviceDTO -> deviceDTO.getType() == deviceType).collect(Collectors.toList());
         }
         return null;
     }

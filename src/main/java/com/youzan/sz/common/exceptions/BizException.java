@@ -8,7 +8,10 @@ import com.youzan.sz.common.response.enums.ResponseCode;
  * Created by zhanguo on 16/8/15.
  */
 public class BizException extends BusinessException {
-    private Object data;
+
+    public final static BizException APP_NOT_SUPPORT = new BizException(ResponseCode.APP_NOT_SUPPORT);
+
+    private Object                   data;
 
     public BizException() {
     }
