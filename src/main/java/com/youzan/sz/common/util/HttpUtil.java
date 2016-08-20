@@ -1,5 +1,6 @@
 package com.youzan.sz.common.util;
 
+import com.youzan.platform.bootstrap.exception.BusinessException;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
@@ -135,7 +136,7 @@ public final class HttpUtil {
      * @return
      * @throws IOException
      */
-    public static String uploadFile(boolean isHttps, String url, String filePath) throws IOException {
+    public static String uploadFile(boolean isHttps, String url, String filePath) throws BusinessException, IOException {
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
         FileBody bin = new FileBody(new File(filePath));
@@ -149,7 +150,11 @@ public final class HttpUtil {
         httpPost.setEntity(reqEntity);
         CloseableHttpResponse response = httpClient.execute(httpPost);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(response.getStatusLine().toString());
+            if( response.getStatusLine().getStatusCode() != 200){
+                LOGGER.error("uploadFile error,code {}",response.getStatusLine().getStatusCode());
+                throw new BusinessException(Long.valueOf(response.getStatusLine().getStatusCode()),"");
+            }
+           // LOGGER.info(response.getStatusLine().toString());
         }
         HttpEntity resEntity = response.getEntity();
         String result = EntityUtils.toString(resEntity, Consts.UTF_8);
