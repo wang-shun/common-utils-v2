@@ -29,7 +29,7 @@ public class TestWrapper implements TestLoggable {
             System.out.println();
 
         } catch (Exception e) {
-            getLogger().error("doTask error", e);
+            getLogger().error("doTask error:{}", e.getMessage(), e);
         }
         getLogger().info("{} cost {}(ms)", getTaskName(), (System.currentTimeMillis() - startTime));
         prettyEnd();
@@ -66,6 +66,8 @@ public class TestWrapper implements TestLoggable {
             line2.append("#");
         }
         StringBuilder line1 = line.insert(lenSharp() / 2, "   END   ");
+
+        System.out.println();
         System.out.println(line.toString());
         System.out.println(line2.toString());
     }

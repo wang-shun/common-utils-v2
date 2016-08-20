@@ -147,11 +147,17 @@ public class DistributedContextTools {
 
     //获取应用id
     public static Integer getAId() {
-        final String aid = get(AId.class.getCanonicalName());
-        if (aid == null || aid.length() == 0) {
+        final Object aid = get(AId.class.getCanonicalName());
+        Integer aidInt = null;
+        if (aid instanceof String) {
+            aidInt = Integer.valueOf((Integer) aid);
+        } else if (aid instanceof Integer) {
+            aidInt = (Integer) aid;
+        }
+        if (aidInt == null || aidInt == 0) {
             LOGGER.warn("not get aid");
         }
-        return Integer.valueOf(aid);
+        return Integer.valueOf(aidInt);
     }
 
     //获取应用id

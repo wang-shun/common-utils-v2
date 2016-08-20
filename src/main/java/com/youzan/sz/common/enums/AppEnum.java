@@ -11,13 +11,13 @@ public enum AppEnum {
                      FC(1, "fc", "免费收银"), //freeCheckout
                      SS(2, "ss", "超级门店"), //super store
                      FSS(3, "fss", "超级门店免费版"); //free super store
-    private Integer                      aid;
-    private String                       shortName;
-    private String                       name;
-    private static Map<Integer, AppEnum> AID_MAPS = new HashMap<>();
+    private Integer                            aid;
+    private String                             shortName;
+    private String                             name;
+    private final static Map<Integer, AppEnum> AID_MAPS = new HashMap<>();
     static {
-        for (AppEnum AppEnum : AID_MAPS.values()) {
-            AID_MAPS.put(AppEnum.aid, AppEnum);
+        for (AppEnum appEnum : AppEnum.values()) {
+            AID_MAPS.put(appEnum.aid, appEnum);
         }
     }
 
