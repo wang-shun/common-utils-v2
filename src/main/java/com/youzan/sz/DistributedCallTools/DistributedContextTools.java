@@ -128,12 +128,14 @@ public class DistributedContextTools {
     }
 
     public static Long getAdminId() {
-        String s = get(AdminId.class.getCanonicalName());
-        if (null == s) {
-            LOGGER.warn("not get adminId");
-            return 0L;
+        Object obj = get(AdminId.class.getCanonicalName());
+        if (obj instanceof String) {
+            return Long.valueOf(obj.toString());
+        } else if (obj instanceof Number) {
+            return (Long) obj;
         }
-        return Long.valueOf(s);
+        LOGGER.warn("not get adminId");
+        return null;
     }
 
     public static Long getKdtId() {
@@ -147,17 +149,12 @@ public class DistributedContextTools {
 
     //获取应用id
     public static Integer getAId() {
-        final Object aid = get(AId.class.getCanonicalName());
-        Integer aidInt = null;
-        if (aid instanceof String) {
-            aidInt = Integer.valueOf((Integer) aid);
-        } else if (aid instanceof Integer) {
-            aidInt = (Integer) aid;
-        }
-        if (aidInt == null || aidInt == 0) {
+        final Integer aid = get(AId.class.getCanonicalName());
+
+        if (aid == null || aid == 0) {
             LOGGER.warn("not get aid");
         }
-        return Integer.valueOf(aidInt);
+        return Integer.valueOf(aid);
     }
 
     //获取应用id
