@@ -13,7 +13,7 @@ public enum AppEnum {
                      FSS(3, "fss", "超级门店免费版"); //free super store
     private Integer                      aid;
     private String                       shortName;
-    private String                       desc;
+    private String                       name;
     private static Map<Integer, AppEnum> AID_MAPS = new HashMap<>();
     static {
         for (AppEnum AppEnum : AID_MAPS.values()) {
@@ -21,18 +21,18 @@ public enum AppEnum {
         }
     }
 
-    AppEnum(Integer aid, String shortName, String desc) {
+    AppEnum(Integer aid, String shortName, String name) {
         this.aid = aid;
         this.shortName = shortName;
-        this.desc = desc;
+        this.name = name;
     }
 
     public static AppEnum getAppByAid(Integer aId) {
         return AID_MAPS.get(aId);
     }
 
-    public String getDesc() {
-        return desc;
+    public String getName() {
+        return name;
     }
 
     public Integer getAid() {

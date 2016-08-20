@@ -26,13 +26,11 @@ import com.youzan.sz.common.model.base.BaseApiImpl;
  *
  * Created by zhanguo on 16/8/16.
  */
-@Service
-public abstract class SimpleApiImpl extends BaseApiImpl {
+@Service public abstract class SimpleApiImpl extends BaseApiImpl {
     private final static Map<AppEnum, List<IAPP>> SERVICE_MAP  = new HashMap<>();
     private final static ExecutorService          LOG_EXECUTOR = Executors.newFixedThreadPool(2);
 
-    @PostConstruct
-    public void registerService() {
+    @PostConstruct public void registerService() {
         final Field[] fields = this.getClass().getFields();
         if (fields != null) {
             for (Field field : fields) {
@@ -72,14 +70,14 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
         }
         final List<IAPP> appServiceList = SERVICE_MAP.get(appByAid);
         if (appServiceList == null) {
-            logger.info("未找到应用({})的service,使用通用service", appByAid.getDesc());
+            logger.info("未找到应用({})的service,使用通用service", appByAid.getName());
         }
         for (IAPP service : appServiceList) {
             if (service.getClass().isAssignableFrom(clazz)) {
                 return (T) service;
             }
         }
-        logger.error("未找到支持此应用({})的服务({})", appByAid.getDesc(), clazz.getCanonicalName());
+        logger.error("未找到支持此应用({})的服务({})", appByAid.getName(), clazz.getCanonicalName());
         return null;
     }
 
@@ -100,11 +98,33 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
     }
 
     public Long getBId() {
-        final Long bid = DistributedContextTools.getKdtId();
+        final Long bid = DistributedContextTools.getBId();
         if (bid == null || bid == 0) {
             throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少bid");
         }
         return bid;
+    }
+
+    /**
+     * 在指定店铺后就会拥有
+     * */
+    public Long getShopId() {
+        final Long shopId = DistributedContextTools.getShopId();
+        if (shopId == null || shopId == 0) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少shopId");
+        }
+        return shopId;
+    }
+
+    /**
+     * 在指定店铺后就会拥有
+     * */
+    public Integer getAId() {
+        final Integer aid = DistributedContextTools.getAId();
+        if (aid == null || aid == 0) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少aId");
+        }
+        return aid;
     }
 
     protected void asyncLog(LogBizType logBizType) {
@@ -112,8 +132,7 @@ public abstract class SimpleApiImpl extends BaseApiImpl {
         final Long bId = getBId();
         final String deviceId = getDeviceId();
         LOG_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 logger.debug("保存{}日志", logBizType.getDesc());
             }
         });
