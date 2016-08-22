@@ -39,15 +39,36 @@ public class DubboUtils {
                 LOGGER.info("zk Register config add {}", zkRegistry);
                 registrys.add(zkRegistry);
             }
+        } catch (Exception e) {
+            LOGGER.warn("zk register center error", e);
+        }
+        try{
             RegistryConfig hauntRegistry = (RegistryConfig) getBean("haunt");
             if (hauntRegistry != null) {
                 LOGGER.info("etcd Register config add {}", hauntRegistry);
                 registrys.add(hauntRegistry);
             }
-        } catch (Exception e) {
-            LOGGER.info("multi register center error {}", e);
+        }catch (Exception e){
+            LOGGER.warn("etcd register center error", e);
         }
-
+        try{
+            RegistryConfig hauntRegistry = (RegistryConfig) getBean("carmenRegistry");
+            if (hauntRegistry != null) {
+                LOGGER.info("etcd Register config add {}", hauntRegistry);
+                registrys.add(hauntRegistry);
+            }
+        }catch (Exception e){
+            LOGGER.warn("etcd register center error", e);
+        }
+        try{
+            RegistryConfig hauntRegistry = (RegistryConfig) getBean("com.alibaba.dubbo.config.RegistryConfig");
+            if (hauntRegistry != null) {
+                LOGGER.info("etcd Register config add {}", hauntRegistry);
+                registrys.add(hauntRegistry);
+            }
+        }catch (Exception e){
+            LOGGER.warn("etcd register center error", e);
+        }
         service.setApplication(application);
 
         if (registrys.size() == 0) {
