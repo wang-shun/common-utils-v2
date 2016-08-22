@@ -149,7 +149,7 @@ public class DistributedCoreFilter implements Filter {
                         // 保存过滤掉系统参数后的结果
                         inv.getArguments()[1] = types.toArray(new String[0]);
                         inv.getArguments()[2] = args.toArray();
-                        LOGGER.debug("core filter:methodName[{}],inArgs:{}", inv.getMethodName(), argsTmp);
+                        LOGGER.info("core filter:methodName[{}],inArgs:{}", inv.getMethodName(), argsTmp);
 
                         invoke = invoker.invoke(inv);
                         if (invoke.hasException()) {
