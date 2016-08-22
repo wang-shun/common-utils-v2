@@ -10,59 +10,59 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 
 public class DistributedContextTools {
     private final static Logger LOGGER = LoggerFactory
-        .getLogger(com.youzan.sz.DistributedCallTools.DistributedContextTools.class);
+            .getLogger(com.youzan.sz.DistributedCallTools.DistributedContextTools.class);
 
     public static class DistributedParamManager {
 
-        public static class AdminId extends DistributedParam {
+        public static class AdminId extends DistributedParam<Long> {
             public static String getName() {
                 return "distributed.admin_id";
             }
         }
 
-        public static class AId extends DistributedParam {
+        public static class AId extends DistributedParam<Integer> {
             public static String getName() {
                 return "distributed.app_id";
             }
         }
 
-        public static class BId extends DistributedParam {
+        public static class BId extends DistributedParam<Long> {
             public static String getName() {
                 return "distributed.bid";
             }
         }
 
-        public static class ShopId extends DistributedParam {
+        public static class ShopId extends DistributedParam<Long> {
             public static String getName() {
                 return "distributed.shop_id";
             }
         }
 
-        public static abstract class DistributedParam {
+        public static abstract class DistributedParam<T> {
             public static String getName() {
                 return "";
             }
         }
 
-        public static class KdtId extends DistributedParam {
+        public static class KdtId extends DistributedParam<Long> {
             public static String getName() {
                 return "distributed.kdt_id";
             }
         }
 
-        public static class RequestIp extends DistributedParam {
+        public static class RequestIp extends DistributedParam<String> {
             public static String getName() {
                 return "distributed.request_ip";
             }
         }
 
-        public static class DeviceId extends DistributedParam {
+        public static class DeviceId extends DistributedParam<String> {
             public static String getName() {
                 return "distributed.device_id";
             }
         }
 
-        public static class DeviceType extends DistributedParam {
+        public static class DeviceType extends DistributedParam<String> {
             public static String getName() {
                 return "distributed.device_type";
             }
@@ -122,8 +122,7 @@ public class DistributedContextTools {
         LOGGER.debug("结束清除{}请求参数", adminId);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T get(String key) {
+    @SuppressWarnings("unchecked") public static <T> T get(String key) {
         return (T) context.get(key);
     }
 
@@ -187,11 +186,24 @@ public class DistributedContextTools {
         return get(DeviceType.class.getCanonicalName());
     }
 
-    public static <T> void set(Class<?> key, T value) {
+    /**
+     *设置属性,有泛型检查
+     * */
+    public static <T extends DistributedParam<V>, V> void setAttr(Class<T> key, V value) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
         }
         context.put(key.getCanonicalName(), value);
+    }
+
+    @Deprecated public static <T> void set(Class<?> key, T value) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
+        }
+        context.put(key.getCanonicalName(), value);
+    }
+
+    public static void set(Class<KdtId> kdtIdClass, Long aLong) {
     }
 
     public static <T> void set(String key, T value) {

@@ -55,16 +55,14 @@ public class DistributedCoreFilter implements Filter {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse(be.getCode().intValue(), getThrowableStr(invoke.getException()),
                     invoke.getValue());
-                LOGGER.error("rpc invoke exception:{}", invoke.getException().getMessage());
 
             } else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
                 br = new BaseResponse(be.getCode().intValue(), getThrowableStr(be), invoke.getValue());
-                LOGGER.error("rpc invoke exception:{}", invoke.getException().getMessage());
             } else {
                 br = new BaseResponse(ResponseCode.ERROR.getCode(), null, invoke.getValue());
-                LOGGER.error("rpc invoke exception:", invoke.getException());
             }
+            LOGGER.error("rpc invoke exception:{}", invoke.getException().getMessage());
             // 变更处理后需要清空原有的异常信息
             rpcResult.setException(null);
             rpcResult.setValue(br);
@@ -163,7 +161,8 @@ public class DistributedCoreFilter implements Filter {
                 } else {// 处理普通的rpc调用，即使用dubbo客户端直接调用的场景
                     String adminId = inv.getAttachment(AdminId.class.getCanonicalName());
                     if (null != adminId) {
-                        com.youzan.sz.DistributedCallTools.DistributedContextTools.set(AdminId.class, adminId);
+                        com.youzan.sz.DistributedCallTools.DistributedContextTools.set(AdminId.class,
+                            Long.valueOf(adminId));
                     }
                     String requestIp = inv.getAttachment(RequestIp.class.getCanonicalName());
                     if (null != requestIp) {
@@ -171,7 +170,8 @@ public class DistributedCoreFilter implements Filter {
                     }
                     String kdtId = inv.getAttachment(KdtId.class.getCanonicalName());
                     if (null != kdtId) {
-                        com.youzan.sz.DistributedCallTools.DistributedContextTools.set(KdtId.class, kdtId);
+                        com.youzan.sz.DistributedCallTools.DistributedContextTools.set(KdtId.class,
+                            Long.valueOf(kdtId));
                     }
                     String deviceId = inv.getAttachment(DeviceId.class.getCanonicalName());
                     if (null != deviceId) {

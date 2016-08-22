@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributeAttribute;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.base.BaseDao;
 import com.youzan.sz.common.enums.LogBizType;
@@ -17,7 +18,8 @@ import com.youzan.sz.common.response.enums.ResponseCode;
  *
  * Created by zhanguo on 16/8/16.
  */
-public abstract class SimpleProcessor<T extends BasePO<ID>, ID extends Serializable> extends BaseProcessor {
+public abstract class SimpleProcessor<T extends BasePO<ID>, ID extends Serializable> extends BaseProcessor
+                                     implements DistributeAttribute {
 
     public int save(T t) {
         if (t.getId() == null) {

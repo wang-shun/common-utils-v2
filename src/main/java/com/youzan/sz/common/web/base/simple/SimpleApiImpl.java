@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 
 import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributeAttribute;
 import com.youzan.sz.common.enums.LogBizType;
 import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -26,11 +27,13 @@ import com.youzan.sz.common.model.base.BaseApiImpl;
  *
  * Created by zhanguo on 16/8/16.
  */
-@Service public abstract class SimpleApiImpl extends BaseApiImpl {
+@Service
+public abstract class SimpleApiImpl extends BaseApiImpl implements DistributeAttribute {
     private final static Map<AppEnum, List<IAPP>> SERVICE_MAP  = new HashMap<>();
     private final static ExecutorService          LOG_EXECUTOR = Executors.newFixedThreadPool(2);
 
-    @PostConstruct public void registerService() {
+    @PostConstruct
+    public void registerService() {
         final Field[] fields = this.getClass().getFields();
         if (fields != null) {
             for (Field field : fields) {
@@ -81,58 +84,13 @@ import com.youzan.sz.common.model.base.BaseApiImpl;
         return null;
     }
 
-    public String getDeviceId() {
-        final String deviceId = DistributedContextTools.getDeviceId();
-        if (StringUtil.isEmpty(deviceId)) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少deviceId");
-        }
-        return deviceId;
-    }
-
-    public Long getAdminId() {
-        final Long adminId = DistributedContextTools.getAdminId();
-        if (adminId == null || adminId == 0) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少adminId");
-        }
-        return adminId;
-    }
-
-    public Long getBId() {
-        final Long bid = DistributedContextTools.getBId();
-        if (bid == null || bid == 0) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少bid");
-        }
-        return bid;
-    }
-
-    /**
-     * 在指定店铺后就会拥有
-     * */
-    public Long getShopId() {
-        final Long shopId = DistributedContextTools.getShopId();
-        if (shopId == null || shopId == 0) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少shopId");
-        }
-        return shopId;
-    }
-
-    /**
-     * 在指定店铺后就会拥有
-     * */
-    public Integer getAId() {
-        final Integer aid = DistributedContextTools.getAId();
-        if (aid == null || aid == 0) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少aId");
-        }
-        return aid;
-    }
-
     protected void asyncLog(LogBizType logBizType) {
         final Long adminId = getAdminId();
-        final Long bId = getBId();
+        final Long bId = getBid();
         final String deviceId = getDeviceId();
         LOG_EXECUTOR.execute(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 logger.debug("保存{}日志", logBizType.getDesc());
             }
         });
