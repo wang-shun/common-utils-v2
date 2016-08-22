@@ -21,8 +21,8 @@ import static com.youzan.sz.common.util.SpringUtils.getBean;
 public class DubboUtils {
     private final static Logger LOGGER      = LoggerFactory.getLogger(com.youzan.sz.dubbo.DubboUtils.class);
     static ApplicationConfig    application = null;
-    static List<RegistryConfig> registrys    = new ArrayList<>();
-    static List<ProtocolConfig>       protocols   = new ArrayList<>();
+    static List<RegistryConfig> registrys   = new ArrayList<>();
+    static List<ProtocolConfig> protocols   = new ArrayList<>();
 
     // 注意：ServiceConfig为重对象，内部封装了与注册中心的连接，以及开启服务端口
 
@@ -32,7 +32,7 @@ public class DubboUtils {
         // 服务提供者暴露服务配置
         ServiceConfig<T> service = new ServiceConfig<T>(); // 此实例很重，封装了与注册中心的连接，请自行缓存，否则可能造成内存和连接泄漏
         application = getBean(ApplicationConfig.class);
-       // registry = SpringUtils.getBean(RegistryConfig.class);
+        // registry = SpringUtils.getBean(RegistryConfig.class);
         try {
             RegistryConfig zkRegistry = (RegistryConfig) getBean("zookeeper");
             if (zkRegistry != null) {
@@ -44,29 +44,31 @@ public class DubboUtils {
                 LOGGER.info("etcd Register config add {}", hauntRegistry);
                 registrys.add(hauntRegistry);
             }
-        }catch (Exception e){
-            LOGGER.info("multi register center error {}",e);
+        } catch (Exception e) {
+            LOGGER.info("multi register center error {}", e);
         }
 
         service.setApplication(application);
 
-        if(registrys.size() ==0 ){
+        if (registrys.size() == 0) {
             registrys.add(getBean(RegistryConfig.class));
         }
         service.setRegistries(registrys); // 多个注册中心可以用setRegistries()
-
-        /*ProtocolConfig dubboProtocol = (ProtocolConfig)SpringUtils.getBean("dubbo");
-        if(dubboProtocol != null){
-            LOGGER.info("dubboProtocol   add {}",dubboProtocol);
-            protocols.add(dubboProtocol);
+        try {
+            ProtocolConfig dubboProtocol = (ProtocolConfig) SpringUtils.getBean("dubbo");
+            if (dubboProtocol != null) {
+                LOGGER.info("dubboProtocol   add {}", dubboProtocol);
+                protocols.add(dubboProtocol);
+            }
+            ProtocolConfig novaProtocol = (ProtocolConfig) SpringUtils.getBean("nova");
+            if (novaProtocol != null) {
+                LOGGER.info("novaProtocol   add {}", novaProtocol);
+                protocols.add(novaProtocol);
+            }
+        } catch (Exception e) {
+            LOGGER.info("multi protocol error {}", e);
         }
-        ProtocolConfig novaProtocol = (ProtocolConfig)SpringUtils.getBean("nova");
-        if(novaProtocol!=null){
-            LOGGER.info("novaProtocol   add {}",novaProtocol);
-            protocols.add(novaProtocol);
-        }
-        */
-        if(protocols.size() ==0 ){
+        if (protocols.size() == 0) {
             protocols.add(SpringUtils.getBean(ProtocolConfig.class));
         }
         service.setProtocols(protocols); // 多个协议可以用setProtocols()
