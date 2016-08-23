@@ -28,6 +28,8 @@ import com.youzan.sz.common.util.PropertiesUtils;
 public class EsClient {
     public static final String PUSH_TYPE_CREATE = "create";
     public static final String PUSH_TYPE_UPDATE = "update";
+    public static final String PUSH_TYPE_UPDATE_BY_QUERY = "update_by_query";
+    public static final int IN_MAX = 20;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String EsClientHost = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "esclient.host", "10.9.77.163");
     private static final String EsClientPort = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "esclient.port", "9200");
