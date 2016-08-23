@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.youzan.sz.common.util.SpringUtils.getBean;
 
@@ -32,65 +33,16 @@ public class DubboUtils {
         // 服务提供者暴露服务配置
         ServiceConfig<T> service = new ServiceConfig<T>(); // 此实例很重，封装了与注册中心的连接，请自行缓存，否则可能造成内存和连接泄漏
         application = getBean(ApplicationConfig.class);
-        // registry = SpringUtils.getBean(RegistryConfig.class);
-        try {
-            RegistryConfig zkRegistry = (RegistryConfig) getBean("zookeeper");
-            if (zkRegistry != null) {
-                LOGGER.info("zk Register config add {}", zkRegistry);
-                registrys.add(zkRegistry);
-            }
-        } catch (Exception e) {
-            LOGGER.warn("zk register center error", e);
-        }
-        try{
-            RegistryConfig hauntRegistry = (RegistryConfig) getBean("haunt");
-            if (hauntRegistry != null) {
-                LOGGER.info("etcd Register config add {}", hauntRegistry);
-                registrys.add(hauntRegistry);
-            }
-        }catch (Exception e){
-            LOGGER.warn("etcd register center error", e);
-        }
-        try{
-            RegistryConfig hauntRegistry = (RegistryConfig) getBean("carmenRegistry");
-            if (hauntRegistry != null) {
-                LOGGER.info("etcd Register config add {}", hauntRegistry);
-                registrys.add(hauntRegistry);
-            }
-        }catch (Exception e){
-            LOGGER.warn("etcd register center error", e);
-        }
-        try{
-            RegistryConfig hauntRegistry = (RegistryConfig) getBean("com.alibaba.dubbo.config.RegistryConfig");
-            if (hauntRegistry != null) {
-                LOGGER.info("etcd Register config add {}", hauntRegistry);
-                registrys.add(hauntRegistry);
-            }
-        }catch (Exception e){
-            LOGGER.warn("etcd register center error", e);
-        }
+        Map<String,RegistryConfig> registryConfigMap = SpringUtils.getBeans(RegistryConfig.class);
+        registrys. addAll(registryConfigMap.values());
         service.setApplication(application);
-
         if (registrys.size() == 0) {
             registrys.add(getBean(RegistryConfig.class));
         }
         service.setRegistries(registrys); // 多个注册中心可以用setRegistries()
-        try {
-            ProtocolConfig dubboProtocol = (ProtocolConfig) SpringUtils.getBean("dubbo");
-            if (dubboProtocol != null) {
-                LOGGER.info("dubboProtocol   add {}", dubboProtocol);
-                protocols.add(dubboProtocol);
-            }
-            ProtocolConfig novaProtocol = (ProtocolConfig) SpringUtils.getBean("nova");
-            if (novaProtocol != null) {
-                LOGGER.info("novaProtocol   add {}", novaProtocol);
-                protocols.add(novaProtocol);
-            }
-        } catch (Exception e) {
-            LOGGER.info("multi protocol error {}", e);
-        }
-        if (protocols.size() == 0) {
-            protocols.add(SpringUtils.getBean(ProtocolConfig.class));
+        Map<String,ProtocolConfig> protocolConfigMap = SpringUtils.getBeans(ProtocolConfig.class);
+        if (protocolConfigMap.size() != 0) {
+            protocols.addAll(protocolConfigMap.values());
         }
         service.setProtocols(protocols); // 多个协议可以用setProtocols()
 
