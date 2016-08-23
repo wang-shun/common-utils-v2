@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.youzan.sz.init.InitDistributedTools;
-
 /**
  *
  * Created by zhanguo on 16/7/21.
@@ -44,7 +42,7 @@ public abstract class BaseApp {
 
     protected void preTask() {
         initSpring();
-        InitDistributedTools.init();//启动心跳
+        //InitDistributedTools.init();//启动心跳
     }
 
     protected abstract void doTask();
