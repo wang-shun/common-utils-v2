@@ -1,6 +1,9 @@
 package com.youzan.sz.common.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,6 +13,31 @@ import java.util.List;
  * Created by zefa on 16/3/30.
  */
 public class ListUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ListUtils.class);
+
+    private ListUtils() {
+        throw new IllegalAccessError("Utility class");
+    }
+
+    public static List<List> subList (List list,int pageSize){
+        List<List> result = new ArrayList<>();
+        int pageNo = 0;
+        while (true) {
+            pageNo ++;
+            int start = (pageNo - 1) * pageSize;
+            int end = start + pageSize;
+            try {
+                result.add(list.subList(start, end));
+            } catch (IndexOutOfBoundsException e) {
+                if (start <= list.size()) {
+                    result.add(list.subList(start,list.size()));
+                }
+                break;
+            }
+        }
+        return result;
+    }
+
     /**
      * @param list
      * @return
@@ -90,5 +118,13 @@ public class ListUtils {
                 differenceList.remove(elem);
         }
         return differenceList;
+    }
+
+    public static void main(String[] args) {
+        List<Integer> list = new ArrayList<>();
+        for(int i = 0; i < 55; i++){
+            list.add(i);
+        }
+        System.out.println(JsonUtils.bean2Json(ListUtils.subList(list,10)));
     }
 }
