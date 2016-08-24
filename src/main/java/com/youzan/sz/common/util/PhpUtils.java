@@ -2,8 +2,10 @@ package com.youzan.sz.common.util;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -36,6 +38,13 @@ public class PhpUtils {
             return null;
         }
         try {
+            if (resp.contains("\"msg\":")) {//返回结构不一样,需要转换一次
+                final HashMap<String, String> hashMap = JsonUtils.json2Bean(resp, HashMap.class);
+                final String msg = hashMap.remove("msg");
+                hashMap.put("message", msg);
+                resp = JsonUtils.bean2Json(hashMap);
+            }
+
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             //            Result<T> result = objectMapper.readValue(resp, new TypeReference<Result<T>>() {

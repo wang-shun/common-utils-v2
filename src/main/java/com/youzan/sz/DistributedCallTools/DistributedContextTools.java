@@ -10,7 +10,7 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 
 public class DistributedContextTools {
     private final static Logger LOGGER = LoggerFactory
-            .getLogger(com.youzan.sz.DistributedCallTools.DistributedContextTools.class);
+        .getLogger(com.youzan.sz.DistributedCallTools.DistributedContextTools.class);
 
     public static class DistributedParamManager {
 
@@ -20,13 +20,13 @@ public class DistributedContextTools {
             }
         }
 
-        public static class AId extends DistributedParam<Integer> {
+        public static class Aid extends DistributedParam<Integer> {
             public static String getName() {
                 return "distributed.app_id";
             }
         }
 
-        public static class BId extends DistributedParam<Long> {
+        public static class Bid extends DistributedParam<Long> {
             public static String getName() {
                 return "distributed.bid";
             }
@@ -77,9 +77,9 @@ public class DistributedContextTools {
             cache.put(KdtId.getName(), RequestIp.class);
             cache.put(DeviceId.getName(), DeviceId.class);
             cache.put(DeviceType.getName(), DeviceType.class);
-            cache.put(AId.getName(), AId.class);
+            cache.put(Aid.getName(), Aid.class);
             cache.put(ShopId.getName(), ShopId.class);
-            cache.put(BId.getName(), BId.class);
+            cache.put(Bid.getName(), Bid.class);
 
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
@@ -87,9 +87,9 @@ public class DistributedContextTools {
             cache.put(RequestIp.class.getCanonicalName(), RequestIp.class);
             cache.put(DeviceId.class.getCanonicalName(), DeviceId.class);
             cache.put(DeviceType.class.getCanonicalName(), DeviceType.class);
-            cache.put(AId.class.getCanonicalName(), AId.class);
+            cache.put(Aid.class.getCanonicalName(), Aid.class);
             cache.put(ShopId.class.getCanonicalName(), ShopId.class);
-            cache.put(BId.class.getCanonicalName(), BId.class);
+            cache.put(Bid.class.getCanonicalName(), Bid.class);
 
         }
 
@@ -122,56 +122,59 @@ public class DistributedContextTools {
         LOGGER.debug("结束清除{}请求参数", adminId);
     }
 
-    @SuppressWarnings("unchecked") public static <T> T get(String key) {
+    @SuppressWarnings("unchecked")
+    public static <T> T get(String key) {
         return (T) context.get(key);
     }
 
     public static Long getAdminId() {
         Object obj = get(AdminId.class.getCanonicalName());
+        if (obj == null) {
+            return null;
+        }
         if (obj instanceof String) {
             return Long.valueOf(obj.toString());
         } else if (obj instanceof Number) {
-            return (Long) obj;
+            return Long.valueOf(obj + "");
         }
-        LOGGER.warn("not get adminId");
-        return null;
+        return (Long) obj;
     }
 
     public static Long getKdtId() {
-        String kdtStr = get(KdtId.class.getCanonicalName());
-        if (kdtStr == null || kdtStr.length() == 0) {
-            LOGGER.warn("not get ktdId");
-            return null;
-        }
-        return Long.valueOf(kdtStr);
+        return get(KdtId.class.getCanonicalName());
     }
 
     //获取应用id
     public static Integer getAId() {
-        final Integer aid = get(AId.class.getCanonicalName());
 
-        if (aid == null || aid == 0) {
-            LOGGER.warn("not get aid");
+        final Object aid = get(Aid.class.getCanonicalName());
+        if (aid instanceof String) {
+            return Integer.valueOf((String) aid);
+        } else if (aid instanceof Long) {
+            return Integer.valueOf(aid + "");
         }
-        return Integer.valueOf(aid);
+        return (Integer) aid;
     }
 
     //获取应用id
     public static Long getShopId() {
-        final Long shopId = get(ShopId.class.getCanonicalName());
-        if (shopId == null || shopId == 0) {
-            LOGGER.warn("not get shopId");
+        final Object shopId = get(ShopId.class.getCanonicalName());
+        if (shopId instanceof String) {
+            return Long.valueOf((String) shopId);
+        } else if (shopId instanceof Integer) {
+            return Long.valueOf(shopId + "");
         }
-        return shopId;
+        return (Long) shopId;
     }
 
     //获取应用id
     public static Long getBId() {
-        final Long bid = get(BId.class.getCanonicalName());
-        if (bid == null || bid == 0) {
-            LOGGER.warn("not get bid");
+        final Object bid = get(Bid.class.getCanonicalName());
+        if (bid instanceof String) {
+            return Long.valueOf((String) bid);
         }
-        return bid;
+        return (Long) bid;
+
     }
 
     public static String getRequestIp() {
@@ -196,14 +199,12 @@ public class DistributedContextTools {
         context.put(key.getCanonicalName(), value);
     }
 
-    @Deprecated public static <T> void set(Class<?> key, T value) {
+    @Deprecated
+    public static <T> void set(Class<?> key, T value) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
         }
         context.put(key.getCanonicalName(), value);
-    }
-
-    public static void set(Class<KdtId> kdtIdClass, Long aLong) {
     }
 
     public static <T> void set(String key, T value) {

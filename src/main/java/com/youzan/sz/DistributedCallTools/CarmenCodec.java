@@ -30,8 +30,8 @@ import com.youzan.sz.monitor.HeathCheck;
 
 @SPI("dubbo")
 public class CarmenCodec implements Codec2 {
-    private static final Logger       LOGGER           = LoggerFactory.getLogger(
-            com.youzan.sz.DistributedCallTools.CarmenCodec.class);
+    private static final Logger       LOGGER           = LoggerFactory
+        .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
 
     /**
      *
@@ -289,15 +289,21 @@ public class CarmenCodec implements Codec2 {
             String kdtId = parseQueryString.get("kdt_id");
             String deviceId = parseQueryString.get("device_id");
             String deviceType = parseQueryString.get("device_type");
+            String aid = parseQueryString.get("aid");
+            String bid = parseQueryString.get("bid");
+            String shopId = parseQueryString.get("shop_id");
 
-            inv.setArguments(
-                new Object[] { methodName,
-                               new String[] { DistributedParamManager.AdminId.getName(),
-                                              DistributedParamManager.RequestIp.getName(),
-                                              DistributedParamManager.KdtId.getName(),
-                                              DistributedParamManager.DeviceId.getName(),
-                                              DistributedParamManager.DeviceType.getName(), "json" },
-                               new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, jsonValue } });
+            inv.setArguments(new Object[] { methodName,
+                                            new String[] { DistributedParamManager.AdminId.getName(),
+                                                           DistributedParamManager.RequestIp.getName(),
+                                                           DistributedParamManager.KdtId.getName(),
+                                                           DistributedParamManager.DeviceId.getName(),
+                                                           DistributedParamManager.DeviceType.getName(),
+                                                           DistributedParamManager.Aid.getName(),
+                                                           DistributedParamManager.Bid.getName(),
+                                                           DistributedParamManager.ShopId.getName(), "json" },
+                                            new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
+                                                           shopId, jsonValue } });
             inv.setMethodName(Constants.$INVOKE);
             inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
             Map<String, String> attachments = new HashMap<>();

@@ -55,4 +55,16 @@ public interface DistributeAttribute {
         }
         return aid;
     }
+
+    /**
+     * 在指定店铺后就会拥有
+     * */
+    default String getDeviceType() {
+        final String deviceType = DistributedContextTools.getDeviceType();
+        if (deviceType == null) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少aId");
+        }
+        return deviceType;
+    }
+
 }
