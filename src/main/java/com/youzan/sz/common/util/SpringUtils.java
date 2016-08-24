@@ -6,6 +6,8 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * Created with IntelliJ IDEA.
  * User: YANG
@@ -32,6 +34,10 @@ public class SpringUtils implements BeanFactoryPostProcessor {
     public static <T> T getBean(Class<T> clz) throws BeansException {
         Object result = beanFactory.getBean(clz);
         return (T) result;
+    }
+
+    public static <T> Map<String,T> getBeans(Class<T> clz) throws BeansException {
+        return beanFactory.getBeansOfType(clz);
     }
 
     public static boolean containsBean(String name) {

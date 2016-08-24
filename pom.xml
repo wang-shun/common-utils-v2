@@ -14,7 +14,6 @@
     <artifactId>common-utils</artifactId>
     <version>1.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
-
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
