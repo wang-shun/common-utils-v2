@@ -2,13 +2,15 @@ package com.youzan.sz.common.util;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.youzan.sz.common.model.Result;
+import com.youzan.sz.common.response.BaseResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,19 +32,26 @@ public class PhpUtils {
      *
      * @throws com.youzan.platform.bootstrap.exception.BusinessException 连接错误,解码错误
      * */
-    public static <T> Result<T> getResult(String url, Map<String, String> params, Class<T> targetClass) {
+    public static <T> BaseResponse<T> getResult(String url, Map<String, String> params, Class<T> targetClass) {
         String resp = get(url, params);
         if (resp == null) {
             return null;
         }
         try {
+            if (resp.contains("\"msg\":")) {//返回结构不一样,需要转换一次
+                final HashMap<String, String> hashMap = JsonUtils.json2Bean(resp, HashMap.class);
+                final String msg = hashMap.remove("msg");
+                hashMap.put("message", msg);
+                resp = JsonUtils.bean2Json(hashMap);
+            }
+
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             //            Result<T> result = objectMapper.readValue(resp, new TypeReference<Result<T>>() {
             //            });
 
-            JavaType type = objectMapper.getTypeFactory().constructParametricType(Result.class, targetClass);
-            Result<T> result = objectMapper.readValue(resp, type);
+            JavaType type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetClass);
+            BaseResponse<T> result = objectMapper.readValue(resp, type);
             return result;
             //            Result<UserDetailDto> result = new ObjectMapper().readValue(src, new TypeReference<Result<UserDetailDto>>() {
             //            });

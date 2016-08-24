@@ -105,6 +105,28 @@ public class SessionTools {
             session = sessionService.loadSession();
             DistributedContextTools.set(SESSION, session);
         }
+        //从session中加载一次
+        final String bid = session.get(SessionTools.BID);
+        final String shopId = session.get(SessionTools.SHOP_ID);
+        final String aid = session.get(SessionTools.AID);
+        final String deviceType = session.get(SessionTools.LOGINDEVICE);
+        if (bid != null) {
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class,
+                Long.valueOf(bid));
+        }
+        if (shopId != null) {
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.ShopId.class,
+                Long.valueOf(shopId));
+        }
+        if (aid != null) {
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class,
+                Integer.valueOf(aid));
+        }
+        if (deviceType != null) {
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.DeviceType.class,
+                deviceType);
+        }
+
         return session;
     }
 

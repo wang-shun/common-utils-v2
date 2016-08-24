@@ -13,6 +13,9 @@ public interface ICacheKey {
         StringBuilder sb = new StringBuilder(getBaseKey());
         if (keys != null && keys.length > 0) {
             for (String key : keys) {
+                if (key == null || key.length() == 0) {
+                    throw new NullPointerException(key);
+                }
                 sb.append(":").append(key.trim());
             }
         }

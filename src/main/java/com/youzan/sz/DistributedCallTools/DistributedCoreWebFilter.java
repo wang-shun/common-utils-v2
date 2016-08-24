@@ -109,7 +109,7 @@ public class DistributedCoreWebFilter implements Filter {
                     if (map == null) {
                         LOGGER.error("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage() + "接口名:" + m);
                         throw new BusinessException((long) ResponseCode.LOGIN_TIMEOUT.getCode(),
-                            ResponseCode.LOGIN_TIMEOUT.getMessage());
+                                ResponseCode.LOGIN_TIMEOUT.getMessage());
                     }
                 }
                 String[] types = null;

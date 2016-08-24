@@ -102,4 +102,10 @@ public class PropertiesUtils {
         }
         return property;
     }
+
+    public static Integer getInteger(String file, String key) {
+        final String property = getProperty(file, key);
+        return Integer.valueOf(property);
+    }
+
 }
