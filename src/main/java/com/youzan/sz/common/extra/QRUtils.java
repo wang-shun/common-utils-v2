@@ -1,4 +1,4 @@
-package com.youzan.sz.common.qr;
+package com.youzan.sz.common.extra;
 
 import com.youzan.sz.common.model.qr.QRConfigVO;
 import com.youzan.sz.common.util.ConfigsUtils;
