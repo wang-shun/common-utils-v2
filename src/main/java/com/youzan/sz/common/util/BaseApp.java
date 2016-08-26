@@ -51,7 +51,7 @@ public abstract class BaseApp {
 
         //startJvmMonitor();
         initSpring();
-        addHook();
+        //addHook();
        // com.alibaba.dubbo.container.Main.main(new String[]{});
        InitDistributedTools.init();//启动心跳
     }
