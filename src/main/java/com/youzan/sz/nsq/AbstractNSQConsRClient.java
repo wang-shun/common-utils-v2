@@ -38,6 +38,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
         try
 
         {
+            consumer.subscribe(getTopic());
             logger.info("consume prepare start whth configs:{}", JsonUtils.bean2Json(getNSQConfig()));
             consumer.start();
         } catch (NSQException e) {
@@ -55,7 +56,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     }
 
     public String getConsumerName() {
-        return init().getNsqConfig().getTopic() + "-" + "consumer";
+        return init().getTopic() + "-" + "consumer";
     }
 
     @Override

@@ -59,18 +59,19 @@ public class NSQclient {
         // 创建配置: 要连接的集群参数和本机进程参数
         final NSQConfig config = newNSQConfig();
         // 设置Topic Name
-        config.setTopic(topic);
+        //config.setTopic(topic);
         // 设置Lookupd集群(多)地址, 是以","分隔的字符串,就是说可以配置一个集群里的多个节点
         config.setLookupAddresses(LOOKUP);
         // 设置Netty里的ThreadPoolSize(带默认值): 1Thread-to-1IOThread, 使用BlockingIO
         config.setThreadPoolSize4IO(DEFAULT_POOLSIZE4IO);
         // 设置timeout(带默认值): 一次IO来回+本机执行了返回给client code完成的消耗时间
-        config.setTimeoutInSecond(DEFAULT_TIMEOUT_SECONDS);
+        config.setConnectTimeoutInMillisecond(DEFAULT_TIMEOUT_SECONDS*1000);
+       // config.setTimeoutInSecond(DEFAULT_TIMEOUT_SECONDS);
         // 设置message中client-server之间可以的timeout(带默认值)
         config.setMsgTimeoutInMillisecond(DEFAULT_MSG_TIMEOUT_MILLSECONDS);
         try (Producer p = new ProducerImplV2(config)) {
             p.start();
-            p.publish(message);
+            p.publish(message,topic);
             LOGGER.info("NSQ推送成功 topic:{}, message:{}",topic,new String(message, "UTF-8"));
         } catch (NSQException e) {
             LOGGER.warn("NSQ推送失败 e:{}", e.getMessage());
@@ -98,12 +99,14 @@ public class NSQclient {
         final NSQConfig config = newNSQConfig();
         config.setLookupAddresses(LOOKUP);
         config.setThreadPoolSize4IO(1);
-        config.setTimeoutInSecond(120);
+       // config.setTimeoutInSecond(120);
+        config.setConnectTimeoutInMillisecond(DEFAULT_TIMEOUT_SECONDS*1000);
         config.setMsgTimeoutInMillisecond(120 * 1000);
-        config.setTopic(topic);
+       // config.setTopic(topic);
         config.setConsumerName(consumerName);
         LOGGER.info("开始注册消费者 topic:{} consumerName:{}", topic, consumerName);
         try (final Consumer consumer = newConsumer(config, callback, clazz)) {
+            consumer.subscribe(topic);
             consumer.start();
         } catch (NSQException e) {
             throw new BusinessException((long) ResponseCode.NSQ_EXCEPTION.getCode(), e.getMessage());
@@ -113,7 +116,7 @@ public class NSQclient {
     private static NSQConfig newNSQConfig() {
         try {
             return new NSQConfig();
-        } catch (NSQException e) {
+        } catch (RuntimeException e) {
             throw new BusinessException((long) ResponseCode.NSQ_EXCEPTION.getCode(), e.getMessage());
         }
     }

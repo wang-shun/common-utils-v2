@@ -1,18 +1,14 @@
 package com.youzan.sz.nsq;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.youzan.nsq.client.entity.NSQConfig;
-import com.youzan.nsq.client.exception.NSQException;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.PropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -38,13 +34,13 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
             nsqClientInitializer.getNsqConfig().setLookupAddresses(DEFAULT_LOOKUP);
         }
         Integer connectionTimeout = Integer.valueOf(PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
-            "nsq.connection.timeout.sec", String.valueOf(TimeUnit.SECONDS.toMillis(10))));
+            "nsq.connection.timeout.second", String.valueOf(TimeUnit.SECONDS.toMillis(10))));
         nsqClientInitializer.getNsqConfig().setConnectTimeoutInMillisecond(connectionTimeout);
         //
         // 设置Netty里的ThreadPoolSize(带默认值): 1Thread-to-1IOThread, 使用BlockingIO
         nsqClientInitializer.getNsqConfig().setThreadPoolSize4IO(2);
         // 设置timeout(带默认值): 一次IO来回+本机执行了返回给client code完成的消耗时间
-        nsqClientInitializer.getNsqConfig().setTimeoutInSecond(3);
+        nsqClientInitializer.getNsqConfig().setConnectTimeoutInMillisecond(3*1000);
         // 设置message中client-server之间可以的timeout(带默认值)
         nsqClientInitializer.getNsqConfig().setMsgTimeoutInMillisecond(60 * 1000);
 
@@ -54,7 +50,9 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
     public NSQConfig getNSQConfig() {
         return nsqClientInitializer.getNsqConfig();
     }
-
+    public String getTopic() {
+        return nsqClientInitializer.getTopic();
+    }
     @Override
     public AroundHandler addLast(AroundHandler AroundHandler) {
         handlers.addLast(AroundHandler);
