@@ -2,6 +2,7 @@ package com.youzan.sz.common.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -17,7 +18,11 @@ public class JsonUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtils.class);
 
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    static {
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     private JsonUtils() {
         throw new IllegalAccessError("Utility class");
@@ -47,8 +52,11 @@ public class JsonUtils {
 
     public static <T> T json2Bean(String jsonStr, Class<T> elementClasses) {
         try {
+            if(elementClasses.newInstance() instanceof String){
+                return (T)jsonStr;
+            }
             return mapper.readValue(jsonStr, elementClasses);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("json2Bean ERROR jsonStr =" + jsonStr);
             return null;
         }
@@ -63,6 +71,10 @@ public class JsonUtils {
             return jo;
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(JsonUtils.json2Bean("基德老司机",String.class));
     }
 
 }
