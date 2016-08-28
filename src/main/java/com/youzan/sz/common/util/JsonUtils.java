@@ -1,5 +1,6 @@
 package com.youzan.sz.common.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,8 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by zefa on 16/6/23.
@@ -55,13 +54,13 @@ public class JsonUtils {
         }
     }
 
-    public static String getPlainJsonString(String[]... objs) {
+    public static JSONObject getPlainJsonString(String[]... objs) {
         if (objs != null) {
-            Map<String, String> jo = new HashMap<>();
+            final JSONObject jo = new JSONObject();
             for (String[] obj : objs) {
                 jo.put(obj[0], obj[1]);
             }
-            return bean2Json(jo);
+            return jo;
         }
         return null;
     }
