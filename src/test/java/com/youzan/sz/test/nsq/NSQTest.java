@@ -8,6 +8,7 @@ import com.youzan.sz.test.nsq.json.DemoStoreMsg;
 import com.youzan.sz.test.nsq.protobuf.NSQProtoMsg;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -26,7 +27,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(PropertiesUtils.class)
 @PowerMockIgnore( {"javax.management.*"})
-//@Ignore
+@Ignore
 public class NSQTest extends BaseJavaTest {
 
     @BeforeClass
