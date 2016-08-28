@@ -1,8 +1,7 @@
 package com.youzan.sz.nsq;
 
 import com.youzan.nsq.client.entity.NSQConfig;
-import com.youzan.nsq.client.exception.NSQException;
-import com.youzan.platform.util.lang.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +15,12 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
     protected final Logger logger   = LoggerFactory.getLogger(getClass());
     protected NSQConfig    nsqConfig;
     protected NSQCodec     nsqCodec = null;
+    protected String       topic    = null;
 
     protected AbstractNSQClientInitializer() {
         try {
             nsqConfig = new NSQConfig();
-        } catch (NSQException e) {
+        } catch (RuntimeException e) {
             logger.error("init exception", e);
         }
     }
@@ -34,16 +34,23 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
             nsqConfig.setLookupAddresses(lp.toString());
         }
         nsqConfig.setThreadPoolSize4IO(1);
-        nsqConfig.setTimeoutInSecond(120);
+        nsqConfig.setConnectTimeoutInMillisecond(3 * 1000);
         nsqConfig.setMsgTimeoutInMillisecond((int) TimeUnit.SECONDS.toMillis(120));
         return this;
     }
 
     public AbstractNSQClientInitializer setTopic(String topic) {
-        nsqConfig.setTopic(topic);
+        if (StringUtils.isEmpty(topic)) {
+            throw new NullPointerException("nsq topic is not null");
+        }
+        this.topic = topic;
+        // nsqConfig.setTopic(topic);
         return this;
     }
 
+    public String getTopic() {
+        return this.topic;
+    }
     public AbstractNSQClientInitializer setCodec(NSQCodec nsqCodec) {
         this.nsqCodec = nsqCodec;
         return this;

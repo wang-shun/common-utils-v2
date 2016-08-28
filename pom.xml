@@ -20,6 +20,11 @@
             <artifactId>aspectjrt</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.youzan</groupId>
+            <artifactId>hawk-collect</artifactId>
+            <version>1.0.8-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjtools</artifactId>
         </dependency>
@@ -113,7 +118,11 @@
             <groupId>com.youzan</groupId>
             <artifactId>NSQ-Client</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>2.4.2</version>
+        </dependency>
         <!--有赞基础服务END-->
 
 
