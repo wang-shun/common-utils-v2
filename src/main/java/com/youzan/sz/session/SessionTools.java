@@ -77,7 +77,7 @@ public class SessionTools {
      * @return
      */
     public boolean deleteSession() {
-        boolean result = sessionService.deleteSession();
+        boolean result = sessionService.deleteDirectSession();
         if (result) {
             DistributedContextTools.clear();
         }
