@@ -15,6 +15,7 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.monitor.HeathCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -331,7 +332,10 @@ public class CarmenCodec implements Codec2 {
             buffer.skipBytes(buf.position());
             req.setData(inv);
 
-            if (Objects.equals(interfaceName, HB_URI)) {
+            if (Objects.equals(interfaceName, HeathCheck.class.getCanonicalName())) {
+                req.setData(HeathCheck.class.getCanonicalName());
+                req.setBroken(true);
+            } else if (Objects.equals(interfaceName, HB_URI)) {
                 String service = parseQueryString.get("service"); //服务上下线,值为online/offline
                 if (service == null || service.trim().equals("")) {
                     service = "check";  //标志为健康检查
@@ -354,6 +358,11 @@ public class CarmenCodec implements Codec2 {
         //处理心跳
         if (msg instanceof Response && ((Response) msg).getStatus() == Response.BAD_REQUEST) {
             Response res = (Response) msg;
+
+            if (res.getErrorMessage().contains(HeathCheck.class.getCanonicalName())) {
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
             if (res.getErrorMessage().contains("check")) {
                 buffer.writeBytes(HEATH_CHECK_RESP);
                 return;
@@ -364,7 +373,7 @@ public class CarmenCodec implements Codec2 {
                 return;
             }
             if (res.getErrorMessage().contains("offline")) { //下线
-                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "Offline")).array();
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.HEART_BEAT_FAILED, "Offline")).array();
                 buffer.writeBytes(HEATH_CHECK_RESP);
                 return;
             }
