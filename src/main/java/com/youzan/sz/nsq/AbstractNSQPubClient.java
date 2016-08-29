@@ -17,7 +17,7 @@ public abstract class AbstractNSQPubClient<V> extends AbstractNSQClient implemen
         super.register();
         try {
             p = new ProducerImplV2(getNSQConfig());
-            logger.info("consume prepare start whth configs:{}", JsonUtils.bean2Json(getNSQConfig()));
+            logger.info("consume prepare start whth configs {},topic {}", JsonUtils.bean2Json(getNSQConfig()),getTopic());
             p.start();
         } catch (NSQException e) {
             logger.error("nsq register fail", e);
