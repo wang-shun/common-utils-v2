@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandler {
     protected final Logger                           logger         = LoggerFactory.getLogger(getClass());
 
-    protected final static LinkedList<AroundHandler> handlers       = new LinkedList<>();
+    protected final LinkedList<AroundHandler> handlers       = new LinkedList<>();
 
     protected static final String                    DEFAULT_LOOKUP = PropertiesUtils
         .getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.host", "nsq-qa.s.qima-inc.com:4161");
