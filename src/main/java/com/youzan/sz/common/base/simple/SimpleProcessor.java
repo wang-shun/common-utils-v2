@@ -10,6 +10,8 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.base.BaseDao;
 import com.youzan.sz.common.enums.LogBizType;
 import com.youzan.sz.common.exceptions.BizException;
+import com.youzan.sz.common.interfaces.DevModeEnable;
+import com.youzan.sz.common.interfaces.ToolKits;
 import com.youzan.sz.common.model.base.BasePO;
 import com.youzan.sz.common.model.base.BaseProcessor;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -19,7 +21,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
  * Created by zhanguo on 16/8/16.
  */
 public abstract class SimpleProcessor<T extends BasePO<ID>, ID extends Serializable> extends BaseProcessor
-                                     implements DistributeAttribute {
+                                     implements ToolKits {
 
     public int save(T t) {
         if (t.getId() == null) {

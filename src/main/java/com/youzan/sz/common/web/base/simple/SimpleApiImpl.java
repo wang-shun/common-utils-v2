@@ -14,6 +14,8 @@ import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributeAttribute;
 import com.youzan.sz.common.enums.LogBizType;
 import com.youzan.sz.common.exceptions.BizException;
+import com.youzan.sz.common.interfaces.DevModeEnable;
+import com.youzan.sz.common.interfaces.ToolKits;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.shop.ShopService;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ import com.youzan.sz.common.model.base.BaseApiImpl;
  * Created by zhanguo on 16/8/16.
  */
 @Service
-public abstract class SimpleApiImpl extends BaseApiImpl implements DistributeAttribute {
+public abstract class SimpleApiImpl extends BaseApiImpl implements ToolKits {
     private final static Map<AppEnum, List<IAPP>> SERVICE_MAP  = new HashMap<>();
     private final static ExecutorService          LOG_EXECUTOR = Executors.newFixedThreadPool(2);
 
