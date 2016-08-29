@@ -43,7 +43,7 @@ public class CarmenCodec implements Codec2 {
     private static final String HB_URI = "_HB_";
 
     static {
-        HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "Online")).array();
+        HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
     }
 
     private static ByteBuffer encodeRPC(BaseResponse response) {
@@ -368,12 +368,12 @@ public class CarmenCodec implements Codec2 {
                 return;
             }
             if (res.getErrorMessage().contains("online")) { //上线
-                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "Online")).array();
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
                 buffer.writeBytes(HEATH_CHECK_RESP);
                 return;
             }
             if (res.getErrorMessage().contains("offline")) { //下线
-                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.HEART_BEAT_FAILED, "Offline")).array();
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.HEART_BEAT_FAILED, "NOT OK")).array();
                 buffer.writeBytes(HEATH_CHECK_RESP);
                 return;
             }
