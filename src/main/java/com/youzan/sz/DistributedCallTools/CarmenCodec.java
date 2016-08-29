@@ -54,19 +54,13 @@ public class CarmenCodec implements Codec2 {
             StringBuilder statusLine = new StringBuilder("HTTP/1.1 ");
             switch (response.getCode()) {
                 case 99999: //服务内部错误
-                    statusLine.append(500);
-                    statusLine.append(" ");
-                    statusLine.append(" Server Error");
+                    statusLine.append("500 Internal Server Error");
                     break;
                 case 99996: //心跳检查失败 , ResponseCode.HEART_BEAT_FAILED
-                    statusLine.append(404);
-                    statusLine.append(" ");
-                    statusLine.append(" Not Found");
+                    statusLine.append("404 Not Found");
                     break;
                 default:
-                    statusLine.append(200);
-                    statusLine.append(" ");
-                    statusLine.append("OK");
+                    statusLine.append("200 OK");
                     break;
             }
             baos.write(statusLine.toString().getBytes("UTF-8"));
