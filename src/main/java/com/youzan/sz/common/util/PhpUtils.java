@@ -86,6 +86,9 @@ public class PhpUtils {
         if (response == null) {//正常条件get请求不应该返回空值
             LOGGER.warn("get url({}) repsonse null", url);
         }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("call php url({}) resp({})", url, response);
+        }
 
         return response;
     }
