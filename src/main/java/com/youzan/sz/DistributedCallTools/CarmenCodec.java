@@ -1,18 +1,7 @@
 package com.youzan.sz.DistributedCallTools;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.alibaba.dubbo.common.extension.SPI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec2;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
@@ -27,21 +16,34 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.monitor.HeathCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @SPI("dubbo")
 public class CarmenCodec implements Codec2 {
-    private static final Logger       LOGGER           = LoggerFactory
-        .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
 
     /**
      *
      */
-    private static final byte[]       CLRF             = new byte[] { 0x0D, 0x0A };
-    public static final String        CARMEN_CODEC     = "CarmenCodec";
-    private static final ObjectMapper om               = new ObjectMapper();
-    private static byte[]             HEATH_CHECK_RESP = null;
+    private static final byte[] CLRF = new byte[]{0x0D, 0x0A};
+    public static final String CARMEN_CODEC = "CarmenCodec";
+    private static final ObjectMapper om = new ObjectMapper();
+    private static volatile byte[] HEATH_CHECK_RESP = null;
+    private static final String HB_URI = "_HB_";
+
     static {
-        HEATH_CHECK_RESP = encodeRPC(new BaseResponse(ResponseCode.SUCCESS, "OK")).array();
+        HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
     }
 
     private static ByteBuffer encodeRPC(BaseResponse response) {
@@ -50,9 +52,17 @@ public class CarmenCodec implements Codec2 {
         try {
             // 1. Write HTTP status line.
             StringBuilder statusLine = new StringBuilder("HTTP/1.1 ");
-            statusLine.append(response.getCode() == 99999 ? 500 : 200);
-            statusLine.append(" ");
-            statusLine.append(response.getCode() == 99999 ? " Server Error" : "OK");
+            switch (response.getCode()) {
+                case 99999: //服务内部错误
+                    statusLine.append("500 Internal Server Error");
+                    break;
+                case 99996: //心跳检查失败 , ResponseCode.HEART_BEAT_FAILED
+                    statusLine.append("404 Not Found");
+                    break;
+                default:
+                    statusLine.append("200 OK");
+                    break;
+            }
             baos.write(statusLine.toString().getBytes("UTF-8"));
             baos.write(CLRF);
             baos.write("Access-Control-Allow-Origin:*".getBytes("UTF-8"));
@@ -85,7 +95,7 @@ public class CarmenCodec implements Codec2 {
             try {
                 body = ("{\"response\":" + om.writeValueAsString(response) + "}").getBytes("UTF-8");
             } catch (Throwable e) {
-                e.printStackTrace();
+                LOGGER.error("encodeRPC 出错,异常信息:{}", e);
             }
 
             header.setLength(0);
@@ -120,13 +130,11 @@ public class CarmenCodec implements Codec2 {
                 baos.write(body);
                 // buffer.put(body);
             }
-            ByteBuffer buffer = ByteBuffer.wrap(baos.toByteArray());
-            return buffer;
+            return ByteBuffer.wrap(baos.toByteArray());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("encodeRPC 出错,异常信息:{}", e);
         }
         return null;
-
     }
 
     private static String readHttpLine(ByteBuffer in) {
@@ -134,7 +142,7 @@ public class CarmenCodec implements Codec2 {
         boolean isLineEnd = false;
         byte b;
 
-        while (true && in.remaining() > 0) {
+        while (in.remaining() > 0) {
             if ((b = in.get()) == '\r') {
                 in.get(); // skip '\n'
                 isLineEnd = true;
@@ -189,7 +197,7 @@ public class CarmenCodec implements Codec2 {
 
                 // 只有对于post方法才需要读取body
                 if (headerLine.length() == 0 && isPostMethod) // End of HTTP
-                                                              // header
+                // header
                 {
                     // Read HTTP body content
                     int contentLength = 0;
@@ -221,9 +229,8 @@ public class CarmenCodec implements Codec2 {
                     }
                     String url = strArray[1].trim();
 
-                    int pIndex = url.lastIndexOf("/?");
-                    int mIndex = -1;
                     // 解析参数信息
+                    int pIndex = url.lastIndexOf("/?");
                     if (pIndex != -1) {
                         param = url.substring(pIndex + 2);
                     } else if ((pIndex = url.lastIndexOf('?')) != -1) {
@@ -231,6 +238,7 @@ public class CarmenCodec implements Codec2 {
                     }
 
                     // 解析方法信息
+                    int mIndex;
                     if (pIndex != -1) {
                         mIndex = url.lastIndexOf("/", pIndex - 1);
                         methodName = url.substring(mIndex + 1, pIndex);
@@ -239,13 +247,17 @@ public class CarmenCodec implements Codec2 {
                         methodName = url.substring(mIndex + 1);
                     }
                     // 解析版本信息
-                    int vIndex = -1;
-                    vIndex = url.lastIndexOf('/', mIndex - 1);
-                    version = url.substring(vIndex + 1, mIndex);
-                    // 解析接口信息
-                    int iIndex = -1;
-                    iIndex = url.lastIndexOf('/', vIndex - 1);
-                    interfaceName = "com.youzan." + url.substring(iIndex + 1, vIndex);
+                    int vIndex = url.lastIndexOf('/', mIndex - 1);
+                    //version = url.substring(vIndex + 1, mIndex);
+                    if (vIndex != -1) {
+                        // 解析接口信息
+                        int iIndex = url.lastIndexOf('/', vIndex - 1);
+                        interfaceName = "com.youzan." + url.substring(iIndex + 1, vIndex);
+                    } else { // 服务上下线URI 中没有 接口、版本
+                        if (Objects.equals(methodName, HB_URI)) {
+                            interfaceName = methodName;
+                        }
+                    }
                 } else
                 // header line
                 {
@@ -262,7 +274,6 @@ public class CarmenCodec implements Codec2 {
                             contentLengthHead = Integer.valueOf(headerLine.substring(index + 1).trim());
                         }
                     }
-                    continue;
                 }
             }
             Map<String, String> parseQueryString = parseQueryString(param);
@@ -293,19 +304,19 @@ public class CarmenCodec implements Codec2 {
             String bid = parseQueryString.get("bid");
             String shopId = parseQueryString.get("shop_id");
 
-            inv.setArguments(new Object[] { methodName,
-                                            new String[] { DistributedParamManager.AdminId.getName(),
-                                                           DistributedParamManager.RequestIp.getName(),
-                                                           DistributedParamManager.KdtId.getName(),
-                                                           DistributedParamManager.DeviceId.getName(),
-                                                           DistributedParamManager.DeviceType.getName(),
-                                                           DistributedParamManager.Aid.getName(),
-                                                           DistributedParamManager.Bid.getName(),
-                                                           DistributedParamManager.ShopId.getName(), "json" },
-                                            new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
-                                                           shopId, jsonValue } });
+            inv.setArguments(new Object[]{methodName,
+                    new String[]{DistributedParamManager.AdminId.getName(),
+                            DistributedParamManager.RequestIp.getName(),
+                            DistributedParamManager.KdtId.getName(),
+                            DistributedParamManager.DeviceId.getName(),
+                            DistributedParamManager.DeviceType.getName(),
+                            DistributedParamManager.Aid.getName(),
+                            DistributedParamManager.Bid.getName(),
+                            DistributedParamManager.ShopId.getName(), "json"},
+                    new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
+                            shopId, jsonValue}});
             inv.setMethodName(Constants.$INVOKE);
-            inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
+            inv.setParameterTypes(new Class[]{String.class, String[].class, Object[].class});
             Map<String, String> attachments = new HashMap<>();
             attachments.put(Constants.DUBBO_VERSION_KEY, "2.8.4");
             attachments.put(Constants.PATH_KEY, interfaceName);
@@ -317,19 +328,23 @@ public class CarmenCodec implements Codec2 {
             inv.setAttachments(attachments);
             buffer.skipBytes(buf.position());
             req.setData(inv);
-            if (interfaceName.equals(HeathCheck.class.getCanonicalName())) {
-                //                                Response response = new Response();
-                //                RpcResult rpcResult = new RpcResult("ok");
-                //                attachments.put(HeathCheck.HEATH_CHECK_TAG,"1");
-                //                rpcResult.setAttachments(attachments);
-                //                response.setResult(rpcResult);
+
+            if (Objects.equals(interfaceName, HeathCheck.class.getCanonicalName())) {
                 req.setData(HeathCheck.class.getCanonicalName());
+                req.setBroken(true);
+            } else if (Objects.equals(interfaceName, HB_URI)) {
+                String service = parseQueryString.get("service"); //服务上下线,值为online/offline
+                if (service == null || service.trim().equals("")) {
+                    service = "check";  //标志为健康检查
+                }
+                req.setData(service);
                 req.setBroken(true);
             }
         } catch (Throwable t) {
             // bad request
             req.setBroken(true);
             req.setData(t);
+            LOGGER.error("decode 异常:{}", t);
         }
         return req;
 
@@ -338,17 +353,31 @@ public class CarmenCodec implements Codec2 {
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         //处理心跳
-        if (msg instanceof Response && ((Response) msg).getStatus() == Response.BAD_REQUEST
-            && ((Response) msg).getErrorMessage().contains(HeathCheck.class.getCanonicalName())) {
-            buffer.writeBytes(HEATH_CHECK_RESP);
-            return;
+        if (msg instanceof Response && ((Response) msg).getStatus() == Response.BAD_REQUEST) {
+            Response res = (Response) msg;
+
+            if (res.getErrorMessage().contains(HeathCheck.class.getCanonicalName())) {
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
+            if (res.getErrorMessage().contains("check")) {
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
+            if (res.getErrorMessage().contains("online")) { //上线
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
+            if (res.getErrorMessage().contains("offline")) { //下线
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.HEART_BEAT_FAILED, "NOT OK")).array();
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
         }
 
         if (msg instanceof Response && ((Response) msg).getResult() instanceof RpcResult) {
             RpcResult res = (RpcResult) ((Response) msg).getResult();
-            //处理心跳检查编码
-            String heathCheck = res.getAttachment(HeathCheck.HEATH_CHECK_TAG);
-
             // 只处理卡门编解码
             String CarmenCodec = res.getAttachment(CARMEN_CODEC);
             if (res.getValue() instanceof BaseResponse && "true".equals(CarmenCodec)) {

@@ -5,11 +5,15 @@ import com.youzan.nsq.client.ConsumerImplV2;
 import com.youzan.nsq.client.MessageHandler;
 import com.youzan.nsq.client.entity.NSQMessage;
 import com.youzan.nsq.client.exception.NSQException;
+import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.common.util.PropertiesUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.*;
 
 /**
@@ -21,10 +25,12 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     private ExecutorService executorService = null;
     private NSQConsRConfig  nsqConsRConfig  = null;
     ThreadPoolExecutor      threadExecutor  = null;
-
+    protected static String      CONSUMER_NAME = PropertiesUtils
+            .getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.consumer.name", "");
     @Override
     public NSQClient register() {
         super.register();
+
         getNSQConfig().setConsumerName(getConsumerName());
         consumer = new ConsumerImplV2(getNSQConfig(), this);
 
@@ -39,7 +45,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
 
         {
             consumer.subscribe(getTopic());
-            logger.info("consume prepare start whth configs:{}", JsonUtils.bean2Json(getNSQConfig()));
+            logger.info("consume prepare start whth configs:{},topic {} ", JsonUtils.bean2Json(getNSQConfig()),getTopic());
             consumer.start();
         } catch (NSQException e) {
             logger.error("start ");
@@ -55,8 +61,20 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
         return this.nsqConsRConfig;
     }
 
+    public void setConsumerName(String consumerName) {
+        if (StringUtils.isEmpty(consumerName)) {
+            Random rd = new Random(1);
+            this.CONSUMER_NAME = init().getTopic() +"_"+ "consuemer"+"_"+(rd.nextDouble()*100+10);
+        }else {
+            this.CONSUMER_NAME = consumerName;
+        }
+    }
     public String getConsumerName() {
-        return init().getTopic() + "-" + "consumer";
+        if(StringUtils.isEmpty(this.CONSUMER_NAME)){
+            Random rd = new Random(1);
+            this.CONSUMER_NAME = init().getTopic() +"_"+ "consuemer"+"_"+(rd.nextDouble()*100+10);
+        }
+        return this.CONSUMER_NAME;
     }
 
     @Override

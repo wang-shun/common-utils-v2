@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -12,11 +13,10 @@ import java.util.concurrent.TimeUnit;
  * Created by zhanguo on 16/7/29.
  */
 public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements ClientInitializer {
-    protected final Logger logger   = LoggerFactory.getLogger(getClass());
+    protected final Logger logger       = LoggerFactory.getLogger(getClass());
     protected NSQConfig    nsqConfig;
-    protected NSQCodec     nsqCodec = null;
-    protected String       topic    = null;
-
+    protected NSQCodec     nsqCodec     = null;
+    protected String       topic        = null;
     protected AbstractNSQClientInitializer() {
         try {
             nsqConfig = new NSQConfig();
@@ -51,6 +51,8 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
     public String getTopic() {
         return this.topic;
     }
+
+
     public AbstractNSQClientInitializer setCodec(NSQCodec nsqCodec) {
         this.nsqCodec = nsqCodec;
         return this;
