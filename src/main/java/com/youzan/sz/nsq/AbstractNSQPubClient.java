@@ -35,10 +35,12 @@ public abstract class AbstractNSQPubClient<V> extends AbstractNSQClient implemen
         byte[] bytes;
         if (object == null) {
             bytes = new byte[0];
-        } else
+        } else {
             bytes = nsqCodec.encode(object);
+        }
         try {
             p.publish(bytes,getTopic());
+            logger.info("push message {} success",JsonUtils.bean2Json(object));
             return true;
         } catch (NSQException e) {
             logger.error("publish message:{} fail", JsonUtils.bean2Json(object), e);
