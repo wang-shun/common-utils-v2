@@ -5,10 +5,8 @@ import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.PropertiesUtils;
 import com.youzan.sz.common.util.test.BaseJavaTest;
 import com.youzan.sz.test.nsq.json.DemoStoreMsg;
-import com.youzan.sz.test.nsq.protobuf.NSQProtoMsg;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -27,7 +25,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(PropertiesUtils.class)
 @PowerMockIgnore( {"javax.management.*"})
-@Ignore
+//@Ignore
 public class NSQTest extends BaseJavaTest {
 
     @BeforeClass
@@ -47,21 +45,35 @@ public class NSQTest extends BaseJavaTest {
     public void testStringPub() {
         DemoPubNsq demoPubNsq = new DemoPubNsq();
         demoPubNsq.register();
-
         DemoStoreMsg msg = new DemoStoreMsg();
         msg.setName("vincent");
         msg.setId(1);
         msg.setShopId(Lists.newArrayList(1, 2));
 
-        NSQProtoMsg.NSQDemoProtoReq pubMsg = NSQProtoMsg.NSQDemoProtoReq.newBuilder().setName("vincent").setSex(1)
-            .addShopId(2).build();
+       /* NSQProtoMsg.NSQDemoProtoReq pubMsg = NSQProtoMsg.NSQDemoProtoReq.newBuilder().setName("vincent").setSex(1)
+            .addShopId(2).build();*/
 
-        Assert.assertTrue(demoPubNsq.pub(pubMsg));
+        Assert.assertTrue(demoPubNsq.pub(msg));
+        try {
+            TimeUnit.MINUTES.sleep(5L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void testStringConsumer() {
 
+        new DemoConsRNSQ().register();
+        try {
+            TimeUnit.MINUTES.sleep(5L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+    @Test
+    public void testStringConsumer2(){
         new DemoConsRNSQ().register();
         try {
             TimeUnit.MINUTES.sleep(5L);

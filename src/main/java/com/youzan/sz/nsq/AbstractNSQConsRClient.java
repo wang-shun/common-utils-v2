@@ -63,7 +63,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
 
     public void setConsumerName(String consumerName) {
         if (StringUtils.isEmpty(consumerName)) {
-            Random rd = new Random(1);
+            Random rd = new Random();
             this.CONSUMER_NAME = init().getTopic() +"_"+ "consuemer"+"_"+(rd.nextDouble()*100+10);
         }else {
             this.CONSUMER_NAME = consumerName;
@@ -71,7 +71,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     }
     public String getConsumerName() {
         if(StringUtils.isEmpty(this.CONSUMER_NAME)){
-            Random rd = new Random(1);
+            Random rd = new Random();
             this.CONSUMER_NAME = init().getTopic() +"_"+ "consuemer"+"_"+(rd.nextDouble()*100+10);
         }
         return this.CONSUMER_NAME;

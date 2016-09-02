@@ -15,7 +15,7 @@ public class DemoConsRNSQ extends AbstractNSQConsRClient {
     public AbstractNSQClientInitializer init() {
         //        return initStringCodec();
 
-        return initPBCodec();
+        return initStringCodec();
 
     }
 
