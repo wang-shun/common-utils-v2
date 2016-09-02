@@ -25,7 +25,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     private ExecutorService executorService = null;
     private NSQConsRConfig  nsqConsRConfig  = null;
     ThreadPoolExecutor      threadExecutor  = null;
-    protected static String      CONSUMER_NAME = PropertiesUtils
+    protected String      CONSUMER_NAME = PropertiesUtils
             .getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.consumer.name", "");
     @Override
     public NSQClient register() {
@@ -63,7 +63,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
 
     public void setConsumerName(String consumerName) {
         if (StringUtils.isEmpty(consumerName)) {
-            Random rd = new Random(1);
+            Random rd = new Random();
             this.CONSUMER_NAME = init().getTopic() +"_"+ "consuemer"+"_"+(rd.nextDouble()*100+10);
         }else {
             this.CONSUMER_NAME = consumerName;
@@ -71,7 +71,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     }
     public String getConsumerName() {
         if(StringUtils.isEmpty(this.CONSUMER_NAME)){
-            Random rd = new Random(1);
+            Random rd = new Random();
             this.CONSUMER_NAME = init().getTopic() +"_"+ "consuemer"+"_"+(rd.nextDouble()*100+10);
         }
         return this.CONSUMER_NAME;

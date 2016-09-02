@@ -11,7 +11,7 @@ public class DemoPubNsq extends AbstractNSQPubClient {
 
     @Override
     public AbstractNSQClientInitializer init() {
-        return initPBCodec();
+        return initStringCodec();
     }
 
     public AbstractNSQClientInitializer initStringCodec() {
