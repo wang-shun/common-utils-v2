@@ -25,7 +25,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     private ExecutorService executorService = null;
     private NSQConsRConfig  nsqConsRConfig  = null;
     ThreadPoolExecutor      threadExecutor  = null;
-    protected static String      CONSUMER_NAME = PropertiesUtils
+    protected String      CONSUMER_NAME = PropertiesUtils
             .getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.consumer.name", "");
     @Override
     public NSQClient register() {
