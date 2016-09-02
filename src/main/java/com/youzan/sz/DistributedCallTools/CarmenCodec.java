@@ -10,6 +10,7 @@ import com.alibaba.dubbo.remoting.exchange.Response;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboCountCodec;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.common.response.BaseResponse;
@@ -30,20 +31,21 @@ import java.util.Objects;
 
 @SPI("dubbo")
 public class CarmenCodec implements Codec2 {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
+    private static final Logger       LOGGER           = LoggerFactory
+        .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
 
     /**
      *
      */
-    private static final byte[] CLRF = new byte[]{0x0D, 0x0A};
-    public static final String CARMEN_CODEC = "CarmenCodec";
-    private static final ObjectMapper om = new ObjectMapper();
-    private static volatile byte[] HEATH_CHECK_RESP = null;
-    private static final String HB_URI = "_HB_";
+    private static final byte[]       CLRF             = new byte[] { 0x0D, 0x0A };
+    public static final String        CARMEN_CODEC     = "CarmenCodec";
+    private static final ObjectMapper om               = new ObjectMapper();
+    private static volatile byte[]    HEATH_CHECK_RESP = null;
+    private static final String       HB_URI           = "_HB_";
 
     static {
         HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
+        om.setSerializationInclusion(JsonInclude.Include.NON_NULL);//默认不导出为空的字段
     }
 
     private static ByteBuffer encodeRPC(BaseResponse response) {
@@ -93,7 +95,18 @@ public class CarmenCodec implements Codec2 {
             // 3. Write HTTP content length.
             byte[] body = null;
             try {
-                body = ("{\"response\":" + om.writeValueAsString(response) + "}").getBytes("UTF-8");
+                if (response != null && response.getData() != null) {
+                    final JsonInclude annotation = response.getData().getClass().getAnnotation(JsonInclude.class);
+                    if (annotation != null && annotation.value() != null) {//如果含有注解,则按照注解导出
+                        final ObjectMapper objectMapper = new ObjectMapper();
+                        objectMapper.setSerializationInclusion(annotation.value());
+                        body = ("{\"response\":" + objectMapper.writeValueAsString(response) + "}").getBytes("UTF-8");
+                    }
+                }
+                if (body == null) {
+                    body = ("{\"response\":" + om.writeValueAsString(response) + "}").getBytes("UTF-8");
+                }
+
             } catch (Throwable e) {
                 LOGGER.error("encodeRPC 出错,异常信息:{}", e);
             }
@@ -304,19 +317,19 @@ public class CarmenCodec implements Codec2 {
             String bid = parseQueryString.get("bid");
             String shopId = parseQueryString.get("shop_id");
 
-            inv.setArguments(new Object[]{methodName,
-                    new String[]{DistributedParamManager.AdminId.getName(),
-                            DistributedParamManager.RequestIp.getName(),
-                            DistributedParamManager.KdtId.getName(),
-                            DistributedParamManager.DeviceId.getName(),
-                            DistributedParamManager.DeviceType.getName(),
-                            DistributedParamManager.Aid.getName(),
-                            DistributedParamManager.Bid.getName(),
-                            DistributedParamManager.ShopId.getName(), "json"},
-                    new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
-                            shopId, jsonValue}});
+            inv.setArguments(new Object[] { methodName,
+                                            new String[] { DistributedParamManager.AdminId.getName(),
+                                                           DistributedParamManager.RequestIp.getName(),
+                                                           DistributedParamManager.KdtId.getName(),
+                                                           DistributedParamManager.DeviceId.getName(),
+                                                           DistributedParamManager.DeviceType.getName(),
+                                                           DistributedParamManager.Aid.getName(),
+                                                           DistributedParamManager.Bid.getName(),
+                                                           DistributedParamManager.ShopId.getName(), "json" },
+                                            new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
+                                                           shopId, jsonValue } });
             inv.setMethodName(Constants.$INVOKE);
-            inv.setParameterTypes(new Class[]{String.class, String[].class, Object[].class});
+            inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
             Map<String, String> attachments = new HashMap<>();
             attachments.put(Constants.DUBBO_VERSION_KEY, "2.8.4");
             attachments.put(Constants.PATH_KEY, interfaceName);
@@ -335,7 +348,7 @@ public class CarmenCodec implements Codec2 {
             } else if (Objects.equals(interfaceName, HB_URI)) {
                 String service = parseQueryString.get("service"); //服务上下线,值为online/offline
                 if (service == null || service.trim().equals("")) {
-                    service = "check";  //标志为健康检查
+                    service = "check"; //标志为健康检查
                 }
                 req.setData(service);
                 req.setBroken(true);
