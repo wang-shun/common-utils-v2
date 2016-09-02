@@ -18,6 +18,7 @@ import com.youzan.sz.common.interfaces.DevModeEnable;
 import com.youzan.sz.common.interfaces.ToolKits;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.oa.shop.ShopService;
+import com.youzan.sz.session.SessionTools;
 import org.springframework.stereotype.Service;
 
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
@@ -96,5 +97,9 @@ public abstract class SimpleApiImpl extends BaseApiImpl implements ToolKits {
                 logger.debug("保存{}日志", logBizType.getDesc());
             }
         });
+    }
+
+    protected static String getPhone() {
+        return SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT);
     }
 }

@@ -3,6 +3,7 @@ package com.youzan.sz.DistributedCallTools;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.session.SessionTools;
 
 /**
  *
