@@ -1,6 +1,7 @@
 package com.youzan.sz.DistributedCallTools;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,8 +83,13 @@ public class DistributedCoreFilter implements Filter {
                     invoke.getValue());
                 rpcResult.setValue(br);
             } else {
+                final Object data = ((Map) invoke.getValue()).get("data");
+                if (data != null && data instanceof HashMap) {
+                    ((HashMap) data).remove("class");
+                }
                 br = new BaseResponse((Integer) ((Map) invoke.getValue()).get("code"),
-                    (String) ((Map) invoke.getValue()).get("message"), ((Map) invoke.getValue()).get("data"));
+
+                    (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
 
@@ -150,9 +156,13 @@ public class DistributedCoreFilter implements Filter {
                         // 保存过滤掉系统参数后的结果
                         inv.getArguments()[1] = types.toArray(new String[0]);
                         inv.getArguments()[2] = args.toArray();
-                        LOGGER.info("core filter:methodName[{}],inArgs:{}", inv.getMethodName(), argsTmp);
 
                         invoke = invoker.invoke(inv);
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), m,
+                                inv.getMethodName(), argsTmp);
+                        }
+
                         if (invoke.hasException()) {
                             isSucess = false;
                         }

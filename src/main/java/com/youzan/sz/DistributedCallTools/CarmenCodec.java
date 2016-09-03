@@ -12,6 +12,8 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboCountCodec;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -46,6 +48,8 @@ public class CarmenCodec implements Codec2 {
     static {
         HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
         om.setSerializationInclusion(JsonInclude.Include.NON_NULL);//默认不导出为空的字段
+        om.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        //        om.setConfig(SerializationConfig)
     }
 
     private static ByteBuffer encodeRPC(BaseResponse response) {
@@ -77,22 +81,6 @@ public class CarmenCodec implements Codec2 {
             // buffer.put(CLRF);
 
             StringBuilder header = new StringBuilder();
-            // // 2. Write HTTP resoponse headers.
-            // List<Pair<String, String>> headers = response.getHeaders();
-            // // 增加允许跨域访问的协议头
-            // Pair<String, String> accessControlAllowOriginHeader = new
-            // Pair<String, String>("Access-Control-Allow-Origin",
-            // "*");
-            // headers.add(accessControlAllowOriginHeader);
-            // for (Pair<String, String> pair : headers) {
-            // header.setLength(0);
-            // header.append(pair.first);
-            // header.append(": ");
-            // header.append(pair.second);
-            // buffer.put(header.toString().getBytes());
-            // buffer.put(CLRF);
-            // }
-            // 3. Write HTTP content length.
             byte[] body = null;
             try {
                 if (response != null && response.getData() != null) {
@@ -103,9 +91,12 @@ public class CarmenCodec implements Codec2 {
                         body = ("{\"response\":" + objectMapper.writeValueAsString(response) + "}").getBytes("UTF-8");
                     }
                 }
+
                 if (body == null) {
                     body = ("{\"response\":" + om.writeValueAsString(response) + "}").getBytes("UTF-8");
                 }
+                LOGGER.info("encode json:{}", JsonUtils.bean2Json(response));
+                LOGGER.info("om write json:{}", om.writeValueAsString(response));
 
             } catch (Throwable e) {
                 LOGGER.error("encodeRPC 出错,异常信息:{}", e);
@@ -116,32 +107,11 @@ public class CarmenCodec implements Codec2 {
             header.append(null == body ? 0 : body.length);
             baos.write(header.toString().getBytes());
             baos.write(CLRF);
-            // buffer.put(header.toString().getBytes());
-            // buffer.put(CLRF);
 
-            // // 4. Write HTTP response cookies.
-            // List<Cookie> cookies = response.getCookies();
-            // String value = null;
-            // for (Cookie cookie : cookies)
-            // {
-            // value = generateCookieString(cookie);
-            // if (value == null || value.length() == 0)
-            // {
-            // continue;
-            // }
-            //
-            // header.setLength(0);
-            // header.append("Set-Cookie: ");
-            // header.append(value);
-            // buffer.put(header.toString().getBytes());
-            // buffer.put(CLRF);
-            // }
             baos.write(CLRF);
-            // buffer.put(CLRF);
 
             if (null != body) {
                 baos.write(body);
-                // buffer.put(body);
             }
             return ByteBuffer.wrap(baos.toByteArray());
         } catch (IOException e) {
