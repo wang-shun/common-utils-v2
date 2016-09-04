@@ -21,7 +21,7 @@ public class DemoConsRNSQ extends AbstractNSQConsRClient {
 
     public AbstractNSQClientInitializer initStringCodec() {
         AbstractNSQClientInitializer<DemoStoreMsg> initializer = new NSQPubClientInitializer<>();
-
+        setConsumerName("我无所谓");
         initializer.setTopic("sz_ss_string_demo").setCodec(new StringCodec(DemoStoreMsg.class));
         this.addLast(new NSQDemoHandler());
         return initializer;
