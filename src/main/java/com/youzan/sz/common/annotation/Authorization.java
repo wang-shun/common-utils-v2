@@ -1,6 +1,7 @@
 package com.youzan.sz.common.annotation;
 
-import com.youzan.sz.oa.enums.RoleEnum;
+
+import com.youzan.sz.common.enums.RoleEnum;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

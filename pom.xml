@@ -48,16 +48,16 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.youzan.sz</groupId>
-            <artifactId>oa-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>common-utils</artifactId>
-                    <groupId>com.youzan.sz</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.youzan.sz</groupId>-->
+            <!--<artifactId>oa-api</artifactId>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<artifactId>common-utils</artifactId>-->
+                    <!--<groupId>com.youzan.sz</groupId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>
@@ -101,17 +101,17 @@
             <groupId>com.youzan.sz</groupId>
             <artifactId>response-model</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.youzan.sz</groupId>
-            <artifactId>portal-service</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>common-utils</artifactId>
-                    <groupId>com.youzan.sz</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.youzan.sz</groupId>-->
+            <!--<artifactId>portal-service</artifactId>-->
+            <!--<version>1.0.2-SNAPSHOT</version>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<artifactId>common-utils</artifactId>-->
+                    <!--<groupId>com.youzan.sz</groupId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
         <!--有赞基础服务START-->
         <dependency>
             <groupId>com.youzan</groupId>

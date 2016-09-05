@@ -4,12 +4,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.extension.SPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
+import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.rpc.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,8 +18,6 @@ import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.annotation.WithoutLogging;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
-import com.youzan.sz.common.util.SpringUtils;
-import com.youzan.sz.oa.staff.api.StaffService;
 import com.youzan.sz.session.SessionTools;
 
 /**
@@ -41,15 +39,15 @@ public class DistributedCoreWebFilter implements Filter {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    StaffService staffService = null;
+//    StaffService staffService = null;
 
     public DistributedCoreWebFilter() {
-        try {
+//        try {
             // 尝试获取账户服务
-            staffService = SpringUtils.getBean(StaffService.class);
-        } catch (Throwable e) {
-            LOGGER.warn("get the StaffService fail,if donn't need this,just ignore!");
-        }
+//            staffService = SpringUtils.getBean(StaffService.class);
+//        } catch (Throwable e) {
+//            LOGGER.warn("get the StaffService fail,if donn't need this,just ignore!");
+//        }
     }
 
     /**

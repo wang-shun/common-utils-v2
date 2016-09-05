@@ -4,18 +4,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.youzan.sz.common.exceptions.BizException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
+import com.youzan.sz.common.exceptions.BizException;
+import com.youzan.sz.common.model.oa.DeviceDTO;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.common.service.SessionService;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.common.util.SpringUtils;
-import com.youzan.sz.oa.device.dto.DeviceDTO;
-import com.youzan.sz.portal.session.service.SessionService;
 
 public class SessionTools {
 

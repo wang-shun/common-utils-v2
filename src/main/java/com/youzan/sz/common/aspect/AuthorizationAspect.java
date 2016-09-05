@@ -1,13 +1,9 @@
 package com.youzan.sz.common.aspect;
 
-import com.youzan.platform.bootstrap.exception.BusinessException;
-import com.youzan.platform.util.lang.StringUtil;
-import com.youzan.sz.DistributedCallTools.DistributedContextTools;
-import com.youzan.sz.common.annotation.Authorization;
-import com.youzan.sz.common.response.BaseResponse;
-import com.youzan.sz.common.response.enums.ResponseCode;
-import com.youzan.sz.oa.enums.RoleEnum;
-import com.youzan.sz.session.SessionTools;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
+import com.youzan.sz.common.enums.RoleEnum;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -17,8 +13,13 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
+import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools;
+import com.youzan.sz.common.annotation.Authorization;
+import com.youzan.sz.common.response.BaseResponse;
+import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.session.SessionTools;
 
 /**
  * Created by YANG on 16/4/7.
@@ -26,8 +27,8 @@ import java.util.Arrays;
 
 @Aspect
 public class AuthorizationAspect extends BaseAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationAspect.class);
-    private boolean ignoreAuthFailed = false;
+    private static final Logger LOGGER           = LoggerFactory.getLogger(AuthorizationAspect.class);
+    private boolean             ignoreAuthFailed = false;
 
     public boolean isIgnoreAuthFailed() {
         return ignoreAuthFailed;
@@ -70,7 +71,7 @@ public class AuthorizationAspect extends BaseAspect {
         } catch (Exception e) {
             allowAccess = false;
             LOGGER.error("Authorization Exception:{}", e);
-            if(!ignoreAuthFailed) {
+            if (!ignoreAuthFailed) {
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
                 } else {
@@ -111,7 +112,8 @@ public class AuthorizationAspect extends BaseAspect {
      */
     private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", DistributedContextTools.getAdminId(), SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
+            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", DistributedContextTools.getAdminId(),
+                SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
         }
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
@@ -130,7 +132,7 @@ public class AuthorizationAspect extends BaseAspect {
         if (allowedRoles != null && allowedRoles.length > 0) {
             String roles = SessionTools.getInstance().get(SessionTools.ROLE);
             if (StringUtil.isEmpty(roles) || !Arrays.stream(allowedRoles)
-                    .anyMatch(roleEnum -> roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(roles))))) {
+                .anyMatch(roleEnum -> roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(roles))))) {
                 LOGGER.error("roles验证不通过,当前roles:{},需要roles:{}", roles, allowedRoles);
                 return false;
 
