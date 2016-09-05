@@ -76,7 +76,7 @@ public class DistributedCoreFilter implements Filter {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
             if (((Map) invoke.getValue()).remove("class") != null) {
-                LOGGER.debug("remove class succ");
+                LOGGER.info("remove class succ");
             }
             if (!BaseResponse.class.getName().equals(invokeClass)) {
                 br = new BaseResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(),
@@ -159,7 +159,7 @@ public class DistributedCoreFilter implements Filter {
 
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), m,
+                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), m,
                                 inv.getMethodName(), argsTmp);
                         }
 

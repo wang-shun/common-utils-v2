@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.youzan.sz.common.util.test.Jsonbean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,8 @@ public class JsonUtils {
     }
 
     public static void main(String[] args) {
-        System.out.println(JsonUtils.json2Bean("基德老司机",String.class));
+
+        System.out.println(JsonUtils.json2Bean("{\"name\":\"基德\",\"age\":99}",Jsonbean.class));
     }
 
 }
