@@ -117,9 +117,8 @@ public class DistributedContextTools {
      * */
     public static void clear() {
         Long adminId = getAdminId();
-        LOGGER.debug("开始清除{}请求参数", adminId);
         context.clear();
-        LOGGER.debug("结束清除{}请求参数", adminId);
+        LOGGER.trace("结束清除{}请求参数", adminId);
     }
 
     @SuppressWarnings("unchecked")

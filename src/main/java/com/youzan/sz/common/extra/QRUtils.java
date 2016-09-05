@@ -18,7 +18,7 @@ public class QRUtils {
     //    批量接口:http://10.9.17.31:8888/qrcode/batch?size=200&fg_color=000000&bg_color=ffffff&case=1&margin=0&level=3&hint=2&ver=2&txt[]=123&txt[]=456
     public static String getQRCode(QRConfigVO qrConfig) {
         final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
-        final StringBuilder url = new StringBuilder(yzQRUrl);
+        final StringBuilder url = new StringBuilder(yzQRUrl).append("/");
         if (qrConfig.getTxts() == null) {
             url.append("?").append("txt=").append(qrConfig.getTxt());//
         } else {
