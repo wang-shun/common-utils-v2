@@ -34,7 +34,7 @@ public class ExtendedSpringJUnit4ClassRunner extends SpringJUnit4ClassRunner {
      */
     public ExtendedSpringJUnit4ClassRunner(Class<?> clazz) throws InitializationError {
         super(clazz);
-        String simpleName = new BaseSpringTest.DefaultSpringTestConfig().getAppSimpleName();
+        String simpleName = new BaseTestUtil.DefaultTestConfig().getAppSimpleName();
         System.setProperty("app.full.name", "store-" + simpleName);
         System.setProperty("app.log.name", "store_" + simpleName);
         System.setProperty("app.name", simpleName);

@@ -11,7 +11,7 @@ import java.net.URL;
 public class ExtendedJunit4Class extends BlockJUnit4ClassRunner {
     public ExtendedJunit4Class(Class<?> klass) throws InitializationError {
         super(klass);
-        String simpleName = new BaseSpringTest.DefaultSpringTestConfig().getAppSimpleName();
+        String simpleName = new BaseTestUtil.DefaultTestConfig().getAppSimpleName();
         System.setProperty("app.full.name", "store-" + simpleName);
         System.setProperty("app.log.name", "store_" + simpleName);
         System.setProperty("app.name", simpleName);
