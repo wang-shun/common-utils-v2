@@ -5,19 +5,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
- * Created by zhanguo on 16/7/27.
- * 单元测试专用
- * 如果需要测试远程service,{@link BaseIntTest}
- *
+ * Created by wangpan on 16/9/4.
  */
-@RunWith(ExtendedSpringJUnit4ClassRunner.class)
-public abstract class BaseSpringTest extends BaseTest {
+@RunWith(ExtendedJunit4Class.class)
+public abstract class BaseNoSpringTest extends BaseTest {
+
     private final static Logger LOGGER = LoggerFactory.getLogger(BaseSpringTest.class);
 
     public static void initWithProfile(EnvProfile envProfile) {
         BaseTestUtil.initWithProfile(envProfile);
     }
 
-
 }
+
+
