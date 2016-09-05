@@ -18,7 +18,11 @@ public class QRUtils {
     //    批量接口:http://10.9.17.31:8888/qrcode/batch?size=200&fg_color=000000&bg_color=ffffff&case=1&margin=0&level=3&hint=2&ver=2&txt[]=123&txt[]=456
     public static String getQRCode(QRConfigVO qrConfig) {
         final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
-        final StringBuilder url = new StringBuilder(yzQRUrl).append("/");
+        final StringBuilder url = new StringBuilder(yzQRUrl);
+        if (url.lastIndexOf("/") == url.indexOf("//")) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
+            url.append("/");
+        }
+
         if (qrConfig.getTxts() == null) {
             url.append("?").append("txt=").append(qrConfig.getTxt());//
         } else {
@@ -33,6 +37,17 @@ public class QRUtils {
         url.append("&").append("hint=").append(qrConfig.getHint());//
         url.append("&").append("ver=").append(qrConfig.getVer());//
         return url.toString();
+    }
+
+    public static void main(String[] args) {
+        String yzQRUrl = "http://www.baidu.com/test1";
+        final StringBuilder url = new StringBuilder(yzQRUrl);
+        System.out.println(url.lastIndexOf("/"));
+        System.out.println(url.indexOf("//"));
+        if (url.lastIndexOf("/") == url.indexOf("//")) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
+            url.append("/");
+        }
+        System.err.println(url);
     }
 
 }
