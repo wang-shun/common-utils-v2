@@ -57,7 +57,7 @@ public class DistributedCoreFilter implements Filter {
 
             } else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
-                br = new BaseResponse<>(be.getCode().intValue(), getThrowableStr(be), invoke.getValue());
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be), invoke.getValue());
             } else {
                 br = new BaseResponse<>(ResponseCode.ERROR.getCode(), null, invoke.getValue());
             }
@@ -77,7 +77,7 @@ public class DistributedCoreFilter implements Filter {
                 LOGGER.info("remove class succ");
             }
             if (!BaseResponse.class.getName().equals(invokeClass)) {
-                br = new BaseResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(),
+                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(),
                         invoke.getValue());
                 rpcResult.setValue(br);
             } else {
@@ -85,8 +85,7 @@ public class DistributedCoreFilter implements Filter {
                 if (data != null && data instanceof HashMap) {
                     ((HashMap) data).remove("class");
                 }
-                br = new BaseResponse((Integer) ((Map) invoke.getValue()).get("code"),
-
+                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"),
                         (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
