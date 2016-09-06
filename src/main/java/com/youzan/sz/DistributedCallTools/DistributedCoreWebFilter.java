@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.youzan.sz.common.SignOut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,15 +40,15 @@ public class DistributedCoreWebFilter implements Filter {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-//    StaffService staffService = null;
+    //    StaffService staffService = null;
 
     public DistributedCoreWebFilter() {
-//        try {
-            // 尝试获取账户服务
-//            staffService = SpringUtils.getBean(StaffService.class);
-//        } catch (Throwable e) {
-//            LOGGER.warn("get the StaffService fail,if donn't need this,just ignore!");
-//        }
+        //        try {
+        // 尝试获取账户服务
+        //            staffService = SpringUtils.getBean(StaffService.class);
+        //        } catch (Throwable e) {
+        //            LOGGER.warn("get the StaffService fail,if donn't need this,just ignore!");
+        //        }
     }
 
     /**
@@ -101,13 +102,13 @@ public class DistributedCoreWebFilter implements Filter {
                                                                                                 + inputParamCount);
                 }
                 LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
-                if (method.getAnnotation(WithoutLogging.class) == null) {
+                if (method.getAnnotation(WithoutLogging.class) == null && method.getAnnotation(SignOut.class) == null) {
                     Map<String, String> map = loadSession();
                     //除了不需要session的方法,其他方法都要做登录状态检测.
                     if (map == null) {
                         LOGGER.error("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage() + "接口名:" + m);
                         throw new BusinessException((long) ResponseCode.LOGIN_TIMEOUT.getCode(),
-                                ResponseCode.LOGIN_TIMEOUT.getMessage());
+                            ResponseCode.LOGIN_TIMEOUT.getMessage());
                     }
                 }
                 String[] types = null;

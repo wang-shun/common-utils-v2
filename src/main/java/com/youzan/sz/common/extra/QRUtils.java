@@ -19,7 +19,7 @@ public class QRUtils {
     public static String getQRCode(QRConfigVO qrConfig) {
         final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
         final StringBuilder url = new StringBuilder(yzQRUrl);
-        if (url.lastIndexOf("/") == url.indexOf("//")) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
+        if (url.lastIndexOf("/") == url.indexOf("//") + 1) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
             url.append("/");
         }
 
@@ -40,11 +40,11 @@ public class QRUtils {
     }
 
     public static void main(String[] args) {
-        String yzQRUrl = "http://www.baidu.com/test1";
+        String yzQRUrl = "http://10.9.17.31:8888";
         final StringBuilder url = new StringBuilder(yzQRUrl);
         System.out.println(url.lastIndexOf("/"));
         System.out.println(url.indexOf("//"));
-        if (url.lastIndexOf("/") == url.indexOf("//")) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
+        if (url.lastIndexOf("/") == url.indexOf("//") + 1) {//如果url最后一个不是/,需要添加,避免某些情况Android无法访问(不自动重定向)不带根目录的url
             url.append("/");
         }
         System.err.println(url);
