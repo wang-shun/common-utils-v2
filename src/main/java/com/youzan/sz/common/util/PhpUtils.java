@@ -2,6 +2,7 @@ package com.youzan.sz.common.util;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,15 +41,26 @@ public class PhpUtils {
         try {
             if (resp.contains("\"msg\":")) {//返回结构不一样,需要转换一次
                 final HashMap<String, String> hashMap = JsonUtils.json2Bean(resp, HashMap.class);
-                final String msg = hashMap.remove("msg");
-                hashMap.put("message", msg);
+                Object data = hashMap.get("data");
+                final Object msg = hashMap.getOrDefault("msg", "");
+
+                if (new Integer(0).equals(hashMap.get("code"))) {//返回成功
+                    if (data != null && (data instanceof Collection)) {//处理空集合返回
+                        if (CollectionUtils.isEmpty((Collection) data)) {
+                            LOGGER.debug("data没数据直接返回");
+                            return new BaseResponse(Integer.valueOf(hashMap.get("code").toString()), msg.toString(),
+                                data);
+                        }
+                    }
+                }
+
+                final Object oldMsg = hashMap.remove("msg");
+                hashMap.put("message", oldMsg == null ? "" : oldMsg.toString());
                 resp = JsonUtils.bean2Json(hashMap);
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            //            Result<T> result = objectMapper.readValue(resp, new TypeReference<Result<T>>() {
-            //            });
 
             JavaType type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetClass);
             BaseResponse<T> result = objectMapper.readValue(resp, type);
@@ -91,6 +103,36 @@ public class PhpUtils {
         }
 
         return response;
+    }
+
+    public static void main(String[] args) throws IOException {
+        String resp = "{\"code\":0,\"msg\":\"\",\"data\":[]}";
+        if (resp.contains("\"msg\":")) {//返回结构不一样,需要转换一次
+            final HashMap hashMap = JsonUtils.json2Bean(resp, HashMap.class);
+            Object data = hashMap.get("data");
+            final Object msg = hashMap.getOrDefault("msg", "");
+            if (new Integer(0).equals(hashMap.get("code"))) {
+                if (data != null && (data instanceof Collection)) {
+                    if (CollectionUtils.isEmpty((Collection) data)) {
+                        System.out.println("没数据直接返回");
+                        System.out.println(JsonUtils.bean2Json(
+                            new BaseResponse<>(Integer.valueOf(hashMap.get("code").toString()), msg.toString(), data)));
+                        return;
+                    }
+                }
+            }
+
+            final Object oldMsg = hashMap.remove("msg");
+            hashMap.put("message", oldMsg);
+            resp = JsonUtils.bean2Json(hashMap);
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        JavaType type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, HashMap.class);
+        BaseResponse result = objectMapper.readValue(resp, type);
+        System.out.println(JsonUtils.bean2Json(result));
     }
 
 }
