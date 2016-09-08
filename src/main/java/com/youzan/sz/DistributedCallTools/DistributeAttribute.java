@@ -52,7 +52,7 @@ public interface DistributeAttribute {
     default Integer getAId() {
         final Integer aid = DistributedContextTools.getAId();
         if (aid == null || aid == 0) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少aId");
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少aid");
         }
         return aid;
     }
@@ -63,7 +63,7 @@ public interface DistributeAttribute {
     default String getDeviceType() {
         final String deviceType = DistributedContextTools.getDeviceType();
         if (deviceType == null) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少aId");
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少deviceType");
         }
         return deviceType;
     }
