@@ -40,7 +40,7 @@ public class PhpUtils {
         }
         try {
             if (resp.contains("\"msg\":")) {//返回结构不一样,需要转换一次
-                final HashMap<String, String> hashMap = JsonUtils.json2Bean(resp, HashMap.class);
+                final HashMap hashMap = JsonUtils.json2Bean(resp, HashMap.class);
                 Object data = hashMap.get("data");
                 final Object msg = hashMap.getOrDefault("msg", "");
 
@@ -49,7 +49,7 @@ public class PhpUtils {
                         if (CollectionUtils.isEmpty((Collection) data)) {
                             LOGGER.debug("data没数据直接返回");
                             return new BaseResponse(Integer.valueOf(hashMap.get("code").toString()), msg.toString(),
-                                data);
+                                null);
                         }
                     }
                 }

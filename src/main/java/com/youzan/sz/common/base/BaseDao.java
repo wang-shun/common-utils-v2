@@ -4,6 +4,7 @@ import com.youzan.sz.common.model.base.BasePO;
 import com.youzan.sz.common.mybatis.MybatisDao;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -23,4 +24,6 @@ public interface BaseDao<T extends BasePO> {
     T findOne(T t);
 
     int insert(T t);
+
+    List<T> findList(T t);
 }

@@ -1,6 +1,7 @@
 package com.youzan.sz.common.base.simple;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,11 +26,27 @@ public abstract class SimpleProcessor<T extends BasePO<ID>, ID extends Serializa
 
     public int save(T t) {
         if (t.getId() == null) {
-            return getDao().insert(t);
+            return insert(t);
         } else {
-            return getDao().update(t);
+            return update(t);
         }
     }
 
+    public T findOne(T queryPO) {
+        return getDao().findOne(queryPO);
+    }
+
+    public List<T> findList(T queryPO) {
+        return getDao().findList(queryPO);
+    }
+
     protected abstract BaseDao<T> getDao();
+
+    public int insert(T t) {
+        return getDao().insert(t);
+    }
+
+    public int update(T t) {
+        return getDao().update(t);
+    }
 }
