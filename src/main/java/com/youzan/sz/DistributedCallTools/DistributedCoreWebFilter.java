@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.youzan.sz.common.SignOut;
+import com.youzan.sz.common.anotations.Admin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,15 +103,8 @@ public class DistributedCoreWebFilter implements Filter {
                                                                                                 + inputParamCount);
                 }
                 LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
-                if (method.getAnnotation(WithoutLogging.class) == null && method.getAnnotation(SignOut.class) == null) {
-                    Map<String, String> map = loadSession();
-                    //除了不需要session的方法,其他方法都要做登录状态检测.
-                    if (map == null) {
-                        LOGGER.error("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage() + "接口名:" + m);
-                        throw new BusinessException((long) ResponseCode.LOGIN_TIMEOUT.getCode(),
-                            ResponseCode.LOGIN_TIMEOUT.getMessage());
-                    }
-                }
+
+                doAuth(m, method, interface1);
                 String[] types = null;
                 Object[] args = null;
                 // 解析json中的参数，并进行对应映射
@@ -141,6 +135,20 @@ public class DistributedCoreWebFilter implements Filter {
             LOGGER.info("result {}", JsonUtils.bean2Json(result.getValue()));
         }
         return result;
+    }
+
+    private void doAuth(String m, Method method, Class<?> interface1) {
+        if (interface1.getAnnotation(Admin.class) != null) {//暂时不对管理进行鉴权
+            return;
+        }
+        if (method.getAnnotation(WithoutLogging.class) == null && method.getAnnotation(SignOut.class) == null) {
+            Map<String, String> map = loadSession();
+            //除了不需要session的方法,其他方法都要做登录状态检测.
+            if (map == null) {
+                LOGGER.error("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage() + "接口名:" + m);
+                throw ResponseCode.LOGIN_TIMEOUT.getBusinessException();
+            }
+        }
     }
 
     private Map<String, String> loadSession() {

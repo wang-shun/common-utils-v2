@@ -95,9 +95,8 @@ public class CarmenCodec implements Codec2 {
                 if (body == null) {
                     body = ("{\"response\":" + om.writeValueAsString(response) + "}").getBytes("UTF-8");
                 }
-                LOGGER.info("encode json:{}", JsonUtils.bean2Json(response));
-                LOGGER.info("om write json:{}", om.writeValueAsString(response));
-
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("om write json:{}", om.writeValueAsString(response));
             } catch (Throwable e) {
                 LOGGER.error("encodeRPC 出错,异常信息:{}", e);
             }

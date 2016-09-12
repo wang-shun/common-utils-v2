@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.youzan.sz.common.response.BaseResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,5 +178,12 @@ public class SessionTools {
                 .filter(deviceDTO -> deviceDTO.getType() == deviceType).collect(Collectors.toList());
         }
         return null;
+    }
+
+    public void updateShopBind() {
+        final BaseResponse baseResponse = sessionService.updateShopBind();
+        if (!baseResponse.isSucc()) {
+            LOGGER.error("update shop bind failed");
+        }
     }
 }

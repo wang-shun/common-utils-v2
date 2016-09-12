@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Date: 2016/06/06
  * Time: 13:24
  */
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WithoutLogging {
 }
