@@ -1,5 +1,7 @@
 package com.youzan.sz.common.util;
 
+import com.youzan.sz.common.interfaces.DevModeEnable;
+import com.youzan.sz.common.util.test.TestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -11,16 +13,24 @@ import com.youzan.hawk.collect.v2.monitor.Monitors;
 import com.youzan.platform.bootstrap.common.ContainerConfig;
 import com.youzan.sz.init.InitDistributedTools;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 /**
  *
  * Created by zhanguo on 16/7/21.
  * 启动应用
  */
-public abstract class BaseApp {
+public abstract class BaseApp implements DevModeEnable {
 
     protected Logger                              logger             = LoggerFactory.getLogger(getClass());
-   private static ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+    private static ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
         "classpath:config-spring.xml");
+    private final List<Runnable>                  asyncTasks         = new ArrayList<>();
+    private final ExecutorService                 executorService    = Executors.newFixedThreadPool(1);
 
     private void initSpring() {
         // 启动Spring
@@ -35,6 +45,14 @@ public abstract class BaseApp {
         preTask();
         doTask();
         logger.info("{} start running", getProjectName());
+        if (isDevModel())
+            new TestWrapper(() -> getProjectName());
+        if (asyncTasks.size() > 0) {
+            logger.info("开始执行异步任务");
+            for (Runnable asyncTask : asyncTasks) {
+                final Future<?> submit = executorService.submit(asyncTask);
+            }
+        }
         try {
             synchronized (getClass()) {
                 this.getClass().wait();
@@ -52,10 +70,11 @@ public abstract class BaseApp {
         //startJvmMonitor();
         initSpring();
         //addHook();
-       // com.alibaba.dubbo.container.Main.main(new String[]{});
-       InitDistributedTools.init();//启动心跳
+        // com.alibaba.dubbo.container.Main.main(new String[]{});
+        InitDistributedTools.init();//启动心跳
     }
-    protected  void addHook(){
+
+    protected void addHook() {
         String HOOK_NAME = "hook";
         ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
 
@@ -63,7 +82,8 @@ public abstract class BaseApp {
             loader.getExtension(HOOK_NAME).start();
         }
     }
-     protected  void startJvmMonitor(){
+
+    protected void startJvmMonitor() {
         Config config = new Config();
         String appName = ContainerConfig.get("application.name");
         config.setApplication(appName);
@@ -71,7 +91,13 @@ public abstract class BaseApp {
         Monitors.getInstance().startJvmMonitor(config);
 
     }
+
     protected abstract void doTask();
+
+    //异步任务
+    protected void addAsyncTask(Runnable runnable) {
+        asyncTasks.add(runnable);
+    }
 
     protected void afterTask() {
         logger.info("项目({})关闭", getProjectName());
