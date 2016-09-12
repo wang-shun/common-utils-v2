@@ -95,8 +95,9 @@ public abstract class BaseApp implements DevModeEnable {
     protected abstract void doTask();
 
     //异步任务
-    protected void addAsyncTask(Runnable runnable) {
+    protected BaseApp addAsyncTask(Runnable runnable) {
         asyncTasks.add(runnable);
+        return this;
     }
 
     protected void afterTask() {
