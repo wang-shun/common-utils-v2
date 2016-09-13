@@ -119,6 +119,9 @@ public class SessionTools {
                 Long.valueOf(shopId));
         }
         if (aid != null) {
+            if (aid.equals("null")) {
+                LOGGER.warn("数据异常,aid({}) is null", aid);
+            }
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class,
                 Integer.valueOf(aid));
         }
