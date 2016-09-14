@@ -12,4 +12,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class BaseServiceImpl implements ToolKits {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
 }

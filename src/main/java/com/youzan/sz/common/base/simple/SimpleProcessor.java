@@ -16,6 +16,7 @@ import com.youzan.sz.common.interfaces.ToolKits;
 import com.youzan.sz.common.model.base.BasePO;
 import com.youzan.sz.common.model.base.BaseProcessor;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import org.slf4j.Logger;
 
 /**
  *
@@ -48,5 +49,10 @@ public abstract class SimpleProcessor<T extends BasePO<ID>, ID extends Serializa
 
     public int update(T t) {
         return getDao().update(t);
+    }
+
+    @Override
+    public Logger getLogger() {
+        return logger;
     }
 }

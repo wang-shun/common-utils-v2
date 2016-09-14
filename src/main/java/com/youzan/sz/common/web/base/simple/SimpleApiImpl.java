@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
@@ -95,5 +96,10 @@ public abstract class SimpleApiImpl extends BaseApiImpl implements ToolKits {
 
     protected static String getPhone() {
         return SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT);
+    }
+
+    @Override
+    public Logger getLogger() {
+        return logger;
     }
 }

@@ -121,9 +121,10 @@ public class SessionTools {
         if (aid != null) {
             if (aid.equals("null")) {
                 LOGGER.warn("数据异常,aid({}) is null", aid);
+            } else {
+                DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class,
+                    Integer.valueOf(aid));
             }
-            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class,
-                Integer.valueOf(aid));
         }
         if (deviceType != null) {
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.DeviceType.class,
