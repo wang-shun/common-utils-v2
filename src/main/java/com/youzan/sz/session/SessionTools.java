@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.youzan.sz.common.model.portal.ShopBindDTO;
 import com.youzan.sz.common.response.BaseResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class SessionTools {
     public static final String                        KDT_ID      = "kdtId";
     public static final String                        LOGINDEVICE = "loginDevice";
     public static final String                        AID         = "aid";        //应用id
+    public static final String                        CERT_STATUS = "certStatus"; //认证状态.0,未认证,1,个人人工,3,企业认证
 
     private static com.youzan.sz.session.SessionTools instance    = null;
     private static Object                             initMutex   = new Object();

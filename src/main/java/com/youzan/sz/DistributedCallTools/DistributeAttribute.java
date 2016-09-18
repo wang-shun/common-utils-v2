@@ -2,6 +2,7 @@ package com.youzan.sz.DistributedCallTools;
 
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.exceptions.BizException;
+import com.youzan.sz.common.interfaces.IShop;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.session.SessionTools;
 
@@ -9,7 +10,7 @@ import com.youzan.sz.session.SessionTools;
  *
  * Created by zhanguo on 16/8/22.
  */
-public interface DistributeAttribute {
+public interface DistributeAttribute extends IShop {
 
     default String getDeviceId() {
         final String deviceId = DistributedContextTools.getDeviceId();
@@ -27,6 +28,7 @@ public interface DistributeAttribute {
         return adminId;
     }
 
+    @Override
     default Long getBid() {
         final Long bid = DistributedContextTools.getBId();
         if (bid == null || bid == 0) {
@@ -38,6 +40,7 @@ public interface DistributeAttribute {
     /**
      * 在指定店铺后就会拥有
      * */
+    @Override
     default Long getShopId() {
         final Long shopId = DistributedContextTools.getShopId();
         if (shopId == null || shopId == 0) {
