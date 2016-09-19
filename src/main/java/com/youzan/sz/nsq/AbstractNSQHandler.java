@@ -16,9 +16,7 @@ public abstract class AbstractNSQHandler<T> implements AroundHandler<T> {
     }
 
     @Override
-    public T doHandle(T t) {
-        return t;
-    }
+    public abstract T doHandle(T t);
 
     @Override
     public T postHandle(T t) {
