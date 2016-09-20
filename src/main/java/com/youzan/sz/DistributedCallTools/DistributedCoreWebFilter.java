@@ -102,7 +102,8 @@ public class DistributedCoreWebFilter implements Filter {
                         "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:"
                                                                                                 + inputParamCount);
                 }
-                LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
 
                 doAuth(m, method, interface1);
                 String[] types = null;
@@ -132,7 +133,7 @@ public class DistributedCoreWebFilter implements Filter {
         }
         Result result = invoker.invoke(inv);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.info("result {}", JsonUtils.bean2Json(result.getValue()));
+            LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
         }
         return result;
     }
