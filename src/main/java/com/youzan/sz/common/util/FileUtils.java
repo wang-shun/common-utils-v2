@@ -55,6 +55,9 @@ public class FileUtils {
                 File sourceFile = file[i];
                 // 目标文件 
                 File targetFile = new File(new File(targetDir).getAbsolutePath() + File.separator + file[i].getName());
+                if(targetFile.exists()){
+                    continue;
+                }
                 copyFile(sourceFile, targetFile);
             }
             if (file[i].isDirectory()) {
