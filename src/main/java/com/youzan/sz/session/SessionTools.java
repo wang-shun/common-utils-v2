@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributedContext;
+import com.youzan.sz.common.model.dto.DeleteTicketDTO;
 import com.youzan.sz.common.model.portal.ShopBindDTO;
 import com.youzan.sz.common.response.BaseResponse;
 import org.slf4j.Logger;
@@ -81,11 +83,22 @@ public class SessionTools {
      * @return
      */
     public boolean deleteSession() {
-        boolean result = sessionService.deleteDirectSession();
-        if (result) {
+        final DeleteTicketDTO deleteTicketDTO = new DeleteTicketDTO();
+        final Long adminId = DistributedContextTools.getAdminId();
+        deleteTicketDTO.setAdminId(adminId);
+        final BaseResponse baseResponse = sessionService.deleteSession(deleteTicketDTO);
+        //        boolean result = sessionService.deleteDirectSession();
+        if (baseResponse.isSucc()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("delete adminId:{} session succ,clear contexts", adminId);
+            }
             DistributedContextTools.clear();
+        } else {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("delete adminId:{} session fail,skip clear contexts", adminId);
+            }
         }
-        return result;
+        return baseResponse.isSucc();
     }
 
     /**
