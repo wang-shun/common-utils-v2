@@ -29,12 +29,12 @@ import com.youzan.sz.common.util.JsonUtils;
  *
  * @author dft
  */
-@Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -100000)
+@Activate(group = { Constants.PROVIDER, Constants.CONSUMER }, order = -100000)
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
+        .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
 
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
@@ -53,12 +53,13 @@ public class DistributedCoreFilter implements Filter {
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
             } else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(invoke.getException()),
-                        invoke.getValue());
+                br = new BaseResponse<>(be.getCode().intValue(),
+                    be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
 
             } else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be), invoke.getValue());
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be),
+                    invoke.getValue());
             } else {
                 br = new BaseResponse<>(ResponseCode.ERROR.getCode(), null, invoke.getValue());
             }
@@ -79,7 +80,7 @@ public class DistributedCoreFilter implements Filter {
             }
             if (!BaseResponse.class.getName().equals(invokeClass)) {
                 br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(),
-                        invoke.getValue());
+                    invoke.getValue());
                 rpcResult.setValue(br);
             } else {
                 final Object data = ((Map) invoke.getValue()).get("data");
@@ -87,7 +88,7 @@ public class DistributedCoreFilter implements Filter {
                     ((HashMap) data).remove("class");
                 }
                 br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"),
-                        (String) ((Map) invoke.getValue()).get("message"), data);
+                    (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
 
@@ -134,7 +135,7 @@ public class DistributedCoreFilter implements Filter {
             try {
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null
-                        && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
+                    && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
                         m = (String) inv.getArguments()[0];
                         String[] typesTmp = (String[]) inv.getArguments()[1];
@@ -158,7 +159,7 @@ public class DistributedCoreFilter implements Filter {
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), m,
-                                    inv.getMethodName(), argsTmp);
+                                inv.getMethodName(), argsTmp);
                         }
 
                         if (invoke.hasException()) {
@@ -184,7 +185,7 @@ public class DistributedCoreFilter implements Filter {
                     }
                     String deviceId = inv.getAttachment(DeviceId.class.getCanonicalName());
                     if (null != deviceId) {
-                        DistributedContextTools.set(DeviceId.class, deviceId);
+                        DistributedContextTools.setAttr(DeviceId.class, deviceId);
                     }
                     String deviceType = inv.getAttachment(DeviceType.class.getCanonicalName());
                     if (null != deviceType) {
@@ -237,7 +238,7 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(DistributedParamManager.KdtId.class.getCanonicalName(), KdtId + "");
                 }
                 if (null != deviceId) {
-                    inv.setAttachment(DeviceId.class.getCanonicalName(), deviceId + "");
+                    inv.setAttachment(DeviceId.class.getCanonicalName(), deviceId);
                 }
                 if (null != deviceType) {
                     inv.setAttachment(DeviceType.class.getCanonicalName(), deviceType + "");

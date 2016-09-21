@@ -3,6 +3,7 @@ package com.youzan.sz.DistributedCallTools;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.interfaces.IShop;
+import com.youzan.sz.common.model.enums.DeviceType;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.session.SessionTools;
 
@@ -14,7 +15,8 @@ public interface DistributeAttribute extends IShop {
 
     default String getDeviceId() {
         final String deviceId = DistributedContextTools.getDeviceId();
-        if (StringUtil.isEmpty(deviceId)) {
+        //不是web登录,必须获取deviceId
+        if (!String.valueOf(DeviceType.WEB.getValue()).equals(getDeviceType()) && StringUtil.isEmpty(deviceId)) {
             throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少deviceId");
         }
         return deviceId;

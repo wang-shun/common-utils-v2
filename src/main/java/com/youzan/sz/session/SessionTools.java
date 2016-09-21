@@ -1,9 +1,11 @@
 package com.youzan.sz.session;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.model.portal.ShopBindDTO;
 import com.youzan.sz.common.response.BaseResponse;
 import org.slf4j.Logger;
@@ -59,7 +61,7 @@ public class SessionTools {
     /**
      * 考虑到性能原因,这里不做可见性检查,因为只有刚开始启动时,可能出现可见性问题,稍微晚一会儿获取到sessionService也可以;
      * */
-    public static com.youzan.sz.session.SessionTools getInstance() {
+    public static SessionTools getInstance() {
         if (sessionService == null) {
             init();
         }
@@ -111,7 +113,7 @@ public class SessionTools {
         final String bid = session.get(SessionTools.BID);
         final String shopId = session.get(SessionTools.SHOP_ID);
         final String aid = session.get(SessionTools.AID);
-        final String deviceType = session.get(SessionTools.LOGINDEVICE);
+        //        final String deviceType = session.get(SessionTools.LOGINDEVICE);
         if (bid != null) {
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class,
                 Long.valueOf(bid));
@@ -128,11 +130,10 @@ public class SessionTools {
                     Integer.valueOf(aid));
             }
         }
-        if (deviceType != null) {
-            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.DeviceType.class,
-                deviceType);
-        }
-
+        //        if (deviceType != null) {
+        //            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.DeviceType.class,
+        //                deviceType);
+        //        }
         return session;
     }
 
@@ -169,7 +170,7 @@ public class SessionTools {
         if (StringUtils.isNotEmpty(session.get(LOGINDEVICE))) {
             return JsonUtils.json2ListBean(session.get(LOGINDEVICE), DeviceDTO.class);
         }
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     /**
@@ -183,7 +184,7 @@ public class SessionTools {
             return JsonUtils.json2ListBean(session.get(LOGINDEVICE), DeviceDTO.class).stream()
                 .filter(deviceDTO -> deviceDTO.getType() == deviceType).collect(Collectors.toList());
         }
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     public void updateShopBind() {
@@ -192,4 +193,9 @@ public class SessionTools {
             LOGGER.error("update shop bind failed");
         }
     }
+
+    public void addDevice(String deviceId) {
+        sessionService.addDevice(deviceId);
+    }
+
 }

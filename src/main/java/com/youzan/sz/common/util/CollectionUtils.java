@@ -1,6 +1,7 @@
 package com.youzan.sz.common.util;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  *
@@ -10,7 +11,16 @@ public class CollectionUtils {
     public static boolean isEmpty(Collection collection) {
         return collection == null || collection.isEmpty();
     }
+
+    public static boolean isEmpty(Iterable iterable) {
+        if (iterable != null) {
+            return iterable.iterator().hasNext();
+        }
+        return false;
+    }
+
     public static boolean isNotEmpty(Collection collection) {
         return collection != null && !collection.isEmpty();
     }
+
 }

@@ -1,6 +1,7 @@
 package com.youzan.sz.common.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -18,13 +19,18 @@ import java.util.ArrayList;
  */
 public class JsonUtils {
 
-    private static final Logger       LOGGER = LoggerFactory.getLogger(JsonUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtils.class);
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper              = new ObjectMapper();
+    private static final ObjectMapper EXCLUDE_NULL_MAPPER = new ObjectMapper();
 
     static {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        EXCLUDE_NULL_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        EXCLUDE_NULL_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        EXCLUDE_NULL_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);//默认不导出为空的字段
+
     }
 
     private JsonUtils() {
@@ -48,9 +54,19 @@ public class JsonUtils {
         try {
             return mapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            LOGGER.error("bean2Json ERROR ", e);
+            LOGGER.error("bean2Json ERROR ,object:{}", object, e);
             return null;
         }
+    }
+
+    public static String toJson(Object object) {
+        try {
+            return EXCLUDE_NULL_MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("bean2Json ERROR ,object:{}", object, e);
+            return null;
+        }
+
     }
 
     public static <T> T json2Bean(String jsonStr, Class<T> elementClasses) {
@@ -60,7 +76,7 @@ public class JsonUtils {
             }
             return mapper.readValue(jsonStr, elementClasses);
         } catch (Exception e) {
-            LOGGER.error("json2Bean ERROR ", e);
+            LOGGER.error("json to bean error,source json:{} ", jsonStr, e);
             return null;
         }
     }
