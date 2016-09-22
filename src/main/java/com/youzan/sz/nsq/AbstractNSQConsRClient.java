@@ -31,12 +31,11 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     public NSQClient register() {
         super.register();
         consumer = new ConsumerImplV2(getNSQConfig(), this);
-
         NSQConsRConfig nsqConsRConfig = getNSQConsRConfig();
 
         //使用异步来处理发送消息
-        ThreadFactory pushThreadFactory = new BasicThreadFactory.Builder().namingPattern(getConsumerName() + "-%d")
-            .build();
+        ThreadFactory pushThreadFactory = new BasicThreadFactory.Builder()
+            .namingPattern(getNsqClientInitializer().getConsumerName() + "-%d").build();
         threadExecutor = new ThreadPoolExecutor(nsqConsRConfig.getMinThreadCount(), nsqConsRConfig.getMaxThreadCount(),
             1L, TimeUnit.MINUTES, new LinkedBlockingQueue(nsqConsRConfig.getQueueSize()), pushThreadFactory);
         try {
@@ -65,17 +64,17 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
         getNsqClientInitializer().setConsumerName(consumerName);
     }
 
-    public String getConsumerName() {
-        if (StringUtils.isEmpty(getNsqClientInitializer().getConsumerName())) {
-            final String defaultConsumerName = "sz" + "_" + init().getTopic() + "consumer";
-            if (logger.isInfoEnabled()) {
-                logger.info("not config consumer name ,use default name:{}", defaultConsumerName);
-            }
-
-            getNsqClientInitializer().setConsumerName(defaultConsumerName);
-        }
-        return getNsqClientInitializer().getConsumerName();
-    }
+    //    public String getConsumerName() {
+    //        if (StringUtils.isEmpty(getNsqClientInitializer().getConsumerName())) {
+    //            final String defaultConsumerName = "sz" + "_" + init().getTopic() + "consumer";
+    //            if (logger.isInfoEnabled()) {
+    //                logger.info("not config consumer name ,use default name:{}", defaultConsumerName);
+    //            }
+    //
+    //            getNsqClientInitializer().setConsumerName(defaultConsumerName);
+    //        }
+    //        return getNsqClientInitializer().getConsumerName();
+    //    }
 
     @Override
     public void process(NSQMessage message) {

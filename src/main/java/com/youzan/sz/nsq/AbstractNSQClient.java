@@ -28,6 +28,7 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
         nsqClientInitializer = init();
         nsqCodec = nsqClientInitializer.getNsqCodec();
         nsqClientInitializer.build();
+
         return this;
     }
 
