@@ -91,7 +91,7 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
                     logger.info("start handle message,reset  next consume time:{} to 0,message:{}",
                         message.getNextConsumingInSecond(), JsonUtils.toJson(message));
                 }
-                message.setNextConsumingInSecond(0);
+                message.setNextConsumingInSecond(null);
             } catch (NSQException e1) {
                 logger.error("", e1);
             }
