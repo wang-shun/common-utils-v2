@@ -1,6 +1,9 @@
 package com.youzan.sz.nsq;
 
 import com.youzan.nsq.client.entity.NSQConfig;
+import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.common.util.ConfigsUtils;
+import com.youzan.sz.common.util.PropertiesUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +39,26 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
             }
             nsqConfig.setLookupAddresses(lp.toString());
         }
-        nsqConfig.setThreadPoolSize4IO(1);
-        nsqConfig.setConnectTimeoutInMillisecond(
-            getConnectTimeoutInMillisecond() == null ? 3 * 1000 : getConnectTimeoutInMillisecond());
-        nsqConfig.setMsgTimeoutInMillisecond(
-            getMsgTimeoutInMillisecond() == null ? (int) TimeUnit.SECONDS.toMillis(120) : getMsgTimeoutInMillisecond());
+
         return this;
+    }
+
+    @Override
+    public void build() {
+        getNsqConfig().setThreadPoolSize4IO(1);
+        final int connectTimeoutInMillisecond = getConnectTimeoutInMillisecond() == null ? 3 * 1000
+            : getConnectTimeoutInMillisecond();
+        getNsqConfig().setMsgTimeoutInMillisecond(
+                getMsgTimeoutInMillisecond() == null ? (int) TimeUnit.SECONDS.toMillis(120) : getMsgTimeoutInMillisecond());
+        getNsqConfig().setConsumerName(getConsumerName());
+        if (StringUtil.isEmpty(getNsqConfig().getLookupAddresses())) {
+            logger.debug("nsq is null,use default set:{}", getLookupDefault());
+            getNsqConfig().setLookupAddresses(getLookupDefault());
+        }
+        Integer connectionTimeout = Integer.valueOf(PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
+            "nsq.connection.timeout.second", String.valueOf(connectTimeoutInMillisecond)));
+        getNsqConfig().setConnectTimeoutInMillisecond(connectionTimeout);
+
     }
 
     /**

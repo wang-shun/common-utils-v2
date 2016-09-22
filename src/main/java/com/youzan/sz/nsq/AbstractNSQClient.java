@@ -27,23 +27,7 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
     public NSQClient register() {
         nsqClientInitializer = init();
         nsqCodec = nsqClientInitializer.getNsqCodec();
-        if (StringUtil.isEmpty(nsqClientInitializer.getNsqConfig().getLookupAddresses())) {
-            logger.debug("nsq is null,use default set:{}", nsqClientInitializer.getLookupDefault());
-            nsqClientInitializer.getNsqConfig().setLookupAddresses(nsqClientInitializer.getLookupDefault());
-        }
-        Integer connectionTimeout = Integer.valueOf(PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
-            "nsq.connection.timeout.second", String.valueOf(TimeUnit.SECONDS.toMillis(10))));
-        nsqClientInitializer.getNsqConfig().setConnectTimeoutInMillisecond(connectionTimeout);
-        //
-        // 设置Netty里的ThreadPoolSize(带默认值): 1Thread-to-1IOThread, 使用BlockingIO
-        nsqClientInitializer.getNsqConfig().setThreadPoolSize4IO(1);
-        // 设置timeout(带默认值): 一次IO来回+本机执行了返回给client code完成的消耗时间
-        nsqClientInitializer.getNsqConfig()
-            .setConnectTimeoutInMillisecond(nsqClientInitializer.getConnectTimeoutInMillisecond());
-        // 设置message中client-server之间可以的timeout(带默认值)
-        nsqClientInitializer.getNsqConfig()
-            .setMsgTimeoutInMillisecond(nsqClientInitializer.getMsgTimeoutInMillisecond());
-        nsqClientInitializer.getNsqConfig().setConsumerName(nsqClientInitializer.getConsumerName());
+        nsqClientInitializer.build();
         return this;
     }
 

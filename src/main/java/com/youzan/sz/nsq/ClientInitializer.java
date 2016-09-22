@@ -22,4 +22,6 @@ public interface ClientInitializer {
         return PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.rt.host");
     }
 
+    void build();
+
 }
