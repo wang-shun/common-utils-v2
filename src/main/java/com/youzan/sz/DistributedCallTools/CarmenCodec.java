@@ -59,8 +59,9 @@ public class CarmenCodec implements Codec2 {
             // 1. Write HTTP status line.
             StringBuilder statusLine = new StringBuilder("HTTP/1.1 ");
             switch (response.getCode()) {
-                case 99999: //服务内部错误
-                    statusLine.append("500 Internal Server Error");
+                case 99999: //服务内部错误->暂时修改为200,避免返回504异常
+                    //                    statusLine.append("500 Internal Server Error");
+                    statusLine.append("200 OK");
                     break;
                 case 99996: //心跳检查失败 , ResponseCode.HEART_BEAT_FAILED
                     statusLine.append("404 Not Found");
