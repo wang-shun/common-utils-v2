@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.youzan.sz.common.util.test.Jsonbean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public class JsonUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtils.class);
 
-    private static final ObjectMapper mapper              = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
     private static final ObjectMapper EXCLUDE_NULL_MAPPER = new ObjectMapper();
 
     static {
@@ -45,7 +44,7 @@ public class JsonUtils {
         try {
             return mapper.readValue(jsonStr, getCollectionType(ArrayList.class, elementClasses));
         } catch (IOException e) {
-            LOGGER.error("json2ListBean ERROR message =" + e.getMessage());
+            LOGGER.error("json2ListBean ERROR message", e);
             return null;
         }
     }
@@ -70,12 +69,12 @@ public class JsonUtils {
     }
 
     public static <T> T json2Bean(String jsonStr, Class<T> elementClasses) {
+        if (String.class.equals(elementClasses)) {
+            return (T) jsonStr;
+        }
         try {
-            if (elementClasses.newInstance() instanceof String) {
-                return (T) jsonStr;
-            }
             return mapper.readValue(jsonStr, elementClasses);
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("json to bean error,source json:{} ", jsonStr, e);
             return null;
         }
@@ -94,7 +93,7 @@ public class JsonUtils {
 
     public static void main(String[] args) {
 
-        System.out.println(JsonUtils.json2Bean("{\"name\":\"基德\",\"age\":99}", Jsonbean.class));
+        System.out.println(JsonUtils.json2Bean("{\"name\":\"基德\",\"age\":99}", String.class));
     }
 
 }
