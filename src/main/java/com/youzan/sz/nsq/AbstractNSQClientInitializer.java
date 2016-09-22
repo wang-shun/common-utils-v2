@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,10 +12,14 @@ import java.util.concurrent.TimeUnit;
  * Created by zhanguo on 16/7/29.
  */
 public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements ClientInitializer {
-    protected final Logger logger       = LoggerFactory.getLogger(getClass());
+    protected final Logger logger   = LoggerFactory.getLogger(getClass());
     protected NSQConfig    nsqConfig;
-    protected NSQCodec     nsqCodec     = null;
-    protected String       topic        = null;
+    protected NSQCodec     nsqCodec = null;
+    protected String       topic    = null;
+    protected String       consumerName;
+    protected Integer      connectTimeoutInMillisecond;
+    protected Integer      msgTimeoutInMillisecond;
+
     protected AbstractNSQClientInitializer() {
         try {
             nsqConfig = new NSQConfig();
@@ -34,17 +37,21 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
             nsqConfig.setLookupAddresses(lp.toString());
         }
         nsqConfig.setThreadPoolSize4IO(1);
-        nsqConfig.setConnectTimeoutInMillisecond(3 * 1000);
-        nsqConfig.setMsgTimeoutInMillisecond((int) TimeUnit.SECONDS.toMillis(120));
+        nsqConfig.setConnectTimeoutInMillisecond(
+            getConnectTimeoutInMillisecond() == null ? 3 * 1000 : getConnectTimeoutInMillisecond());
+        nsqConfig.setMsgTimeoutInMillisecond(
+            getMsgTimeoutInMillisecond() == null ? (int) TimeUnit.SECONDS.toMillis(120) : getMsgTimeoutInMillisecond());
         return this;
     }
 
+    /**
+     * 设置主题
+     * */
     public AbstractNSQClientInitializer setTopic(String topic) {
         if (StringUtils.isEmpty(topic)) {
             throw new NullPointerException("nsq topic is not null");
         }
         this.topic = topic;
-        // nsqConfig.setTopic(topic);
         return this;
     }
 
@@ -52,9 +59,13 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
         return this.topic;
     }
 
-
     public AbstractNSQClientInitializer setCodec(NSQCodec nsqCodec) {
         this.nsqCodec = nsqCodec;
+        return this;
+    }
+
+    public AbstractNSQClientInitializer setConsumerName(String consumerName) {
+        this.consumerName = consumerName;
         return this;
     }
 
@@ -64,5 +75,27 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
 
     public NSQConfig getNsqConfig() {
         return nsqConfig;
+    }
+
+    public String getConsumerName() {
+        return consumerName;
+    }
+
+    public Integer getConnectTimeoutInMillisecond() {
+        return connectTimeoutInMillisecond;
+    }
+
+    public AbstractNSQClientInitializer<T> setConnectTimeoutInMillisecond(Integer connectTimeoutInMillisecond) {
+        this.connectTimeoutInMillisecond = connectTimeoutInMillisecond;
+        return this;
+    }
+
+    public Integer getMsgTimeoutInMillisecond() {
+        return msgTimeoutInMillisecond;
+    }
+
+    public AbstractNSQClientInitializer<T> setMsgTimeoutInMillisecond(Integer msgTimeoutInMillisecond) {
+        this.msgTimeoutInMillisecond = msgTimeoutInMillisecond;
+        return this;
     }
 }

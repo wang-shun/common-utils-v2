@@ -25,14 +25,10 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     private ExecutorService executorService = null;
     private NSQConsRConfig  nsqConsRConfig  = null;
     ThreadPoolExecutor      threadExecutor  = null;
-    protected String        CONSUMER_NAME   = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
-        "nsq.consumer.name");
 
     @Override
     public NSQClient register() {
         super.register();
-
-        getNSQConfig().setConsumerName(getConsumerName());
         consumer = new ConsumerImplV2(getNSQConfig(), this);
 
         NSQConsRConfig nsqConsRConfig = getNSQConsRConfig();
@@ -61,21 +57,23 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
         return this.nsqConsRConfig;
     }
 
+    /***
+     * 请使用initializer初始化*/
+    @Deprecated
     public void setConsumerName(String consumerName) {
-        if (StringUtils.isEmpty(consumerName)) {
-            Random rd = new Random();
-            this.CONSUMER_NAME = init().getTopic() + "_" + "consumer" + "_" + (rd.nextDouble() * 100 + 10);
-        } else {
-            this.CONSUMER_NAME = consumerName;
-        }
+        getNsqClientInitializer().setConsumerName(consumerName);
     }
 
     public String getConsumerName() {
-        if (StringUtils.isEmpty(this.CONSUMER_NAME)) {
-            Random rd = new Random();
-            this.CONSUMER_NAME = init().getTopic() + "_" + "consumer" + "_" + (rd.nextDouble() * 100 + 10);
+        if (StringUtils.isEmpty(getNsqClientInitializer().getConsumerName())) {
+            final String defaultConsumerName = "sz" + "_" + init().getTopic() + "consumer";
+            if (logger.isInfoEnabled()) {
+                logger.info("not config consumer name ,use default name:{}", defaultConsumerName);
+            }
+
+            getNsqClientInitializer().setConsumerName(defaultConsumerName);
         }
-        return this.CONSUMER_NAME;
+        return getNsqClientInitializer().getConsumerName();
     }
 
     @Override
@@ -143,8 +141,8 @@ class HandlerMsgCMD implements Runnable {
     public void run() {
         logger.debug("start handle message :{}", new String(message.getMessageID()));
         Object obj = nsqCodec.decode(message.getMessageBody());
-        if (logger.isDebugEnabled()) {
-            logger.debug("parse result:{}", JsonUtils.bean2Json(obj));
+        if (logger.isInfoEnabled()) {
+            logger.info("parse result:{}", JsonUtils.toJson(obj));
         }
         for (AroundHandler handler : handlers) {
             handler.preHandle(obj);
@@ -157,7 +155,7 @@ class HandlerMsgCMD implements Runnable {
                 }
 
             } catch (Throwable e) {
-                logger.error("hander message end,cause:", e);
+                logger.error("handler message end,cause:", e);
                 try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
                     message.setNextConsumingInSecond(getNextConsumingInSecond);
                 } catch (NSQException e1) {
@@ -169,7 +167,7 @@ class HandlerMsgCMD implements Runnable {
         }
         try {
             consumer.finish(message);
-            logger.debug("handle message end :{}", new String(message.getMessageID()));
+            logger.info("handle message end :{}", new String(message.getMessageID()));
         } catch (NSQException e) {
             logger.error("finish message error", e);
         }

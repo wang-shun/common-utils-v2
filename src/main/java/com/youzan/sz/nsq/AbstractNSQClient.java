@@ -15,12 +15,10 @@ import java.util.concurrent.TimeUnit;
  * Created by zhanguo on 16/7/29.
  */
 public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandler {
-    protected final Logger                    logger         = LoggerFactory.getLogger(getClass());
+    protected final Logger                    logger   = LoggerFactory.getLogger(getClass());
 
-    protected final LinkedList<AroundHandler> handlers       = new LinkedList<>();
+    protected final LinkedList<AroundHandler> handlers = new LinkedList<>();
 
-    protected static final String             DEFAULT_LOOKUP = PropertiesUtils
-        .getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.host");
     /**连接超时时间*/
     protected NSQCodec                        nsqCodec;
     private AbstractNSQClientInitializer      nsqClientInitializer;
@@ -30,8 +28,8 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
         nsqClientInitializer = init();
         nsqCodec = nsqClientInitializer.getNsqCodec();
         if (StringUtil.isEmpty(nsqClientInitializer.getNsqConfig().getLookupAddresses())) {
-            logger.debug("nsq is null,use default set:{}", DEFAULT_LOOKUP);
-            nsqClientInitializer.getNsqConfig().setLookupAddresses(DEFAULT_LOOKUP);
+            logger.debug("nsq is null,use default set:{}", nsqClientInitializer.getLookupDefault());
+            nsqClientInitializer.getNsqConfig().setLookupAddresses(nsqClientInitializer.getLookupDefault());
         }
         Integer connectionTimeout = Integer.valueOf(PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
             "nsq.connection.timeout.second", String.valueOf(TimeUnit.SECONDS.toMillis(10))));
@@ -43,7 +41,6 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
         nsqClientInitializer.getNsqConfig().setConnectTimeoutInMillisecond(3 * 1000);
         // 设置message中client-server之间可以的timeout(带默认值)
         nsqClientInitializer.getNsqConfig().setMsgTimeoutInMillisecond(60 * 1000);
-
         return this;
     }
 
@@ -53,6 +50,10 @@ public abstract class AbstractNSQClient implements NSQClient, LinkedAroundHandle
 
     public String getTopic() {
         return nsqClientInitializer.getTopic();
+    }
+
+    public AbstractNSQClientInitializer getNsqClientInitializer() {
+        return nsqClientInitializer;
     }
 
     @Override
