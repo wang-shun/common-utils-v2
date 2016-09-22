@@ -1,5 +1,6 @@
 package com.youzan.sz.nsq;
 
+import com.alibaba.dubbo.common.json.JSON;
 import com.youzan.nsq.client.Consumer;
 import com.youzan.nsq.client.ConsumerImplV2;
 import com.youzan.nsq.client.MessageHandler;
@@ -78,11 +79,22 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
 
     @Override
     public void process(NSQMessage message) {
-
-        logger.debug("start handle message :{}", new String(message.getMessageID()));
+        final long start = System.currentTimeMillis();
+        logger.info("start handle message :{}", new String(message.getMessageID()));
         Object obj = nsqCodec.decode(message.getMessageBody());
-        if (logger.isDebugEnabled()) {
-            logger.debug("parse result:{}", JsonUtils.bean2Json(obj));
+        if (logger.isInfoEnabled()) {
+            logger.info("parse result:{}", JsonUtils.bean2Json(obj));
+        }
+        if (message.getNextConsumingInSecond() != null && message.getNextConsumingInSecond() > 0) {
+            try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
+                if (logger.isInfoEnabled()) {
+                    logger.info("start handle message,reset  next consume time:{} to 0,message:{}",
+                        message.getNextConsumingInSecond(), JsonUtils.toJson(message));
+                }
+                message.setNextConsumingInSecond(0);
+            } catch (NSQException e1) {
+                logger.error("", e1);
+            }
         }
         for (AroundHandler handler : handlers) {
             handler.preHandle(obj);
@@ -90,16 +102,17 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
             try {
                 handler.doHandle(obj);
                 if (message.getNextConsumingInSecond() != null) {//赋值了下一次发送时间,相当于标识提前结束
-                    logger.info("message next consunm flag set {},abort invoke", message.getNextConsumingInSecond());
+                    logger.info("message next consume flag set {},abort invoke,message:{}",
+                        message.getNextConsumingInSecond(), JsonUtils.toJson(message));
                     break;
                 }
 
             } catch (Throwable e) {
-                logger.error("hander message end,cause:", e);
+                logger.error("handle message end,cause:", e);
                 try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
                     message.setNextConsumingInSecond(getNextConsumingSecond());
                 } catch (NSQException e1) {
-                    logger.error("", e1);
+                    logger.error("nsq set next consume time error", e1);
                 }
                 handler.postHandle(obj);
                 break;
@@ -107,7 +120,8 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
         }
         try {
             consumer.finish(message);
-            logger.debug("handle message end :{}", new String(message.getMessageID()));
+            logger.info("handle message end :{},cost:{}", new String(message.getMessageID()),
+                (System.currentTimeMillis() - start));
         } catch (NSQException e) {
             logger.error("finish message error", e);
         }
@@ -118,58 +132,71 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
 
 }
 
-class HandlerMsgCMD implements Runnable {
-
-    private NSQCodec            nsqCodec;
-    private NSQMessage          message;
-    private List<AroundHandler> handlers;
-    private Logger              logger;
-    private int                 getNextConsumingInSecond;
-    private Consumer            consumer;
-
-    public HandlerMsgCMD(NSQCodec nsqCodec, NSQMessage message, List<AroundHandler> handlers, Logger logger,
-                         int getNextConsumingInSecond, Consumer consumer) {
-        this.nsqCodec = nsqCodec;
-        this.message = message;
-        this.handlers = handlers;
-        this.logger = logger;
-        this.getNextConsumingInSecond = getNextConsumingInSecond;
-        this.consumer = consumer;
-    }
-
-    @Override
-    public void run() {
-        logger.debug("start handle message :{}", new String(message.getMessageID()));
-        Object obj = nsqCodec.decode(message.getMessageBody());
-        if (logger.isInfoEnabled()) {
-            logger.info("parse result:{}", JsonUtils.toJson(obj));
-        }
-        for (AroundHandler handler : handlers) {
-            handler.preHandle(obj);
-
-            try {
-                handler.doHandle(obj);
-                if (message.getNextConsumingInSecond() != null) {//赋值了下一次发送时间,相当于标识提前结束
-                    logger.info("message next consunm flag set {},abort invoke", message.getNextConsumingInSecond());
-                    break;
-                }
-
-            } catch (Throwable e) {
-                logger.error("handler message end,cause:", e);
-                try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
-                    message.setNextConsumingInSecond(getNextConsumingInSecond);
-                } catch (NSQException e1) {
-                    logger.error("", e1);
-                }
-                handler.postHandle(obj);
-                break;
-            }
-        }
-        try {
-            consumer.finish(message);
-            logger.info("handle message end :{}", new String(message.getMessageID()));
-        } catch (NSQException e) {
-            logger.error("finish message error", e);
-        }
-    }
-}
+//class HandlerMsgCMD implements Runnable {
+//
+//    private NSQCodec            nsqCodec;
+//    private NSQMessage          message;
+//    private List<AroundHandler> handlers;
+//    private Logger              logger;
+//    private int                 getNextConsumingInSecond;
+//    private Consumer            consumer;
+//
+//    public HandlerMsgCMD(NSQCodec nsqCodec, NSQMessage message, List<AroundHandler> handlers, Logger logger,
+//                         int getNextConsumingInSecond, Consumer consumer) {
+//        this.nsqCodec = nsqCodec;
+//        this.message = message;
+//        this.handlers = handlers;
+//        this.logger = logger;
+//        this.getNextConsumingInSecond = getNextConsumingInSecond;
+//        this.consumer = consumer;
+//    }
+//
+//    @Override
+//    public void run() {
+//        logger.debug("start handle message :{}", new String(message.getMessageID()));
+//        Object obj = nsqCodec.decode(message.getMessageBody());
+//        if (message.getNextConsumingInSecond() != null && message.getNextConsumingInSecond() > 0) {
+//            try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
+//                if (logger.isInfoEnabled()) {
+//                    logger.info("start handle message,reset  next consume time to 0,message:{}",
+//                        JsonUtils.toJson(message));
+//                }
+//                message.setNextConsumingInSecond(0);
+//            } catch (NSQException e1) {
+//                logger.error("", e1);
+//            }
+//        }
+//
+//        if (logger.isInfoEnabled()) {
+//            logger.info("parse result:{}", JsonUtils.toJson(obj));
+//        }
+//        for (AroundHandler handler : handlers) {
+//            handler.preHandle(obj);
+//
+//            try {
+//                handler.doHandle(obj);
+//                if (message.getNextConsumingInSecond() != null) {//赋值了下一次发送时间,相当于标识提前结束
+//                    logger.info("message next consunm flag set {},abort invoke,message:{}",
+//                        message.getNextConsumingInSecond(), JsonUtils.toJson(message));
+//                    break;
+//                }
+//
+//            } catch (Throwable e) {
+//                logger.error("handler message end,cause:", e);
+//                try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
+//                    message.setNextConsumingInSecond(getNextConsumingInSecond);
+//                } catch (NSQException e1) {
+//                    logger.error("", e1);
+//                }
+//                handler.postHandle(obj);
+//                break;
+//            }
+//        }
+//        try {
+//            consumer.finish(message);
+//            logger.info("handle message end :{}", new String(message.getMessageID()));
+//        } catch (NSQException e) {
+//            logger.warn("finish message error", e);
+//        }
+//    }
+//}
