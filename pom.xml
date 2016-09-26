@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.youzan</groupId>
             <artifactId>hawk-collect</artifactId>
-            <version>1.0.8-SNAPSHOT</version>
+            <version>1.0.8-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
