@@ -61,7 +61,7 @@ public final class HttpUtil {
         }
 
         if (headers != null && headers.size() > 0) {
-            headers.entrySet().stream().forEach(e -> {
+            headers.entrySet().forEach(e -> {
                 httpPost.setHeader(e.getKey(), e.getValue());
             });
         }
@@ -117,7 +117,7 @@ public final class HttpUtil {
         }
 
         if (headers != null && headers.size() > 0) {
-            headers.entrySet().stream().forEach(e -> {
+            headers.entrySet().forEach(e -> {
                 httpPost.setHeader(e.getKey(), e.getValue());
             });
         }
@@ -145,7 +145,6 @@ public final class HttpUtil {
                 .addPart("bin", bin)
                 .addPart("comment", comment)
                 .build();
-
 
         httpPost.setEntity(reqEntity);
         CloseableHttpResponse response = httpClient.execute(httpPost);
@@ -206,7 +205,7 @@ public final class HttpUtil {
         httpGet.setConfig(buildRequestConfig());
 
         if (headers != null && headers.size() > 0) {
-            headers.entrySet().stream().forEach(e -> {
+            headers.entrySet().forEach(e -> {
                 httpGet.setHeader(e.getKey(), e.getValue());
             });
         }
