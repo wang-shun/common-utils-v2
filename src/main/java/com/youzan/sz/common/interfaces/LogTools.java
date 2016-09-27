@@ -1,6 +1,7 @@
 package com.youzan.sz.common.interfaces;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -22,6 +23,8 @@ public interface LogTools {
             getLogger().error("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
     }
 
-    Logger getLogger();
+    default Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
+    }
 
 }

@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 public class TestWrapper implements TestLoggable {
 
     final static Logger    logger = LoggerFactory.getLogger(TestWrapper.class);
-    private final TestTask testTask;
+    private final Task testTask;
 
-    public TestWrapper(TestTask testTask) {
-        this.testTask = testTask;
+    public TestWrapper(Task task) {
+        this.testTask = task;
         this.start();
     }
 

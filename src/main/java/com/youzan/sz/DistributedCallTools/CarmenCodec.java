@@ -99,7 +99,7 @@ public class CarmenCodec implements Codec2 {
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("om write json:{}", om.writeValueAsString(response));
             } catch (Throwable e) {
-                LOGGER.error("encodeRPC 出错,异常信息:{}", e);
+                LOGGER.warn("encodeRPC 出错,异常信息:{}", e);
             }
 
             header.setLength(0);
@@ -115,7 +115,7 @@ public class CarmenCodec implements Codec2 {
             }
             return ByteBuffer.wrap(baos.toByteArray());
         } catch (IOException e) {
-            LOGGER.error("encodeRPC 出错,异常信息:{}", e);
+            LOGGER.warn("encodeRPC 出错,异常信息:{}", e);
         }
         return null;
     }
@@ -327,7 +327,7 @@ public class CarmenCodec implements Codec2 {
             // bad request
             req.setBroken(true);
             req.setData(t);
-            LOGGER.error("decode 异常:{}", t);
+            LOGGER.warn("decode 异常:{}", t);
         }
         return req;
 
@@ -385,7 +385,7 @@ public class CarmenCodec implements Codec2 {
                         key = URLDecoder.decode(pair.substring(0, eqIndex), "UTF-8");
                         value = URLDecoder.decode(pair.substring(eqIndex + 1), "UTF-8");
                     } catch (UnsupportedEncodingException e) {
-                        System.out.println("UnsupportedEncodingException:" + "UTF-8" + ", param=" + src);
+                        LOGGER.warn("UnsupportedEncodingException:" + "UTF-8" + ", param=" + src);
                     }
                     parameters.put(key, value);
                 }

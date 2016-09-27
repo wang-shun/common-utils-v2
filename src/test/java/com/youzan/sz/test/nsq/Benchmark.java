@@ -2,6 +2,8 @@ package com.youzan.sz.test.nsq;
 
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+import com.youzan.sz.common.util.TimeCostWrapper;
+import com.youzan.sz.common.util.test.Task;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -17,8 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class Benchmark extends NSQTest {
-    @Test
-    public void benchmarkPub() {
+    @Test public void benchmarkPub() {
         DemoPubNsq demoPubNsq = new DemoPubNsq();
         demoPubNsq.register();
 
@@ -28,18 +29,20 @@ public class Benchmark extends NSQTest {
         msg.setShopId(Lists.newArrayList(1, 2));
 
         NSQProtoMsg.NSQDemoProtoReq pubMsg = NSQProtoMsg.NSQDemoProtoReq.newBuilder().setName("vincent").setSex(1)
-            .addShopId(2).build();
-        new TimeCost(10000) {
-            @Override
-            public void run() {
-                demoPubNsq.pub(pubMsg);
-            }
-        };
+                .addShopId(2).build();
+        final Boolean aBoolean = TimeCostWrapper.doTask(() -> demoPubNsq.pub(pubMsg));
+        TimeCostWrapper.doTask((Task) () -> demoPubNsq.pub(pubMsg), 1000, 10000);
+
+        //        new TimeCostWrapper(1000, 10000) {
+        //            @Override
+        //            public void run() {
+        //                demoPubNsq.pub(pubMsg);
+        //            }
+        //        };
 
     }
 
-    @Test
-    public void benchmarkConsR() {
+    @Test public void benchmarkConsR() {
         new DemoConsRNSQ().register();
         try {
             TimeUnit.HOURS.sleep(1L);

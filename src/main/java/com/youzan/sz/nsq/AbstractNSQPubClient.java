@@ -17,7 +17,8 @@ public abstract class AbstractNSQPubClient<V> extends AbstractNSQClient implemen
         super.register();
         try {
             p = new ProducerImplV2(getNSQConfig());
-            logger.info("consume prepare start whth configs {},topic {}", JsonUtils.bean2Json(getNSQConfig()),getTopic());
+            logger.info("consume prepare start whth configs {},topic {}", JsonUtils.bean2Json(getNSQConfig()),
+                getTopic());
             p.start();
         } catch (NSQException e) {
             logger.error("nsq register fail", e);
@@ -26,7 +27,7 @@ public abstract class AbstractNSQPubClient<V> extends AbstractNSQClient implemen
     }
 
     @Override
-    public boolean pub(Object object) {
+    public Boolean pub(Object object) {
         for (AroundHandler handler : handlers) {
             handler.preHandle(object);
             handler.doHandle(object);
@@ -39,8 +40,8 @@ public abstract class AbstractNSQPubClient<V> extends AbstractNSQClient implemen
             bytes = nsqCodec.encode(object);
         }
         try {
-            p.publish(bytes,getTopic());
-            logger.info("push message {} success",JsonUtils.bean2Json(object));
+            p.publish(bytes, getTopic());
+            logger.info("push message {} success", JsonUtils.bean2Json(object));
             return true;
         } catch (NSQException e) {
             logger.error("publish message:{} fail", JsonUtils.bean2Json(object), e);

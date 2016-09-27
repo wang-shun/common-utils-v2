@@ -128,7 +128,7 @@ public class DistributedCoreWebFilter implements Filter {
 
             } while (false);
         } catch (Throwable e) {
-            LOGGER.error("distributed  error", e);
+            LOGGER.warn("distributed  error", e);
             throw new RuntimeException(e);
         }
         Result result = invoker.invoke(inv);
@@ -146,7 +146,7 @@ public class DistributedCoreWebFilter implements Filter {
             Map<String, String> map = loadSession();
             //除了不需要session的方法,其他方法都要做登录状态检测.
             if (map == null) {
-                LOGGER.error("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage() + "接口名:" + m);
+                LOGGER.warn("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage() + "接口名:" + m);
                 throw ResponseCode.LOGIN_TIMEOUT.getBusinessException();
             }
         }

@@ -1,20 +1,13 @@
 package com.youzan.sz.nsq;
 
-import com.alibaba.dubbo.common.json.JSON;
 import com.youzan.nsq.client.Consumer;
 import com.youzan.nsq.client.ConsumerImplV2;
 import com.youzan.nsq.client.MessageHandler;
 import com.youzan.nsq.client.entity.NSQMessage;
 import com.youzan.nsq.client.exception.NSQException;
-import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.JsonUtils;
-import com.youzan.sz.common.util.PropertiesUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.slf4j.Logger;
 
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.*;
 
 /**
@@ -80,21 +73,18 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
     public void process(NSQMessage message) {
         final long start = System.currentTimeMillis();
         logger.info("start handle message :{}", new String(message.getMessageID()));
-        Object obj = nsqCodec.decode(message.getMessageBody());
-        if (logger.isInfoEnabled()) {
-            logger.info("parse result:{}", JsonUtils.bean2Json(obj));
+        final Object obj = doLoad(message);
+        if (obj == null) {//暂时不支持空消息体
+            logger.warn("parse msg is null,skip message:{}", message.getMessageID());
+        } else {
+            doProcessor(message, obj);
         }
-        if (message.getNextConsumingInSecond() != null && message.getNextConsumingInSecond() > 0) {
-            try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
-                if (logger.isInfoEnabled()) {
-                    logger.info("start handle message,reset  next consume time:{} to 0,message:{}",
-                        message.getNextConsumingInSecond(), JsonUtils.toJson(message));
-                }
-                message.setNextConsumingInSecond(null);
-            } catch (NSQException e1) {
-                logger.error("", e1);
-            }
-        }
+        doFinish(message);
+        logger.info("handle message end :{},cost:{}", new String(message.getMessageID()),
+            (System.currentTimeMillis() - start));
+    }
+
+    private void doProcessor(NSQMessage message, Object obj) {
         for (AroundHandler handler : handlers) {
             handler.preHandle(obj);
 
@@ -117,10 +107,31 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
                 break;
             }
         }
+    }
+
+    /**装载*/
+    private Object doLoad(NSQMessage message) {
+        Object obj = nsqCodec.decode(message.getMessageBody());
+        if (logger.isInfoEnabled()) {
+            logger.info("parse result:{}", JsonUtils.bean2Json(obj));
+        }
+        if (message.getNextConsumingInSecond() != null && message.getNextConsumingInSecond() > 0) {
+            try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
+                if (logger.isInfoEnabled()) {
+                    logger.info("start handle message,reset  next consume time:{} to 0,message:{}",
+                        message.getNextConsumingInSecond(), JsonUtils.toJson(message));
+                }
+                message.setNextConsumingInSecond(null);
+            } catch (NSQException e1) {
+                logger.error("", e1);
+            }
+        }
+        return obj;
+    }
+
+    private void doFinish(NSQMessage message) {
         try {
             consumer.finish(message);
-            logger.info("handle message end :{},cost:{}", new String(message.getMessageID()),
-                (System.currentTimeMillis() - start));
         } catch (NSQException e) {
             logger.error("finish message error", e);
         }

@@ -1,0 +1,38 @@
+<desc>
+<!--
+支持的数据类型:
+	INTEGER
+	LONG
+	BOOLEAN
+	BYTES
+	STRING
+	BYTESABLE
+	INT_LIST
+	LONG_LIST
+	BOOLEAN_LIST
+	BYTES_LIST
+	STING_LIST
+	LIST
+-->
+	<classdesc pkg="com.qq" name="GenerateClassTest1">
+		<field name="a" type="INTEGER"/>
+		<field name="b" type="LONG"/>
+		<field name="c" type="BOOLEAN"/>
+		<field name="d" type="BYTES"/>
+		<field name="e" type="STRING"/>
+		<field name="f" type="INT_LIST"/>
+		<field name="g" type="LONG_LIST"/>
+		<field name="h" type="BOOLEAN_LIST"/>
+		<field name="i" type="BYTES_LIST"/>
+		<field name="j" type="STING_LIST"/>						
+		<field name="k" type="LIST"/>					
+	</classdesc>				
+	<classdesc pkg="com.qq" name="GenerateClassTest2">
+		<field name="a" type="BYTESABLE">
+			<class pkg="com.qq" name="GenerateClassTest1"/>
+		</field>												
+		<field name="b" type="BYTESABLE">
+			<class pkg="com.qq" name="GenerateClassTest1"/>
+		</field>
+	</classdesc>			
+</desc>

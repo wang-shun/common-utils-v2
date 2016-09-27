@@ -95,6 +95,7 @@ public abstract class SimpleApiImpl extends BaseApiImpl implements ToolKits {
     }
 
     protected static String getPhone() {
+
         return SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT);
     }
 

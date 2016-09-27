@@ -6,6 +6,6 @@ package com.youzan.sz.nsq;
  */
 public interface NSQPubClient extends NSQClient {
 
-    boolean pub(Object Object);
+    Boolean pub(Object Object);
 
 }
