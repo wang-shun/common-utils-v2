@@ -139,7 +139,7 @@ public abstract class BaseBloomHelper<T> extends BaseHelper {
                 filter.getBitBuffer().getCapacity());
             filter = new BloomFilter(filter.getHashCount(), bitBuffer);
             logger.info("load bloom filter({}) from cache,hashCount:{},byte len:{}", getConfig().getBloomTopic(),
-                bloomCache.length(), filter.getHashCount());
+                filter.getHashCount(), filter.getBitBuffer().toArray().length);
             return filter;
         }
         logger.warn("load bloom filter from cache failed,use empty filter");
