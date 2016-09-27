@@ -5,6 +5,7 @@ import com.youzan.nsq.client.ConsumerImplV2;
 import com.youzan.nsq.client.MessageHandler;
 import com.youzan.nsq.client.entity.NSQMessage;
 import com.youzan.nsq.client.exception.NSQException;
+import com.youzan.sz.common.exceptions.AbortionException;
 import com.youzan.sz.common.util.JsonUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
@@ -86,9 +87,8 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
 
     private void doProcessor(NSQMessage message, Object obj) {
         for (AroundHandler handler : handlers) {
-            handler.preHandle(obj);
-
             try {
+                handler.preHandle(obj);
                 handler.doHandle(obj);
                 if (message.getNextConsumingInSecond() != null) {//赋值了下一次发送时间,相当于标识提前结束
                     logger.info("message next consume flag set {},abort invoke,message:{}",
@@ -96,6 +96,9 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
                     break;
                 }
 
+            } catch (AbortionException ae) {//just swallow this exception
+                logger.info("msg:{} had been aborted by:{}", JsonUtils.toJson(obj), handler.getClass().getName());
+                break;
             } catch (Throwable e) {
                 logger.error("handle message end,cause:", e);
                 try {//设置一个下次消费时间.避免这条消息因为异常被误以为处理成功
@@ -103,8 +106,9 @@ public abstract class AbstractNSQConsRClient extends AbstractNSQClient implement
                 } catch (NSQException e1) {
                     logger.error("nsq set next consume time error", e1);
                 }
-                handler.postHandle(obj);
                 break;
+            } finally {
+                handler.postHandle(obj);
             }
         }
     }
