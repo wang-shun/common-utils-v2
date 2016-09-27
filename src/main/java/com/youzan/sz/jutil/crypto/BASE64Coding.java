@@ -1,12 +1,8 @@
 package com.youzan.sz.jutil.crypto;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import java.nio.ByteBuffer;
 
-//import sun.misc.BASE64Decoder;
-//import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * BASE64的工具类
@@ -23,7 +19,7 @@ public class BASE64Coding {
      * @return String
      */
     public static String encode(String s) {
-        return new BASE64Encoder().encode(s.getBytes());
+        return Base64.encodeBase64String(s.getBytes());
     }
 
     /**
@@ -32,7 +28,7 @@ public class BASE64Coding {
      * @return String
      */
     public static String encode(byte[] bytes) {
-        return new BASE64Encoder().encode(bytes);
+        return Base64.encodeBase64String(bytes);
     }
 
     /**
@@ -41,7 +37,7 @@ public class BASE64Coding {
      * @return String
      */
     public static String encode(ByteBuffer buf) {
-        return new BASE64Encoder().encode(buf);
+        return Base64.encodeBase64String(buf.array());
     }
 
     /**
@@ -51,7 +47,7 @@ public class BASE64Coding {
      */
     public static byte[] decode(String str) {
         try {
-            return new BASE64Decoder().decodeBuffer(str);
+            return Base64.decodeBase64(str);
         } catch (Exception e) {
             return null;
         }

@@ -268,7 +268,7 @@ public class BloomFilter implements Serializable {
     public static void main(String[] avg) throws UnsupportedEncodingException {
         //numElements:黑名单数量
         testMarshal();
-        int numElements = 1_000_000;
+        int numElements = 1_000_000_000;
         BloomFilter filter = getFilter(numElements, 0.01);
         //        final int maxBucketsPerElement = filter.maxBucketsPerElement(1_000_000_000);
         //        final BloomCalculations.BloomSpecification bloomSpecification = BloomCalculations
