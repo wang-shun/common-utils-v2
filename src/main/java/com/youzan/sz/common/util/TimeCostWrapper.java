@@ -60,14 +60,13 @@ public class TimeCostWrapper {
         }
         long cost = System.currentTimeMillis() - start;
         String costStr;
-        if (cost > 1000 && cost < 60 * 1000) {
-            costStr = cost / 1000f + "(s)";
-        } else if (cost < 60 * 1000 * 60) {
+        if (cost > 1000 * 60) {
             costStr = cost / (1000f * 60) + "(min)";
+        } else if (cost > 1000) {
+            costStr = cost / 1000f + "(s)";
         } else {
             costStr = cost + "(ms)";
         }
-
         if (cost / 1000 > maxCostTime) {
             LOGGER.warn("execute time cost:{}", costStr);
         } else {
