@@ -1,5 +1,6 @@
 package com.youzan.sz.common.util;
 
+import com.alibaba.dubbo.common.json.JSON;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.model.number.NumberTypes;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -40,7 +41,6 @@ public class BeanUtil {
         return t;
     }
 
-
     public static <T> T copyProperty(Object source, T t) {
 
         if (source == null) {
@@ -50,7 +50,6 @@ public class BeanUtil {
         BeanUtils.copyProperties(source, t);
         return t;
     }
-
 
     public static <T> List<T> copyPropertyList(List<?> sources, Class<T> destinationClazz) {
         if (sources == null || sources.isEmpty()) {
@@ -103,9 +102,9 @@ public class BeanUtil {
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
                 } catch (IllegalArgumentException ex) {
-                    LOGGER.error("BeanUtil Error: 类型转换异常,请自行转换");
+                    LOGGER.warn("BeanUtil Error: 类型转换异常,请自行转换,value:{}", value);
                 } catch (Exception e) {
-                    LOGGER.error("BeanUtil Error:{}", e);
+                    LOGGER.warn("source map:{},BeanUtil Error:{}", JsonUtils.toJson(map), e);
                 }
             }
         }
@@ -140,14 +139,14 @@ public class BeanUtil {
      * @throws IllegalAccessException    如果实例化 JavaBean 失败
      * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
-    public static  Map<String,Object> transBean2Map(Object bean) {
+    public static Map<String, Object> transBean2Map(Object bean) {
         Class type = bean.getClass();
         Map<String, Object> returnMap = new HashMap<>();
         BeanInfo beanInfo;
         try {
             beanInfo = Introspector.getBeanInfo(type);
         } catch (IntrospectionException e) {
-            LOGGER.error("BeanUtil Error:{}", e);
+            LOGGER.warn("BeanUtil Error:{}", e);
             throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
         }
 
@@ -161,10 +160,9 @@ public class BeanUtil {
                 try {
                     result = readMethod.invoke(bean, new Object[0]);
                 } catch (IllegalAccessException e) {
-                    LOGGER.error("BeanUtil Error:{}", e);
-                    e.printStackTrace();
+                    LOGGER.warn("BeanUtil Error:{}", e);
                 } catch (InvocationTargetException e) {
-                    LOGGER.error("BeanUtil Error:{}", e);
+                    LOGGER.warn("BeanUtil Error:{}", e);
                     throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常");
                 }
                 if (result != null) {
@@ -194,7 +192,8 @@ public class BeanUtil {
         return result;
     }
 
-    public static void main(String[] args) throws IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
+    public static void main(String[] args) throws IllegalAccessException, IntrospectionException,
+                                           InvocationTargetException, InstantiationException {
         List<StockRunningVO> result = new ArrayList<>();
         StockRunningVO sr0 = new StockRunningVO();
         sr0.setBusinessType("盘盈");
