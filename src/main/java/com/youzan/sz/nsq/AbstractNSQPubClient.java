@@ -9,7 +9,7 @@ import com.youzan.sz.common.util.JsonUtils;
  *
  * Created by zhanguo on 16/7/29.
  */
-public abstract class AbstractNSQPubClient<V> extends AbstractNSQClient implements NSQPubClient {
+public abstract class AbstractNSQPubClient extends AbstractNSQClient implements NSQPubClient {
 
     Producer p = null;
 
