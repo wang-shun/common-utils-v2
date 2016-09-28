@@ -10,7 +10,9 @@ import java.util.Map;
 public enum AppEnum {
                      FC(1, "fc", "免费收银"), //freeCheckout
                      SS(2, "ss", "超级门店"), //super store
-                     FSS(3, "fss", "超级门店免费版"); //free super store
+                     FSS(3, "fss", "超级门店免费版"), //free super store
+                     PC(11, "fss", "收银专业版"), //Professional Checkout
+    ;
     private Integer                            aid;
     private String                             shortName;
     private String                             name;
