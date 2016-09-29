@@ -285,6 +285,14 @@ public class JedisTemplate {
         return this.execute((JedisAction<Set<String>>) jedis -> jedis.smembers(key));
     }
 
+    public List<String> srangemembers(String key, int count) {
+        return this.execute((JedisAction<List<String>>) jedis -> jedis.srandmember(key, count));
+    }
+
+    public Long srem(String key, String... memebers) {
+        return this.execute((JedisAction<Long>) jedis -> jedis.srem(key, memebers));
+    }
+
     public Boolean zadd(String key, double score, String member) {
         return this.execute((JedisAction<Boolean>) jedis -> jedis.zadd(key, score, member).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
