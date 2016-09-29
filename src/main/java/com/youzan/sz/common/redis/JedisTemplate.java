@@ -289,6 +289,10 @@ public class JedisTemplate {
         return this.execute((JedisAction<List<String>>) jedis -> jedis.srandmember(key, count));
     }
 
+    public Long scard(String key) {
+        return this.execute((JedisAction<Long>) jedis -> jedis.scard(key));
+    }
+
     public Long srem(String key, String... memebers) {
         return this.execute((JedisAction<Long>) jedis -> jedis.srem(key, memebers));
     }
