@@ -88,6 +88,9 @@ public class BeanUtil {
             throw new BusinessException((long) ResponseCode.ERROR.getCode(), "转换异常", e);
         }
 
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("bean info :{}" + beanInfo);
+        }
         // 给 JavaBean 对象的属性赋值
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         for (int i = 0; i < propertyDescriptors.length; i++) {
@@ -102,7 +105,7 @@ public class BeanUtil {
                 try {
                     descriptor.getWriteMethod().invoke(obj, args);
                 } catch (IllegalArgumentException ex) {
-                    LOGGER.warn("BeanUtil Error: 类型转换异常,请自行转换,value:{}", value);
+                    LOGGER.warn("BeanUtil Error: 类型转换异常,请自行转换,proprtyName:{},value:{}", propertyName, value);
                 } catch (Exception e) {
                     LOGGER.warn("source map:{},BeanUtil Error:{}", JsonUtils.toJson(map), e);
                 }

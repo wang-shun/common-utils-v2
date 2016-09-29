@@ -49,14 +49,14 @@ public class PropertiesUtils {
                     }
                     return propertiesMap;
                 } catch (Exception e) {
-                    LOGGER.error("Read Property Exception:{}", e);
+                    LOGGER.warn("Read Property Exception:{}", e);
                     throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
                 } finally {
                     if (inputStream != null) {
                         try {
                             inputStream.close();
                         } catch (IOException e) {
-                            LOGGER.error("Read Property Exception:{}", e);
+                            LOGGER.warn("Read Property Exception:{}", e);
                         }
                     }
                 }
@@ -73,7 +73,7 @@ public class PropertiesUtils {
         try {
             return future.get().get(propertiesKey);
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error("Read Property Exception:{}", e);
+            LOGGER.warn("Read Property Exception:{}", e);
             throw new BusinessException((long) ResponseCode.ERROR.getCode(), e.getMessage());
         }
     }
@@ -92,12 +92,12 @@ public class PropertiesUtils {
         try {
             property = getProperty(propertiesName, propertiesKey);
             if (property == null) {
-                LOGGER.error("load property({}) is null,use default value:{}", propertiesName, defaultValue);
+                LOGGER.info("load property({}) is null,use default value:{}", propertiesName, defaultValue);
 
                 return defaultValue;
             }
         } catch (Throwable e) {
-            LOGGER.error("load property({}) error,use default value:{}", propertiesName, defaultValue);
+            LOGGER.warn("load property({}) error,use default value:{}", propertiesName, defaultValue);
             property = defaultValue;
         }
         return property;
