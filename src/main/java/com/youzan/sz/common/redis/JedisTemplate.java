@@ -205,17 +205,36 @@ public class JedisTemplate {
     }
 
     public Long lpush(String key, String... values) {
-        return this.execute((JedisAction<Long>) jedis -> jedis.lpushx(key, values));
+        return this.execute((JedisAction<Long>) jedis -> jedis.lpush(key, values));
+    }
+
+    public String lpop(String key) {
+        return this.execute((JedisAction<String>) jedis -> jedis.lpop(key));
+    }
+
+    public String blpop(String key) {
+        return this.execute((JedisAction<String>) jedis -> {
+            List result = jedis.blpop(key);
+            return result != null && result.size() > 0 ? (String) result.get(0) : null;
+        });
+    }
+
+    public String blpop(int timeout, String key) {
+        return this.execute((JedisAction<String>) jedis -> {
+            List result = jedis.blpop(timeout, key);
+            return result != null && result.size() > 0 ? (String) result.get(0) : null;
+        });
+    }
+
+    public Long rpush(String key, String... values) {
+        return this.execute((JedisAction<Long>) jedis -> jedis.rpush(key, values));
     }
 
     public String rpop(String key) {
         return this.execute((JedisAction<String>) jedis -> jedis.rpop(key));
     }
 
-    /**
-     * @Deprecated unusable command, this command will be removed in 3.0.0.
-     */
-    @Deprecated
+
     public String brpop(String key) {
         return this.execute((JedisAction<String>) jedis -> {
             List result = jedis.brpop(key);
@@ -264,6 +283,18 @@ public class JedisTemplate {
 
     public Set<String> smembers(String key) {
         return this.execute((JedisAction<Set<String>>) jedis -> jedis.smembers(key));
+    }
+
+    public List<String> srandmember(String key, int count) {
+        return this.execute((JedisAction<List<String>>) jedis -> jedis.srandmember(key, count));
+    }
+
+    public Long scard(String key) {
+        return this.execute((JedisAction<Long>) jedis -> jedis.scard(key));
+    }
+
+    public Long srem(String key, String... memebers) {
+        return this.execute((JedisAction<Long>) jedis -> jedis.srem(key, memebers));
     }
 
     public Boolean zadd(String key, double score, String member) {
