@@ -285,7 +285,7 @@ public class JedisTemplate {
         return this.execute((JedisAction<Set<String>>) jedis -> jedis.smembers(key));
     }
 
-    public List<String> srangemembers(String key, int count) {
+    public List<String> srandmember(String key, int count) {
         return this.execute((JedisAction<List<String>>) jedis -> jedis.srandmember(key, count));
     }
 
