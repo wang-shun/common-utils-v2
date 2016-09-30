@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod=" 5 seconds" debug="true">
+    <property name="APP_NAME" value="store-oa"/>
+    <property name="APP_LOG_NAME" value="store_oa"/>
+    <property name="logback.level" value="INFO"/>
+    <property name="LOG_PATH" value="/data/logs/${APP_NAME}"/>
+
+    <property name="main.track.name" value="${APP_LOG_NAME}_track"/>
+    <property name="main.track.topic" value="${APP_LOG_NAME}"/>
+
+    <property name="param.track.name" value="${APP_LOG_NAME}_param_track"/>
+    <property name="param.track.topic" value="${APP_LOG_NAME}_param"/>
+
+    <property name="root.track.name" value="${APP_LOG_NAME}_root_track"/>
+    <property name="root.track.topic" value="${APP_LOG_NAME}_root"/>
+
+    <property file="config-base.properties"/>
+    <property file="config-env.properties"/>
+    <property name="track.host.value" value="flume-dev.s.qima-inc.com"/>
+    <!-- 控制台输出 -->
+    <!--
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{56} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    -->
+    <!-- app 日志输出格式 -->
+    <property name="OUTPUT_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %class{56}.%M:%L - %msg%n"/>
+
+    <!-- 框架日志输出格式-->
+    <property name="FW_OUTPUT_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %class{56}.%M:%L - %msg%n"/>
+
+    <property name="ONLY_INFO_PATTERN"
+              value="%msg%n"/>
+
+    <!--日志文件保留最大天数-->
+    <property name="MAXDAY" value="10"/>
+
+    <!--日志文件滚动阈值-->
+    <property name="MAXSIZE" value="256MB"/>
+
+    <!-- app 主业务的Track配置 -->
+    <appender name="${main.track.name}" class="com.youzan.track.appender.TrackAppender">
+        <!-- 应用名称 -->
+        <app>${APP_NAME}</app>
+        <!-- 自定义的一个日志的类型，业务方自己用 可日后查询 required -->
+        <topic>${main.track.topic}</topic>
+        <!-- 消息体格式 同logback的pattern 默认 %msg -->
+        <pattern>%-4relative [%thread] %-5level %class{56}.%M:%L - %msg%n</pattern>
+        <!-- 开发环境 指向192.168.66.204 线上环境指向127.0.0.1 -->
+        <host>${track.host.value}</host>
+    </appender>
+
+    <!-- 出入参的Track配置 -->
+    <appender name="${param.track.name}" class="com.youzan.track.appender.TrackAppender">
+        <!-- 应用名称 -->
+        <app>${APP_NAME}</app>
+        <!-- 自定义的一个日志的类型，业务方自己用 可日后查询 required -->
+        <topic>${param.track.topic}</topic>
+        <!-- 消息体格式 同logback的pattern 默认 %msg -->
+        <pattern>%-4relative [%thread] %-5level %class{56}.%M:%L - %msg%n</pattern>
+        <!-- 开发环境 指向192.168.66.204 线上环境指向127.0.0.1 -->
+        <host>${track.host.value}</host>
+    </appender>
+
+
+    <!-- rootlog根的Track配置 -->
+    <appender name="${root.track.name}" class="com.youzan.track.appender.TrackAppender">
+        <!-- 应用名称 -->
+        <app>${APP_NAME}</app>
+        <!-- 自定义的一个日志的类型，业务方自己用 可日后查询 required -->
+        <topic>${root.track.topic}</topic>
+        <!-- 消息体格式 同logback的pattern 默认 %msg -->
+        <pattern>%-4relative [%thread] %-5level %class{56}.%M:%L - %msg%n</pattern>
+        <!-- 开发环境 指向192.168.66.204 线上环境指向127.0.0.1 -->
+        <host>${track.host.value}</host>
+    </appender>
+
+    <!-- 错误日志 APPENDER -->
+    <appender name="ALARM" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/alarm.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/alarm-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${OUTPUT_PATTERN}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter"><!-- 只打印错误日志 -->
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- youzan包下业务日志 APPENDER -->
+    <appender name="BUSINESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/${APP_NAME}.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${OUTPUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Dubbo框架日志 APPENDER -->
+    <appender name="DUBBO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/dubbo.log</File>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/dubbo-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FW_OUTPUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 数据库连接池Druid日志 APPENDER -->
+    <appender name="SQL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/sql.log</File>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/sql-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FW_OUTPUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="snapTransfer" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/snaptransfer-info.log</File>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/snaptransfer-info-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FW_OUTPUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="snapTransferError" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/snaptransfer-errorkey.log</File>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/snaptransfer-errorkey-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${ONLY_INFO_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 出入参数日志 APPENDER -->
+    <appender name="PARAM" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/param.log</File>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/param-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FW_OUTPUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- ROOT日志 APPENDER -->
+    <appender name="ROOT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/root.log</File>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/root-%d{yyyy-MM-dd}-%i.log.gz
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAXSIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAXDAY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FW_OUTPUT_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!--控制台输出-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <Encoding>UTF-8</Encoding>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} {%thread} %-5level %X%logger{50} %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <logger name="snapTransferLog" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="snapTransfer"/>
+    </logger>
+
+    <logger name="snapTransferkey" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="snapTransferError"/>
+    </logger>
+
+    <!-- youzan包下业务日志输出 -->
+    <logger name="com.youzan" additivity="false">
+        <level value="${logback.level}"/>
+        <appender-ref ref="BUSINESS"/>
+        <appender-ref ref="ROOT"/>
+        <appender-ref ref="ALARM"/>
+        <appender-ref ref="${main.track.name}"/>
+        <appender-ref ref="${param.track.name}"/>
+        <appender-ref ref="console"/>
+    </logger>
+
+    <!-- Dubbo框架日志输出 -->
+    <logger name="com.alibaba.dubbo" additivity="false">
+        <level value="${logback.level}"/>
+        <appender-ref ref="DUBBO"/>
+        <appender-ref ref="ROOT"/>
+        <appender-ref ref="ALARM"/>
+        <appender-ref ref="console"/>
+    </logger>
+
+    <!-- 数据库连接池Druid日志输出 -->
+    <logger name="com.alibaba.druid" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="SQL"/>
+        <appender-ref ref="ROOT"/>
+        <appender-ref ref="ALARM"/>
+        <appender-ref ref="console"/>
+    </logger>
+    <!-- 出入参数日志输入  -->
+    <logger name="PARAM" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="PARAM"/>
+        <appender-ref ref="ALARM"/>
+        <appender-ref ref="${param.track.name}"/>
+        <appender-ref ref="console"/>
+    </logger>
+
+    <!-- 根logger输出,配置日志级别 -->
+    <root level="${logback.level}">
+        <appender-ref ref="ROOT"/>
+        <appender-ref ref="ALARM"/>
+        <appender-ref ref="${root.track.name}"/>
+        <appender-ref ref="${main.track.name}"/>
+        <appender-ref ref="${param.track.name}"/>
+        <appender-ref ref="console"/>
+    </root>
+
+    <!--控制台输出-->
+    <root name="com.youzan" level="${logback.level}">
+        <appender-ref ref="${main.track.name}"/>
+        <appender-ref ref="ROOT"/>
+        <appender-ref ref="${root.track.name}"/>
+        <appender-ref ref="${param.track.name}"/>
+        <appender-ref ref="console"/>
+    </root>
+
+</configuration>

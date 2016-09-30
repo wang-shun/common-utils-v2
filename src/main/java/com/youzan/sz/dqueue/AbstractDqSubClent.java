@@ -32,30 +32,40 @@ public abstract class AbstractDqSubClent<T> extends AbstractDqClient {
     /**是否自动删除key,请在处理完成后再删除*/
     private boolean             autoDelete = false;
 
+    private PopHandler          popHandler;
+
     public AbstractDqSubClent(String dequeueURL, String chanel, Class<T> z) {
         super(dequeueURL, chanel);
         this.z = z;
     }
 
-    /**用默认线程池always取数据,一定要判取的数据是否有返回*/
+    /**用默认线程池always取数据,一定要判取的数据是否有返回
+     * 不建议使用,有bug*/
+
+    @Deprecated
     public void popAlways() {
         dq.popAlways(this.getChanel(), getDqPopHandler());
+    }
+
+    public void popOne() throws Exception {
+
+        Response response = dq.popOne(this.getChanel());
+        dealResponse(response);
     }
 
     /**
      * 使用自己的线程池来完成
      * @param coreThreads
-     * @param maxThreads
      * @param threadFactory
      */
-    public void popAlways(int coreThreads, int maxThreads, ThreadFactory threadFactory) {
+    public void popAlways(int coreThreads, ThreadFactory threadFactory) {
         taskList = new ArrayList<PopTask>();
 
         if (threadFactory == null) {
             threadFactory = new ExceptionThreadFactory(new ExceptionThreadFactory.ExceptionHandler());
         }
 
-        popExecutor = new ThreadPoolExecutor(coreThreads, maxThreads, 0L, TimeUnit.MILLISECONDS,
+        popExecutor = new ThreadPoolExecutor(coreThreads, coreThreads, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(), threadFactory);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -71,49 +81,66 @@ public abstract class AbstractDqSubClent<T> extends AbstractDqClient {
                 HttpUtils.close();
             }
         });
+        for (int i = 0; i < coreThreads; i++) {
+            PopTask task = new PopTask(this.dq, this.getChanel(), getDqPopHandler());
+            taskList.add(task);
+            popExecutor.submit(task);
+        }
 
-        PopTask task = new PopTask(this.dq, this.getChanel(), getDqPopHandler());
-        taskList.add(task);
-        popExecutor.submit(task);
     }
 
     private PopHandler getDqPopHandler() {
-        PopHandler handler = new PopHandler() {
-            @Override
-            public void dealJob(Response response) throws Throwable {
 
-                if (response.isSuccess()) {
-                    LOGGER.debug("dq pop msg key={},value={}", response.getKey(),response.getValue());
-                    if (!StringUtils.isEmpty(response.getKey())) {
-                        try {
-                           T obj = null;
-                            if (decode != null) {
+        if (popHandler == null) {
+            synchronized (this) {
 
-                                if(z !=null && ! (z == String.class) ){
-                                    obj = decode.decode(response.getValue(), z);
-                                }else {
-                                    obj = (T) response.getValue();
-                                }
-                            }else {
-                                obj = (T)response.getValue();
-                            }
-                            if (linkedDqHandler != null) {
-                                linkedDqHandler.handler(response.getKey(),obj);
-                            }
-                            if (autoDelete) {
-                                dq.delete(response.getKey());
-                            }
-                        } catch (Exception e) {
-                            LOGGER.error("handler dq msg key ={},value={},error={}", response.getKey(),
-                                response.getValue(), e);
+                if (popHandler == null) {
+                    popHandler = new PopHandler() {
+                        @Override
+                        public void dealJob(Response response) throws Throwable {
+                            dealResponse(response);
                         }
-                    }
-                } else if(StringUtils.isNotEmpty(response.getKey())){
-                    LOGGER.error("pop dequeue msg error={},", response.getError());
+                    };
                 }
             }
-        };
-        return handler;
+
+        }
+        return popHandler;
+    }
+
+    /**
+     * 处理response
+     * @param response
+     */
+    private void dealResponse(Response response) {
+        if (response.isSuccess()) {
+            LOGGER.debug("dq pop msg key={},value={}", response.getKey(), response.getValue());
+            if (!StringUtils.isEmpty(response.getKey())) {
+                try {
+                    T obj = null;
+                    if (decode != null) {
+
+                        if (z != null && !(z == String.class)) {
+                            obj = decode.decode(response.getValue(), z);
+                        } else {
+                            obj = (T) response.getValue();
+                        }
+                    } else {
+                        obj = (T) response.getValue();
+                    }
+                    if (linkedDqHandler != null) {
+                        linkedDqHandler.handler(response.getKey(), obj);
+                    }
+                    if (autoDelete) {
+                        dq.delete(response.getKey());
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("handler dq msg key ={},value={},error={}", response.getKey(), response.getValue(), e);
+                }
+            }
+        } else if (StringUtils.isNotEmpty(response.getKey())) {
+            LOGGER.error("pop dequeue msg error={},", response.getError());
+        }
     }
 
     public Decode getDecode() {
@@ -132,6 +159,5 @@ public abstract class AbstractDqSubClent<T> extends AbstractDqClient {
         this.autoDelete = autoDelete;
     }
 
-
-    public abstract  void init();
+    public abstract void init();
 }

@@ -12,7 +12,7 @@ public class TestNqSubClient extends AbstractDqSubClent {
 
     @Override
     public void init() {
-        popAlways();
+       // popAlways();
         try {
             System.in.read();
         }catch (Exception  e){

@@ -20,7 +20,8 @@ public class NqTest {
 
         TestNqPubClient client =  new TestNqPubClient(DQUEUE_URI,CHANEL);
         DemoPoeple demoPoeple = new DemoPoeple();
-
+        client.setInterval(3);
+        client.setReservedTimeout(2);
         try{
             int i  =0;
             while(true) {
@@ -46,7 +47,9 @@ public class NqTest {
             public <T, V> T handler(String key,V v)  {
                 try {
                     LOGGER.info("receive msg key={},v={}", key, v);
+                    Thread.sleep(11000);
                     client.delete(key);
+
                 }catch (Exception e){
 
                 }
@@ -58,6 +61,7 @@ public class NqTest {
         client.setLinkedDqHandler(linkedDqHandler);
         client.setAutoDelete(true);
         client.setDecode(new StringDecode());
+        client.popAlways(2,null);
         client.init();
 
     }
