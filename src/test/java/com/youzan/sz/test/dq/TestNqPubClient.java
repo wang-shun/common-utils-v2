@@ -11,7 +11,6 @@ public class TestNqPubClient extends AbstractDqPubClient {
         super(dequeueURL, chanel);
     }
 
-    @Override
     public void init() {
 
     }

@@ -131,4 +131,7 @@ public abstract class AbstractDqSubClent<T> extends AbstractDqClient {
     public void setAutoDelete(boolean autoDelete) {
         this.autoDelete = autoDelete;
     }
+
+
+    public abstract  void init();
 }

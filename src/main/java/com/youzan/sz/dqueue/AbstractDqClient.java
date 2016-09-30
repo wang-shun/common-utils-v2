@@ -63,6 +63,5 @@ public abstract class AbstractDqClient {
         return true;
     }
 
-   public abstract  void init();
 
 }
