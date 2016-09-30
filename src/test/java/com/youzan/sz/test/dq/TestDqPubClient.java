@@ -5,9 +5,9 @@ import com.youzan.sz.dqueue.AbstractDqPubClient;
 /**
  * Created by wangpan on 2016/9/30.
  */
-public class TestNqPubClient extends AbstractDqPubClient {
+public class TestDqPubClient extends AbstractDqPubClient {
 
-    public TestNqPubClient(String dequeueURL, String chanel) {
+    public TestDqPubClient(String dequeueURL, String chanel) {
         super(dequeueURL, chanel);
     }
 

@@ -11,17 +11,17 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by wangpan on 2016/9/30.
  */
-public class NqTest {
+public class DqTest {
     private static final String DQUEUE_URI = "http://delay-dev.s.qima-inc.com:80/json";
     private static final String CHANEL = "wp_1";
-    private static final Logger LOGGER = LoggerFactory.getLogger(NqTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DqTest.class);
     @Test
     public void pub(){
 
-        TestNqPubClient client =  new TestNqPubClient(DQUEUE_URI,CHANEL);
+        TestDqPubClient client =  new TestDqPubClient(DQUEUE_URI,CHANEL);
         DemoPoeple demoPoeple = new DemoPoeple();
         client.setInterval(3);
-        client.setReservedTimeout(2);
+        client.setReservedTimeout(30);
         try{
             int i  =0;
             while(true) {
@@ -41,13 +41,13 @@ public class NqTest {
     @Test
     public void sub(){
 
-      TestNqSubClient client = new TestNqSubClient(DQUEUE_URI,CHANEL,DemoPoeple.class);
+      TestDqSubClient client = new TestDqSubClient(DQUEUE_URI,CHANEL,DemoPoeple.class);
         DqHandler handler = new DqHandler() {
             @Override
             public <T, V> T handler(String key,V v)  {
                 try {
                     LOGGER.info("receive msg key={},v={}", key, v);
-                    Thread.sleep(11000);
+                    Thread.sleep(2000);
                     client.delete(key);
 
                 }catch (Exception e){
