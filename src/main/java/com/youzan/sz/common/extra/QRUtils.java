@@ -78,6 +78,7 @@ public class QRUtils {
         System.err.println(url);
         final long start = System.currentTimeMillis();
 
+
         final URL imgUrl = new URL(
             "http://10.9.17.31:8888/?txt=http%3A%2F%2Fshorturl-qa.s.qima-inc.com%2F1w0V1r&size=200&fg_color=000000&bg_color=ffffff&case=1&margin=0&level=0&hint=2&ver=2");
         final BufferedImage image = ImageIO.read(imgUrl);
