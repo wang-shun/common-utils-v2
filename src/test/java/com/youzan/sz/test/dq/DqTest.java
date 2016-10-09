@@ -4,6 +4,7 @@ import com.youzan.dqueue.client.exceptions.DQueueException;
 import com.youzan.sz.dqueue.codec.json.StringDecode;
 import com.youzan.sz.dqueue.handler.DqHandler;
 import com.youzan.sz.dqueue.handler.LinkedDqHandler;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by wangpan on 2016/9/30.
  */
+@Ignore
 public class DqTest {
     private static final String DQUEUE_URI = "http://delay-dev.s.qima-inc.com:80/json";
     private static final String CHANEL = "wp_1";
@@ -26,7 +28,6 @@ public class DqTest {
             int i  =0;
             while(true) {
                 client.pub(String.valueOf(i),demoPoeple);
-                Thread.sleep(3000);
                 // break;
                 i++;
                 demoPoeple.setAge(i);
@@ -47,7 +48,6 @@ public class DqTest {
             public <T, V> T handler(String key,V v)  {
                 try {
                     LOGGER.info("receive msg key={},v={}", key, v);
-                    Thread.sleep(2000);
                     client.delete(key);
 
                 }catch (Exception e){
@@ -61,7 +61,7 @@ public class DqTest {
         client.setLinkedDqHandler(linkedDqHandler);
         client.setAutoDelete(true);
         client.setDecode(new StringDecode());
-        client.popAlways(2,null);
+        client.popAlways(5,null);
         client.init();
 
     }
