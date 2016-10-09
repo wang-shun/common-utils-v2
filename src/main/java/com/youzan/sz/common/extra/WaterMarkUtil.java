@@ -29,7 +29,7 @@ public class WaterMarkUtil {
     //模板的y起始地方
     private static final int YCoord=700;
 
-    private static BufferedImage createImage(String content, BufferedImage templateImg) {
+    public static BufferedImage createImage(String content, BufferedImage templateImg) {
         QRConfigVO qrConfigVO=new QRConfigVO();
         qrConfigVO.setTxt(content);
         qrConfigVO.setSize(QRCODE_SIZE);
@@ -63,7 +63,7 @@ public class WaterMarkUtil {
      * @return
      * @throws IOException
      */
-    private static BufferedImage createImage(String content, BufferedImage templateImg,ImageConfig imageConfig) {
+    public static BufferedImage createImage(String content, BufferedImage templateImg,ImageConfig imageConfig) {
         QRConfigVO qrConfigVO=new QRConfigVO();
         qrConfigVO.setTxt(content);
         qrConfigVO.setSize(imageConfig.getQrcodeSize());
