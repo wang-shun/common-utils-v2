@@ -137,9 +137,30 @@ public final class HttpUtil {
      * @throws IOException
      */
     public static String uploadFile(boolean isHttps, String url, String filePath) throws BusinessException, IOException {
+        if (filePath == null || filePath.equals("")) {
+            return "";
+        }
+        return uploadFile(isHttps, url, new File(filePath));
+    }
+
+
+    /**
+     * 上传文件 utf-8
+     *
+     * @param isHttps
+     * @param url
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    public static String uploadFile(boolean isHttps, String url, File file) throws BusinessException, IOException {
+        if (file == null) {
+            return "";
+        }
+
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
-        FileBody bin = new FileBody(new File(filePath));
+        FileBody bin = new FileBody(file);
         StringBody comment = new StringBody("a binary file", ContentType.APPLICATION_OCTET_STREAM);
         HttpEntity reqEntity = MultipartEntityBuilder.create()
                 .addPart("bin", bin)
@@ -149,11 +170,11 @@ public final class HttpUtil {
         httpPost.setEntity(reqEntity);
         CloseableHttpResponse response = httpClient.execute(httpPost);
         if (LOGGER.isInfoEnabled()) {
-            if( response.getStatusLine().getStatusCode() != 200){
-                LOGGER.error("uploadFile error,code {}",response.getStatusLine().getStatusCode());
-                throw new BusinessException(Long.valueOf(response.getStatusLine().getStatusCode()),"");
+            if (response.getStatusLine().getStatusCode() != 200) {
+                LOGGER.error("uploadFile error,code {}", response.getStatusLine().getStatusCode());
+                throw new BusinessException(Long.valueOf(response.getStatusLine().getStatusCode()), "");
             }
-           // LOGGER.info(response.getStatusLine().toString());
+            // LOGGER.info(response.getStatusLine().toString());
         }
         HttpEntity resEntity = response.getEntity();
         String result = EntityUtils.toString(resEntity, Consts.UTF_8);
