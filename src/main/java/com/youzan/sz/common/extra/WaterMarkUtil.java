@@ -29,7 +29,7 @@ public class WaterMarkUtil {
     //模板的y起始地方
     private static final int YCoord=700;
 
-    public static BufferedImage createImage(String content, BufferedImage templateImg) {
+    public static BufferedImage createImage(String content, BufferedImage templateImg) throws IOException {
         QRConfigVO qrConfigVO=new QRConfigVO();
         qrConfigVO.setTxt(content);
         qrConfigVO.setSize(QRCODE_SIZE);
@@ -41,6 +41,7 @@ public class WaterMarkUtil {
             source = ImageIO.read(new File(QRuRL));
         } catch (IOException e) {
             LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}",e);
+            throw e;
         }
         int width = templateImg.getWidth(null);
         int height = templateImg.getHeight(null);
@@ -63,7 +64,7 @@ public class WaterMarkUtil {
      * @return
      * @throws IOException
      */
-    public static BufferedImage createImage(String content, BufferedImage templateImg,ImageConfig imageConfig) {
+    public static BufferedImage createImage(String content, BufferedImage templateImg,ImageConfig imageConfig) throws IOException {
         QRConfigVO qrConfigVO=new QRConfigVO();
         qrConfigVO.setTxt(content);
         qrConfigVO.setSize(imageConfig.getQrcodeSize());
@@ -75,6 +76,7 @@ public class WaterMarkUtil {
             source = ImageIO.read(new File(QRuRL));
         } catch (IOException e) {
             LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}",e);
+            throw e;
         }
         int width = templateImg.getWidth(null);
         int height = templateImg.getHeight(null);
