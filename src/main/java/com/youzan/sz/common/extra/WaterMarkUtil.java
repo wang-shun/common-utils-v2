@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Created by jinxiaofei on 16/10/8.
@@ -38,7 +39,7 @@ public class WaterMarkUtil {
 
         BufferedImage source= null;
         try {
-            source = ImageIO.read(new File(QRuRL));
+            source = ImageIO.read(new URL(QRuRL));
         } catch (IOException e) {
             LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}",e);
             throw e;
