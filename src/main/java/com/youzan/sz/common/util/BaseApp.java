@@ -51,11 +51,13 @@ public abstract class BaseApp {
 
         //startJvmMonitor();
         initSpring();
+
         //addHook();
        // com.alibaba.dubbo.container.Main.main(new String[]{});
        InitDistributedTools.init();//启动心跳
     }
     protected  void addHook(){
+        logger.info("add hook");
         String HOOK_NAME = "hook";
         ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
 
