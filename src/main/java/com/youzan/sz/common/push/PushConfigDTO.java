@@ -56,7 +56,8 @@ public class PushConfigDTO extends BaseDTO {
         return msgChannel;
     }
 
-    public void setMsgChannel(MsgChannel msgChannel) {
+    public PushConfigDTO setMsgChannel(MsgChannel msgChannel) {
         this.msgChannel = msgChannel;
+        return this;
     }
 }
