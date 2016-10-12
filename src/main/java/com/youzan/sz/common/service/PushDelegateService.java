@@ -1,6 +1,12 @@
 package com.youzan.sz.common.service;
 
+import com.youzan.sz.common.SignOut;
+import com.youzan.sz.common.model.Page;
+import com.youzan.sz.common.push.PushMsgDTO;
 import com.youzan.sz.common.push.PushContextDTO;
+import com.youzan.sz.common.push.msg.MsgDTO;
+import com.youzan.sz.common.push.msg.MsgPageDTO;
+import com.youzan.sz.common.push.msg.MsgReadDTO;
 import com.youzan.sz.common.response.BaseResponse;
 
 /**
@@ -26,7 +32,19 @@ public interface PushDelegateService {
      * */
     BaseResponse<PushContextDTO> validateWithDisposal(PushContextDTO pushContextDTO);
 
-    //    BaseResponse sendSmsVerify(String appKey, String phone, Integer ttl, Integer count);
-    //
-    //    BaseResponse smsVerify(String appKey, String phone, String credentials);
+    /**
+     * @return 返回推送成功的接收者
+     * */
+    @SignOut
+    BaseResponse<PushMsgDTO> pushMsg(PushMsgDTO pushMsgDTO);
+
+    /**
+     *拉取消息列表 
+     * */
+    BaseResponse<Page<MsgDTO>> getPushMsg(MsgPageDTO msgPageDTO);
+
+    /**
+     * 标记消息为已读
+     * */
+    BaseResponse<MsgReadDTO> markRead(MsgReadDTO msgReadDTO);
 }
