@@ -5,61 +5,98 @@ package com.youzan.sz.common.extra;
  */
 public class ImageConfig {
     //二维码大小
-    private int qrcodeSize;
+    private Integer qrcodeSize;
     //镶嵌的横坐标
-    private int XCoord;
+    private Integer XCoord;
     //镶嵌的纵坐标
-    private int YCoord;
+    private Integer YCoord;
     //镶嵌的宽度
-    private int width;
+    private Integer width;
     //镶嵌的高度
-    private int height;
+    private Integer height;
 
-    public ImageConfig(int qrcodeSize, int XCoord, int YCoord, int width, int height) {
-        this.qrcodeSize = qrcodeSize;
-        this.XCoord = XCoord;
-        this.YCoord = YCoord;
-        this.width = width;
-        this.height = height;
-    }
+    //logo镶嵌的时候的大小,因为logo原图和镶嵌的时候可能不一样大;
+    private Integer logoSize;
+    //logo的横坐标
+    private Integer logoXcoord;
+    //logo的纵坐标
+    private Integer logoYcoord;
 
-    public int getQrcodeSize() {
+    public Integer getQrcodeSize() {
         return qrcodeSize;
     }
 
-    public void setQrcodeSize(int qrcodeSize) {
+    public void setQrcodeSize(Integer qrcodeSize) {
         this.qrcodeSize = qrcodeSize;
     }
 
-    public int getXCoord() {
+    public Integer getXCoord() {
         return XCoord;
     }
 
-    public void setXCoord(int XCoord) {
+    public void setXCoord(Integer XCoord) {
         this.XCoord = XCoord;
     }
 
-    public int getYCoord() {
+    public Integer getYCoord() {
         return YCoord;
     }
 
-    public void setYCoord(int YCoord) {
+    public void setYCoord(Integer YCoord) {
         this.YCoord = YCoord;
     }
 
-    public int getWidth() {
+    public Integer getWidth() {
         return width;
     }
 
-    public void setWidth(int width) {
+    public void setWidth(Integer width) {
         this.width = width;
     }
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
+    public void setHeight(Integer height) {
         this.height = height;
+    }
+
+    public Integer getLogoSize() {
+        return logoSize;
+    }
+
+    public void setLogoSize(Integer logoSize) {
+        this.logoSize = logoSize;
+    }
+
+    public Integer getLogoXcoord() {
+        return logoXcoord;
+    }
+
+    public void setLogoXcoord(Integer logoXcoord) {
+        this.logoXcoord = logoXcoord;
+    }
+
+    public Integer getLogoYcoord() {
+        return logoYcoord;
+    }
+
+    public void setLogoYcoord(Integer logoYcoord) {
+        this.logoYcoord = logoYcoord;
+    }
+
+    @Override
+    public String toString() {
+        return "ImageConfig{" +
+                "qrcodeSize=" + qrcodeSize +
+                ", XCoord=" + XCoord +
+                ", YCoord=" + YCoord +
+                ", width=" + width +
+                ", height=" + height +
+                ", logoSize=" + logoSize +
+                ", logoXcoord=" + logoXcoord +
+                ", logoYcoord=" + logoYcoord +
+                '}';
     }
 }
