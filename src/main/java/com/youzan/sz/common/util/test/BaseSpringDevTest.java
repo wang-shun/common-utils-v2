@@ -3,7 +3,6 @@ package com.youzan.sz.common.util.test;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  *
@@ -18,7 +17,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = "classpath:config-spring.xml")
 @TestProfile(EnvProfile.DEV)
 public abstract class BaseSpringDevTest extends BaseSpringTest {
-
     @BeforeClass
     public static void init() {
         BaseSpringTest.initWithProfile(BaseSpringDevTest.class.getAnnotation(TestProfile.class).value());
