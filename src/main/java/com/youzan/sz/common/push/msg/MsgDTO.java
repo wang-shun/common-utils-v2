@@ -29,6 +29,18 @@ public class MsgDTO {
      * 消息类型
      * */
     private int                 msgTypeEnum;
+    /**
+     * 接收时间
+     * */
+    private Long                recvDate;
+
+    public Long getRecvDate() {
+        return recvDate;
+    }
+
+    public void setRecvDate(Long recvDate) {
+        this.recvDate = recvDate;
+    }
 
     public Long getId() {
         return id;

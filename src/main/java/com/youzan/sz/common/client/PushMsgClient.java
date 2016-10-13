@@ -1,6 +1,13 @@
 package com.youzan.sz.common.client;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.validation.constraints.NotNull;
+
+import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.model.Page;
@@ -11,15 +18,10 @@ import com.youzan.sz.common.push.SendType;
 import com.youzan.sz.common.push.msg.MsgDTO;
 import com.youzan.sz.common.push.msg.MsgPageDTO;
 import com.youzan.sz.common.response.BaseResponse;
-import com.youzan.sz.common.service.PushDelegateService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.common.service.PushDelegateService;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.common.util.SpringUtils;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Created by zefa on 16/7/5.
@@ -75,10 +77,11 @@ public final class PushMsgClient {
     /**
      * 按照bid+shopId+roleId推送
      * */
-    public void pushRoleMsg(BaseStaffDTO staffDTO, MsgTypeEnum msgTypeEnum, @NotNull String content,
-                            @NotNull String title, Map<String, String> params) {
+    public void pushRoleMsg(BaseStaffDTO staffDTO, MsgTypeEnum msgTypeEnum, @NotNull String title,
+                            @NotNull String content, Map<String, String> params) {
         final PushMsgDTO pushMsgDTO = new PushMsgDTO();
         pushMsgDTO.setMsgType(msgTypeEnum.getValue());
+        pushMsgDTO.setTitle(title);
         pushMsgDTO.setContent(content);
         pushMsgDTO.setSendType(SendType.SHOP_ROLE.getValue());
         pushMsgDTO.addStaffRecv(staffDTO);
@@ -118,4 +121,14 @@ public final class PushMsgClient {
         return pushDelegateService.getPushMsg(msgPageDTO).getData();
     }
 
+    public static void main(String[] args) {
+        final HashMap<String, String> appMap = new HashMap<>();
+        final JSONObject jsonObject = new JSONObject();
+        //        jsonObject.put("os", "6.0");
+        jsonObject.put("versionStr", "1.0.1");
+        //        jsonObject.put("buildId", 10);
+        //profile
+        appMap.put("appProfs", jsonObject.toString());
+        System.out.println(JsonUtils.toJson(appMap));
+    }
 }

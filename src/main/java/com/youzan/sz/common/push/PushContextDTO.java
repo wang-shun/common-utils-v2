@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.youzan.platform.courier.domain.Recipient;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.youzan.sz.common.model.BaseDTO;
@@ -21,6 +22,8 @@ public class PushContextDTO extends BaseDTO {
     private Map<String, String>  params;
     @NotEmpty(message = "消息接收者不能为空")
     private List<PushReceiveDTO> recvList;
+
+    private List<Recipient>      recipientList;
 
     public Map<String, String> getParams() {
         return params;
@@ -39,6 +42,14 @@ public class PushContextDTO extends BaseDTO {
         this.pushConfigDTO = pushConfigDTO;
         return this;
 
+    }
+
+    public List<Recipient> getRecipientList() {
+        return recipientList;
+    }
+
+    public void setRecipientList(List<Recipient> recipientList) {
+        this.recipientList = recipientList;
     }
 
     public List<PushReceiveDTO> getRecvList() {
