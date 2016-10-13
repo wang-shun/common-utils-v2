@@ -29,13 +29,13 @@ public class WaterMarkUtil {
 
 
     //模板的x起始地方
-    private static final int XCoord=315;
+    private static final int XCoord=300;
     //模板的y起始地方
-    private static final int YCoord=800;
+    private static final int YCoord=870;
 
-    private static final int LOGO_XCOORD=650;
-    private static final int LOGO_YCOORD =1130;
-    private static final int LOGO_SIZE=200;
+    private static final int LOGO_XCOORD=660;
+    private static final int LOGO_YCOORD =1230;
+    private static final int LOGO_SIZE=180;
 
     private static final ImageConfig DEFAULT_IMAGE_CONFIG=WaterMarkUtil.getDefaultConfig();
 
