@@ -216,7 +216,7 @@ public class CarmenCodec implements Codec2 {
                     int pIndex = url.indexOf("/?");
                     if (pIndex != -1) {
                         param = url.substring(pIndex + 2);
-                    } else if ((pIndex = url.lastIndexOf('?')) != -1) {
+                    } else if ((pIndex = url.indexOf('?')) != -1) {
                         param = url.substring(pIndex + 1);
                     }
 
