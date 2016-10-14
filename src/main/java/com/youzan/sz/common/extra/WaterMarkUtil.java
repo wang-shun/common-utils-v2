@@ -91,6 +91,18 @@ public class WaterMarkUtil {
         return tag;
     }
 
+    /**
+     *
+     * @param content 二维码的内容
+     * @param logoImg logo的图片
+     * @param imageConfig 图片镶嵌的私人化的设置
+     * @return
+     * @throws IOException
+     */
+    public static BufferedImage createImage(String content,BufferedImage logoImg,ImageConfig imageConfig) throws IOException {
+        return  null;
+    }
+
     private static ImageConfig inherrateConifg(ImageConfig imageConfig) {
         if(imageConfig==null){
             return DEFAULT_IMAGE_CONFIG;

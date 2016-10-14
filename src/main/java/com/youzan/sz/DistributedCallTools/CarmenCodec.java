@@ -213,7 +213,7 @@ public class CarmenCodec implements Codec2 {
                     String url = strArray[1].trim();
 
                     // 解析参数信息
-                    int pIndex = url.lastIndexOf("/?");
+                    int pIndex = url.indexOf("/?");
                     if (pIndex != -1) {
                         param = url.substring(pIndex + 2);
                     } else if ((pIndex = url.lastIndexOf('?')) != -1) {
