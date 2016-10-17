@@ -176,8 +176,8 @@ public class JedisTemplate {
         return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.hmset(key, map)) ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    public void hsetnx(String key, String field, String value) {
-        this.execute((JedisActionNoResult) jedis -> jedis.hsetnx(key, field, value));
+    public boolean hsetnx(String key, String field, String value) {
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.hsetnx(key, field, value) > 0L);
     }
 
     public Long hincrBy(String key, String field, long increment) {
