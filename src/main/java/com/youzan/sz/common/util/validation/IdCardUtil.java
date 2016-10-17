@@ -160,6 +160,9 @@ public class IdCardUtil {
      * 验证身份证是否合法
      */
     public static boolean validateCard(String idCard) {
+        if (idCard == null || idCard.isEmpty()) {
+            return false;
+        }
         String card = idCard.trim();
         if (validateIdCard18(card)) {
             return true;

@@ -53,6 +53,10 @@ public class RegexUtils {
      * @return 验证成功返回true，验证失败返回false
      */
     public static boolean checkPhone(String phone) {
+        if(phone==null||phone.isEmpty()){
+            return false;
+        }
+
         String regex = "(\\+\\d+)?(\\d{3,4}\\-?)?\\d{7,8}$";
         return Pattern.matches(regex, phone);
     }
