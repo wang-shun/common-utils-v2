@@ -12,8 +12,10 @@ import java.util.UUID;
  * Created by zefa on 16/4/9.
  */
 public class NumberUtils {
-    private static final String idClientHost = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "idclient.host", "192.168.66.202");
-    private static final String idClientPort = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "idclient.port", "6000");
+    private static final String idClientHost = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
+        "idclient.host", "192.168.66.202");
+    private static final String idClientPort = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH,
+        "idclient.port", "6000");
 
     /**
      * 获取订单 ID
@@ -90,34 +92,34 @@ public class NumberUtils {
         UUID uuid = UUID.randomUUID();
         String str = uuid.toString();
         // 去掉"-"符号
-        return str.substring(0, 8) + str.substring(9, 13) + str.substring(14, 18) + str.substring(19, 23) + str.substring(24);
+        return str.substring(0, 8) + str.substring(9, 13) + str.substring(14, 18) + str.substring(19, 23)
+               + str.substring(24);
     }
 
-
-//    public static void main(String args[]) {
-//        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
-//        System.out.println(NumberTypes.SKU.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKU));
-//        System.out.println(NumberTypes.SELL.getName() + ":" + NumberUtils.initNumber(NumberTypes.SELL));
-//        System.out.println(NumberTypes.RETURN.getName() + ":" + NumberUtils.initNumber(NumberTypes.RETURN));
-//        System.out.println(NumberTypes.STOCKCHECK.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKCHECK));
-//        System.out.println(NumberTypes.PURCHASE.getName() + ":" + NumberUtils.initNumber(NumberTypes.PURCHASE));
-//        System.out.println(NumberTypes.STOCKIN.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKIN));
-//        System.out.println(NumberTypes.STOCKOUT.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKOUT));
-//        System.out.println(NumberTypes.SHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOUKUAN));
-//        System.out.println(NumberTypes.FUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.FUKUAN));
-//        System.out.println(NumberTypes.YINGSHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGSHOUKUAN));
-//        System.out.println(NumberTypes.YINGFUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGFUKUAN));
-//        System.out.println(NumberTypes.STAFFBINDID.getName() + ":" + NumberUtils.initNumber(NumberTypes.STAFFBINDID));
-//        System.out.println(NumberTypes.BANKACCOUNTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.BANKACCOUNTID));
-//        System.out.println(NumberTypes.SPNODEID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SPNODEID));
-//        System.out.println(NumberTypes.CATEGORYID.getName() + ":" + NumberUtils.initNumber(NumberTypes.CATEGORYID));
-//        System.out.println(NumberTypes.SHOPID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOPID));
-//        System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
-//        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
-//        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
-//        System.out.println("批量方法");
-//        NumberUtils.testBatch(NumberTypes.SELL, 10);
-//    }
+    //    public static void main(String args[]) {
+    //        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
+    //        System.out.println(NumberTypes.SKU.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKU));
+    //        System.out.println(NumberTypes.SELL.getName() + ":" + NumberUtils.initNumber(NumberTypes.SELL));
+    //        System.out.println(NumberTypes.RETURN.getName() + ":" + NumberUtils.initNumber(NumberTypes.RETURN));
+    //        System.out.println(NumberTypes.STOCKCHECK.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKCHECK));
+    //        System.out.println(NumberTypes.PURCHASE.getName() + ":" + NumberUtils.initNumber(NumberTypes.PURCHASE));
+    //        System.out.println(NumberTypes.STOCKIN.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKIN));
+    //        System.out.println(NumberTypes.STOCKOUT.getName() + ":" + NumberUtils.initNumber(NumberTypes.STOCKOUT));
+    //        System.out.println(NumberTypes.SHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOUKUAN));
+    //        System.out.println(NumberTypes.FUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.FUKUAN));
+    //        System.out.println(NumberTypes.YINGSHOUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGSHOUKUAN));
+    //        System.out.println(NumberTypes.YINGFUKUAN.getName() + ":" + NumberUtils.initNumber(NumberTypes.YINGFUKUAN));
+    //        System.out.println(NumberTypes.STAFFBINDID.getName() + ":" + NumberUtils.initNumber(NumberTypes.STAFFBINDID));
+    //        System.out.println(NumberTypes.BANKACCOUNTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.BANKACCOUNTID));
+    //        System.out.println(NumberTypes.SPNODEID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SPNODEID));
+    //        System.out.println(NumberTypes.CATEGORYID.getName() + ":" + NumberUtils.initNumber(NumberTypes.CATEGORYID));
+    //        System.out.println(NumberTypes.SHOPID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOPID));
+    //        System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
+    //        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
+    //        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
+    //        System.out.println("批量方法");
+    //        NumberUtils.testBatch(NumberTypes.SELL, 10);
+    //    }
 
     public static void testBatch(NumberTypes numberType, int num) {
         List<String> ids = batchInitNumber(numberType, num);
@@ -127,10 +129,18 @@ public class NumberUtils {
         }
     }
 
+    public static boolean isPositive(Number number) {
+        return number != null && number.longValue() > 0;
+    }
+
+    public static boolean isNotPositive(Number number) {
+        return !isPositive(number);
+    }
+
     public static void main(String[] args) throws Throwable {
-        for(int i = 0 ; i < 100 ; i++){
+        for (int i = 0; i < 100; i++) {
             System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
-            for(int k = 0 ; k < 5; k++){
+            for (int k = 0; k < 5; k++) {
                 System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
             }
         }
