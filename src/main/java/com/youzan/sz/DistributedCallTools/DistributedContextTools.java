@@ -74,7 +74,7 @@ public class DistributedContextTools {
             // 放入卡门调用时传入的参数类型映射
             cache.put(AdminId.getName(), AdminId.class);
             cache.put(RequestIp.getName(), RequestIp.class);
-            cache.put(KdtId.getName(), RequestIp.class);
+            cache.put(KdtId.getName(), KdtId.class);
             cache.put(DeviceId.getName(), DeviceId.class);
             cache.put(DeviceType.getName(), DeviceType.class);
             cache.put(Aid.getName(), Aid.class);
