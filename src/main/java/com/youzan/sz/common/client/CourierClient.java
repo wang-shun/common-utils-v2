@@ -39,7 +39,7 @@ public final class CourierClient {
                     try {
                         instance = new CourierClient();
                     } catch (BusinessException e) {
-                        LOGGER.error("推送异常:{}", e);
+                        LOGGER.warn("推送异常:{}", e);
                         isInit = false;
                         throw e;
                     }
@@ -90,7 +90,7 @@ public final class CourierClient {
         try {
             pushService.sendMessage(messageContext, recipient);
         } catch (Exception e) {
-            LOGGER.error("推送信息给设备出现问题:{}", e);
+            LOGGER.warn("推送信息给设备出现问题:{}", e);
             throw new BusinessException((long) ResponseCode.PUSH_DEVICE_INFO.getCode(), ResponseCode.PUSH_DEVICE_INFO.getMessage(), e);
         }
 

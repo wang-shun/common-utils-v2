@@ -66,7 +66,7 @@ public class EsClient {
             Page<Map<String, Object>> page = searchable.getPage();
             return decode(result, page);
         } catch (Exception e) {
-            LOGGER.error("Es seach Error:{}", e);
+            LOGGER.warn("Es seach Error:{}", e);
             if (e instanceof IOException) {
                 throw new BusinessException((long) ResponseCode.DECODE_ERROR.getCode(), ResponseCode.DECODE_ERROR.getMessage());
             } else {
@@ -95,7 +95,7 @@ public class EsClient {
             }
             return decode(result);
         } catch (Exception e) {
-            LOGGER.error("Es seach Error:{}", e);
+            LOGGER.warn("Es seach Error:{}", e);
             if (e instanceof IOException) {
                 throw new BusinessException((long) ResponseCode.DECODE_ERROR.getCode(), ResponseCode.DECODE_ERROR.getMessage());
             } else {

@@ -43,7 +43,7 @@ public final class PushMsgClient {
             if (instance == null) {
                 final PushDelegateService delegateService = SpringUtils.getBean(PushDelegateService.class);
                 if (delegateService == null) {
-                    logger.error(
+                    logger.warn(
                         "the push service not ready, check the service config add pushDelegateService to rpc service");
                     throw ResponseCode.PUSH_SERVICE_NOT_EXIST.getBusinessException();
                 }
@@ -115,7 +115,7 @@ public final class PushMsgClient {
         }
 
         if (msgPageDTO.getAdminId() == null || msgPageDTO.getShopId() == null || msgPageDTO.getBid() == null) {
-            logger.error("数据异常,未获取到上下文adminId:{},bid:{},shopId:{}", msgPageDTO.getAdminId(), msgPageDTO.getBid(),
+            logger.warn("数据异常,未获取到上下文adminId:{},bid:{},shopId:{}", msgPageDTO.getAdminId(), msgPageDTO.getBid(),
                 msgPageDTO.getShopId());
         }
         return pushDelegateService.getPushMsg(msgPageDTO).getData();

@@ -1,7 +1,6 @@
 package com.youzan.sz.common.util;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  *
@@ -12,6 +11,14 @@ public class CollectionUtils {
         return collection == null || collection.isEmpty();
     }
 
+    public static boolean isNotEmpty(Collection collection) {
+        return collection != null && !collection.isEmpty();
+    }
+
+    public static boolean isNotEmpty(Iterable iterable) {
+        return !isEmpty(iterable);
+    }
+
     public static boolean isEmpty(Iterable iterable) {
         if (iterable != null) {
             return iterable.iterator().hasNext();
@@ -19,8 +26,15 @@ public class CollectionUtils {
         return false;
     }
 
-    public static boolean isNotEmpty(Collection collection) {
-        return collection != null && !collection.isEmpty();
+    public static boolean isEmpty(Map map) {
+        if (map == null) {
+            return false;
+        }
+        return map.isEmpty();
+    }
+
+    public static boolean isNotEmpty(Map map) {
+        return !isEmpty(map);
     }
 
 }

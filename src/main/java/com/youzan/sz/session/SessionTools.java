@@ -203,7 +203,7 @@ public class SessionTools {
     public void updateShopBind() {
         final BaseResponse baseResponse = sessionService.updateShopBind();
         if (!baseResponse.isSucc()) {
-            LOGGER.error("update shop bind failed");
+            LOGGER.warn("update shop bind failed");
         }
     }
 

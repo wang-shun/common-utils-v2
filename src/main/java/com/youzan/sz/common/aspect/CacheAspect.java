@@ -40,7 +40,7 @@ public class CacheAspect extends BaseAspect {
             try {
                 result = pjp.proceed();
             } catch (Throwable throwable) {
-                LOGGER.error("Cache Exceptio:{}", throwable);
+                LOGGER.warn("Cache Exceptio:{}", throwable);
             }
 
             return result;
@@ -73,7 +73,7 @@ public class CacheAspect extends BaseAspect {
                         jedisTemplate.expire(cacheable.key(), cacheable.expireTime());
                     }
                 } catch (Throwable throwable) {
-                    LOGGER.error("Cache Exceptio:{}", throwable);
+                    LOGGER.warn("Cache Exceptio:{}", throwable);
                 }
             }
             return result;
@@ -91,7 +91,7 @@ public class CacheAspect extends BaseAspect {
         try {
             return pjp.proceed();
         } catch (Throwable throwable) {
-            LOGGER.error("Cache Exception:{}", throwable);
+            LOGGER.warn("Cache Exception:{}", throwable);
         }
         return null;
     }
