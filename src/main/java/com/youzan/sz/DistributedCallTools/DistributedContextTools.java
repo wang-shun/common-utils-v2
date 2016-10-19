@@ -3,6 +3,7 @@ package com.youzan.sz.DistributedCallTools;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.youzan.platform.util.lang.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,6 +133,9 @@ public class DistributedContextTools {
             return null;
         }
         if (obj instanceof String) {
+            if(StringUtil.isEmpty(obj.toString())){
+                return 0L;
+            }
             return Long.valueOf(obj.toString());
         } else if (obj instanceof Number) {
             return Long.valueOf(obj + "");
@@ -145,6 +149,9 @@ public class DistributedContextTools {
             return null;
         }
         if (obj instanceof String) {
+            if(StringUtil.isEmpty(obj.toString())){
+                return 0L;
+            }
             return Long.valueOf(obj.toString());
         } else if (obj instanceof Number) {
             return Long.valueOf(obj + "");
@@ -217,6 +224,10 @@ public class DistributedContextTools {
 
     public static <T> void set(String key, T value) {
         context.put(key, value);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Long.parseLong(""));
     }
 
 }
