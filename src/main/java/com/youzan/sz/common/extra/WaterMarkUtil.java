@@ -2,7 +2,6 @@ package com.youzan.sz.common.extra;
 
 import com.youzan.sz.common.model.qr.QRConfigVO;
 import com.youzan.sz.common.util.JsonUtils;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Base64;
 
 /**
  * Created by jinxiaofei on 16/10/8.
@@ -108,7 +108,7 @@ public class WaterMarkUtil {
         qrConfigVO.setTxt(content);
         qrConfigVO.setSize(imageConfig.getQrcodeSize());
         if(logoImg!=null){
-            qrConfigVO.setLevel(1);
+            qrConfigVO.setLevel(2);
         }
         String QRuRL=QRUtils.getQRCode(qrConfigVO);
 
@@ -144,16 +144,16 @@ public class WaterMarkUtil {
 
     public static String getBase64logoImage(String content,BufferedImage logoImg,ImageConfig imageConfig) throws  IOException{
             BufferedImage targetImage=createImage(content,logoImg,imageConfig);
-            Base64 encoder = new Base64();
-            byte[] imageBytes = new byte[0];
             try {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 ImageIO.write(targetImage, "png", bos);
-                imageBytes = bos.toByteArray();
+                byte[] imageBytes = bos.toByteArray();
+                targetImage.flush();
+                return Base64.getEncoder().encodeToString(imageBytes);
             } catch (IOException e) {
                 LOGGER.error("encode to base64 error,qrConfig:{}", JsonUtils.bean2Json(imageConfig), e);
+                throw e;
             }
-        return encoder.encodeAsString(imageBytes);
     }
     private static ImageConfig inherrateConifg(ImageConfig imageConfig) {
         if(imageConfig==null){
@@ -217,8 +217,8 @@ public class WaterMarkUtil {
         }
         BufferedImage result=WaterMarkUtil.createImage(text,logo,null);
         ImageConfig imageConfig=new ImageConfig();
-        imageConfig.setQrcodeSize(300);
-        imageConfig.setLogoSize(70);
+        imageConfig.setQrcodeSize(400);
+        imageConfig.setLogoSize(100);
         System.out.println(WaterMarkUtil.getBase64logoImage(text,logo,imageConfig));
 
     }
