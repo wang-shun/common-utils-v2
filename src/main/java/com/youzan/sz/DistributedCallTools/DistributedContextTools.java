@@ -140,7 +140,16 @@ public class DistributedContextTools {
     }
 
     public static Long getKdtId() {
-        return get(KdtId.class.getCanonicalName());
+        Object obj = get(KdtId.class.getCanonicalName());
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof String) {
+            return Long.valueOf(obj.toString());
+        } else if (obj instanceof Number) {
+            return Long.valueOf(obj + "");
+        }
+        return (Long) obj;
     }
 
     //获取应用id
