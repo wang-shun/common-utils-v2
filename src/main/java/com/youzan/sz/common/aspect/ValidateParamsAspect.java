@@ -78,10 +78,10 @@ public class ValidateParamsAspect extends BaseAspect {
             try {
                 return pjp.proceed();
             } catch (BusinessException be) {
-                LOGGER.error("Error:{}", be);
+                LOGGER.warn("Error:{}", be);
                 throw be;
             } catch (Throwable e) {
-                LOGGER.error("Error:{}", e);
+                LOGGER.warn("Error:{}", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.ERROR.getCode(), "系统异常", e);
                 } else {

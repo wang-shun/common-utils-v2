@@ -70,7 +70,7 @@ public class AuthorizationAspect extends BaseAspect {
             throw be;
         } catch (Exception e) {
             allowAccess = false;
-            LOGGER.error("Authorization Exception:{}", e);
+            LOGGER.warn("Authorization Exception:{}", e);
             if (!ignoreAuthFailed) {
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
@@ -87,7 +87,7 @@ public class AuthorizationAspect extends BaseAspect {
             } catch (BusinessException be) {
                 throw be;
             } catch (Throwable e) {
-                LOGGER.error("Exception:{}", e);
+                LOGGER.warn("Exception:{}", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
                     return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
                 } else {
@@ -118,14 +118,14 @@ public class AuthorizationAspect extends BaseAspect {
         if (shopId != null) {//shopId不为空,需要进行shopId判断
             String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
             if (!(StringUtil.isNoneEmpty(userShopId) && userShopId.equals(shopId.toString()))) {//店铺不存在或者不相等
-                LOGGER.error("shopId 验证不通过.当前shopId:{},需要shopId:{}", userShopId, shopId);
+                LOGGER.warn("shopId 验证不通过.当前shopId:{},需要shopId:{}", userShopId, shopId);
                 return false;
             }
         }
         if (bid != null) {//bid不为空,需要进行bid判断
             String userBid = SessionTools.getInstance().get(SessionTools.BID);
             if (!(StringUtil.isNoneEmpty(userBid) && userBid.equals(bid.toString()))) {
-                LOGGER.error("bid 验证不通过.当前bid:{},需要bid:{}", userBid, bid);
+                LOGGER.warn("bid 验证不通过.当前bid:{},需要bid:{}", userBid, bid);
                 return false;
             }
         }
