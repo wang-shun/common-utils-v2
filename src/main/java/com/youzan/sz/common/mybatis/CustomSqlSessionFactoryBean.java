@@ -43,7 +43,7 @@ public class CustomSqlSessionFactoryBean extends SqlSessionFactoryBean {
                         location));
             }
         } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+            logger.warn(e.getMessage(), e);
         }
         if (StringUtil.isBlank(typeAliasesPackageStringBuffer.toString())) {
             throw new RuntimeException(

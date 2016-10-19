@@ -63,7 +63,7 @@ public class QRUtils {
             ImageIO.write(image, "png", bos);
             imageBytes = bos.toByteArray();
         } catch (IOException e) {
-            LOGGER.error("encode to base64 error,qrConfig:{}", JsonUtils.bean2Json(qrUrl), e);
+            LOGGER.warn("encode to base64 error,qrConfig:{}", JsonUtils.bean2Json(qrUrl), e);
         }
         return encoder.encodeAsString(imageBytes);
     }

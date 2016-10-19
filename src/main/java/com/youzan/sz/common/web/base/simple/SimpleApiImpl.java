@@ -78,7 +78,7 @@ public abstract class SimpleApiImpl extends BaseApiImpl implements ToolKits {
                 return (T) service;
             }
         }
-        logger.error("未找到支持此应用({})的服务({})", appByAid.getName(), clazz.getCanonicalName());
+        logger.warn("未找到支持此应用({})的服务({})", appByAid.getName(), clazz.getCanonicalName());
         return null;
     }
 
