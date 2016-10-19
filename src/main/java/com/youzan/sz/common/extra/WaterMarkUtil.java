@@ -95,6 +95,56 @@ public class WaterMarkUtil {
     }
 
     /**
+     *
+     * @param content 二维码的内容
+     * @param templateImg 模板的图片
+     * @param logoImg logo的图片
+     * @param imageConfig 图片镶嵌的私人化的设置
+     * @return 圆形的logo
+     * @throws IOException
+     */
+    public static BufferedImage createImageWithCircleLogo(String content, BufferedImage templateImg,BufferedImage logoImg,ImageConfig imageConfig) throws IOException {
+        imageConfig=inherrateConifg(imageConfig);
+        QRConfigVO qrConfigVO=new QRConfigVO();
+        qrConfigVO.setTxt(content);
+        qrConfigVO.setSize(imageConfig.getQrcodeSize());
+        if(logoImg!=null){
+            qrConfigVO.setLevel(2);
+        }
+        String QRuRL=QRUtils.getQRCode(qrConfigVO);
+        BufferedImage source= null;
+        try {
+            source = ImageIO.read(new URL(QRuRL));
+        } catch (IOException e) {
+            LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}",e);
+            throw e;
+        }
+        int width = templateImg.getWidth(null);
+        int height = templateImg.getHeight(null);
+        BufferedImage tag = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_RGB);
+        Graphics g = tag.getGraphics();
+        g.drawImage(templateImg,0,0,null);
+        // 插入二维码
+        g.drawImage(source, (width-imageConfig.getQrcodeSize())/2, imageConfig.getYCoord(), imageConfig.getQrcodeSize(), imageConfig.getQrcodeSize(), null);
+        // 插入logo,对logo进行压缩,不然太大
+
+        if(logoImg!=null){
+            Image logoScale=logoImg.getScaledInstance(imageConfig.getLogoSize(), imageConfig.getLogoSize(),
+                    Image.SCALE_SMOOTH);
+            g.drawImage(logoScale, (width-imageConfig.getLogoSize())/2, imageConfig.getYCoord()+(imageConfig.getQrcodeSize()-imageConfig.getLogoSize())/2, imageConfig.getLogoSize(), imageConfig.getLogoSize(), null);
+            logoScale.flush();
+        }
+        //释放图片
+        g.dispose();
+        if(source!=null){
+            source.flush();
+        }
+        // 插入图片
+        return tag;
+    }
+
+    /**
      *没有模板的情况下
      * @param content 二维码的内容
      * @param logoImg logo的图片
@@ -207,9 +257,11 @@ public class WaterMarkUtil {
 
     public static void main(String[] args) throws IOException {
         BufferedImage template=null;
+        BufferedImage templateCard=null;
+        BufferedImage badgeTemplate=null;
         BufferedImage logo=null;
         String text = "http://www.youzan.com?kw=aaaaaaaaa";
-        try {
+        /*try {
              template=ImageIO.read(new File("/Users/jinxiaofei/qrtest/template2.png"));
             logo=ImageIO.read(new File("/Users/jinxiaofei/qrtest/logo.png"));
         } catch (IOException e) {
@@ -219,7 +271,41 @@ public class WaterMarkUtil {
         ImageConfig imageConfig=new ImageConfig();
         imageConfig.setQrcodeSize(400);
         imageConfig.setLogoSize(100);
-        System.out.println(WaterMarkUtil.getBase64logoImage(text,logo,imageConfig));
+        System.out.println(WaterMarkUtil.getBase64logoImage(text,logo,imageConfig));*/
+        try {
+            template=ImageIO.read(new File("/Users/jinxiaofei/qrtest/stick-template.png"));
+            templateCard=ImageIO.read(new File("/Users/jinxiaofei/qrtest/card-template.png"));
+            badgeTemplate=ImageIO.read(new File("/Users/jinxiaofei/qrtest/badge-template.png"));
+            logo=ImageIO.read(new File("/Users/jinxiaofei/qrtest/circle-logo.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //不干胶
+        ImageConfig imageConfig=new ImageConfig();
+        imageConfig.setQrcodeSize(568);
+        imageConfig.setYCoord(680);
+        imageConfig.setLogoSize(100);
+        BufferedImage result=WaterMarkUtil.createImageWithCircleLogo(text,template,logo,imageConfig);
+        ImageIO.write(result,"png",new File("/Users/jinxiaofei/qrtest/stick.png"));
+
+        //台卡
+        ImageConfig imageConfig2=new ImageConfig();
+        imageConfig2.setQrcodeSize(886);
+        imageConfig2.setYCoord(910);
+        imageConfig2.setLogoSize(150);
+        BufferedImage result2=WaterMarkUtil.createImageWithCircleLogo(text,templateCard,logo,imageConfig2);
+        ImageIO.write(result2,"png",new File("/Users/jinxiaofei/qrtest/card.png"));
+
+        //胸牌
+        ImageConfig imageConfig3=new ImageConfig();
+        imageConfig3.setQrcodeSize(422);
+        imageConfig3.setYCoord(471);
+        imageConfig3.setLogoSize(80);
+        BufferedImage result3=WaterMarkUtil.createImageWithCircleLogo(text,badgeTemplate,logo,imageConfig3);
+        ImageIO.write(result3,"png",new File("/Users/jinxiaofei/qrtest/badge.png"));
+
+
+
 
     }
 }
