@@ -3,6 +3,7 @@ package com.youzan.sz.DistributedCallTools;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.youzan.platform.util.lang.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,7 @@ public class DistributedContextTools {
             // 放入卡门调用时传入的参数类型映射
             cache.put(AdminId.getName(), AdminId.class);
             cache.put(RequestIp.getName(), RequestIp.class);
-            cache.put(KdtId.getName(), RequestIp.class);
+            cache.put(KdtId.getName(), KdtId.class);
             cache.put(DeviceId.getName(), DeviceId.class);
             cache.put(DeviceType.getName(), DeviceType.class);
             cache.put(Aid.getName(), Aid.class);
@@ -132,6 +133,9 @@ public class DistributedContextTools {
             return null;
         }
         if (obj instanceof String) {
+            if(StringUtil.isEmpty(obj.toString())){
+                return 0L;
+            }
             return Long.valueOf(obj.toString());
         } else if (obj instanceof Number) {
             return Long.valueOf(obj + "");
@@ -140,7 +144,19 @@ public class DistributedContextTools {
     }
 
     public static Long getKdtId() {
-        return get(KdtId.class.getCanonicalName());
+        Object obj = get(KdtId.class.getCanonicalName());
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof String) {
+            if(StringUtil.isEmpty(obj.toString())){
+                return 0L;
+            }
+            return Long.valueOf(obj.toString());
+        } else if (obj instanceof Number) {
+            return Long.valueOf(obj + "");
+        }
+        return (Long) obj;
     }
 
     //获取应用id
@@ -208,6 +224,10 @@ public class DistributedContextTools {
 
     public static <T> void set(String key, T value) {
         context.put(key, value);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Long.parseLong(""));
     }
 
 }
