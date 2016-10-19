@@ -1,12 +1,15 @@
 package com.youzan.sz.common.extra;
 
 import com.youzan.sz.common.model.qr.QRConfigVO;
+import com.youzan.sz.common.util.JsonUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -92,7 +95,7 @@ public class WaterMarkUtil {
     }
 
     /**
-     *
+     *没有模板的情况下
      * @param content 二维码的内容
      * @param logoImg logo的图片
      * @param imageConfig 图片镶嵌的私人化的设置
@@ -100,9 +103,58 @@ public class WaterMarkUtil {
      * @throws IOException
      */
     public static BufferedImage createImage(String content,BufferedImage logoImg,ImageConfig imageConfig) throws IOException {
-        return  null;
+        imageConfig=inherrateConifg(imageConfig);
+        QRConfigVO qrConfigVO=new QRConfigVO();
+        qrConfigVO.setTxt(content);
+        qrConfigVO.setSize(imageConfig.getQrcodeSize());
+        if(logoImg!=null){
+            qrConfigVO.setLevel(1);
+        }
+        String QRuRL=QRUtils.getQRCode(qrConfigVO);
+
+
+        BufferedImage source= null;
+        try {
+            source = ImageIO.read(new URL(QRuRL));
+        } catch (IOException e) {
+            LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}",e);
+            throw e;
+        }
+        BufferedImage tag = new BufferedImage(imageConfig.getQrcodeSize(),imageConfig.getQrcodeSize(),
+                BufferedImage.TYPE_INT_RGB);
+        Graphics g = tag.getGraphics();
+        // 插入二维码
+        g.drawImage(source, 0, 0, imageConfig.getQrcodeSize(), imageConfig.getQrcodeSize(), null);
+        // 插入logo,对logo进行压缩,不然太大
+
+        if(logoImg!=null){
+            Image logoScale=logoImg.getScaledInstance(imageConfig.getLogoSize(), imageConfig.getLogoSize(),
+                    Image.SCALE_SMOOTH);
+            g.drawImage(logoScale,(imageConfig.getQrcodeSize()-imageConfig.getLogoSize())/2, (imageConfig.getQrcodeSize()-imageConfig.getLogoSize())/2, imageConfig.getLogoSize(), imageConfig.getLogoSize(), null);
+            logoScale.flush();
+        }
+        //释放图片
+        g.dispose();
+        if(source!=null){
+            source.flush();
+        }
+        // 插入图片
+        return tag;
     }
 
+    public static String getBase64logoImage(String content,BufferedImage logoImg,ImageConfig imageConfig) throws  IOException{
+            BufferedImage targetImage=createImage(content,logoImg,imageConfig);
+            Base64 encoder = new Base64();
+            byte[] imageBytes = new byte[0];
+            try {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ImageIO.write(targetImage, "png", bos);
+                imageBytes = bos.toByteArray();
+            } catch (IOException e) {
+                LOGGER.error("encode to base64 error,qrConfig:{}", JsonUtils.bean2Json(imageConfig), e);
+            }
+        return encoder.encodeAsString(imageBytes);
+    }
     private static ImageConfig inherrateConifg(ImageConfig imageConfig) {
         if(imageConfig==null){
             return DEFAULT_IMAGE_CONFIG;
@@ -156,15 +208,18 @@ public class WaterMarkUtil {
     public static void main(String[] args) throws IOException {
         BufferedImage template=null;
         BufferedImage logo=null;
-        String text = "http://www.youzan.com?kw=456d4a56d4sa56d4sa564d56sa4d65sa4d5as46d4sa56";
+        String text = "http://www.youzan.com?kw=aaaaaaaaa";
         try {
              template=ImageIO.read(new File("/Users/jinxiaofei/qrtest/template2.png"));
             logo=ImageIO.read(new File("/Users/jinxiaofei/qrtest/logo.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        BufferedImage result=WaterMarkUtil.createImage(text,template,logo,null);
-        ImageIO.write( result,"jpg", new File("/Users/jinxiaofei/qrtest/qrcode.jpg"));
+        BufferedImage result=WaterMarkUtil.createImage(text,logo,null);
+        ImageConfig imageConfig=new ImageConfig();
+        imageConfig.setQrcodeSize(300);
+        imageConfig.setLogoSize(70);
+        System.out.println(WaterMarkUtil.getBase64logoImage(text,logo,imageConfig));
 
     }
 }
