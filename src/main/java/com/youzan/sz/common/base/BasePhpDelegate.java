@@ -1,13 +1,15 @@
 package com.youzan.sz.common.base;
 
+import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.session.SessionTools;
+import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.slf4j.LoggerFactory;
-
-import com.youzan.sz.common.util.JsonUtils;
-import com.youzan.sz.session.SessionTools;
 
 /**
  *
@@ -37,16 +39,22 @@ public abstract class BasePhpDelegate {
     }
 
     //    api.koudaitong.com/account/teamCertification/getCertification?debug=web&kdt_id=1
-    public String getInvokeUrl(String methodName, Map<String, String> params) {
+    public String getInvokeUrl(String methodName, Map<String, String> params)  {
         final String baseUrl = getApiUrl().append(URI_SPITOR).append(methodName).append("?").toString().intern();
-        StringBuilder sb = new StringBuilder(baseUrl).append(getDefaultDebug());
-        if (params != null) {
-            for (String key : params.keySet()) {
-                sb.append("&").append(key).append("=").append(params.get(key));
+        try {
+            StringBuilder sb = new StringBuilder(baseUrl).append(getDefaultDebug());
+            if (params != null) {
+                for (String key : params.keySet()) {
 
+                    sb.append("&").append(key).append("=").append(URLEncoder.encode(params.get(key), StandardCharsets.UTF_8.displayName()));
+
+                }
             }
+            return sb.toString();
+        }catch (UnsupportedEncodingException e){
+            logger.error("URLEncoder.encode error,url ={},prameters={},e=",methodName,params,e);
         }
-        return sb.toString();
+        return null;
     }
 
     protected static String wrapDebugModel(String debugMode) {
