@@ -28,7 +28,7 @@ public class CollectionUtils {
 
     public static boolean isEmpty(Map map) {
         if (map == null) {
-            return false;
+            return true;
         }
         return map.isEmpty();
     }
