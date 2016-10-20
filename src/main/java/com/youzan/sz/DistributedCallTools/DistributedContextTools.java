@@ -129,27 +129,20 @@ public class DistributedContextTools {
 
     public static Long getAdminId() {
         Object obj = get(AdminId.class.getCanonicalName());
-        if (obj == null) {
-            return null;
-        }
-        if (obj instanceof String) {
-            if(StringUtil.isEmpty(obj.toString())){
-                return 0L;
-            }
-            return Long.valueOf(obj.toString());
-        } else if (obj instanceof Number) {
-            return Long.valueOf(obj + "");
-        }
-        return (Long) obj;
+        return getLong(obj);
     }
 
     public static Long getKdtId() {
         Object obj = get(KdtId.class.getCanonicalName());
+        return getLong(obj);
+    }
+
+    private static Long getLong(Object obj) {
         if (obj == null) {
             return null;
         }
         if (obj instanceof String) {
-            if(StringUtil.isEmpty(obj.toString())){
+            if (StringUtil.isEmpty(obj.toString())) {
                 return 0L;
             }
             return Long.valueOf(obj.toString());
