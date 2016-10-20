@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -78,9 +75,9 @@ public class PhpUtils {
      *
      * @throws com.youzan.platform.bootstrap.exception.BusinessException 连接错误,解码错误
      * */
-   public static <T> BaseResponse<T> getResultWithNamingStrategy(String url, Map<String, String> params, Class<T> targetClass,
+   public static <T> BaseResponse getResultWithNamingStrategy(String url, Map<String, String> params, Class<T> targetClass,
 
-                                                                 PropertyNamingStrategy s,Map<String,String> jsonTransferFiled ) {
+                                                                 PropertyNamingStrategy s,Map<String,String> jsonTransferFiled,Boolean isList ) {
         String resp = get(url, params);
         if (resp == null) {
             return null;
@@ -124,14 +121,18 @@ public class PhpUtils {
 
                 }
             }
-
+            JavaType type = null;
+            if(isList == true){
+                JavaType type1 = objectMapper.getTypeFactory().constructParametricType(List.class, targetClass);
+                type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, type1);
+            }else {
+                type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetClass);
+            }
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-            JavaType type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetClass);
+
             BaseResponse<T> result = objectMapper.readValue(resp, type);
             return result;
-            //            Result<UserDetailDto> result = new ObjectMapper().readValue(src, new TypeReference<Result<UserDetailDto>>() {
-            //            });
         } catch (Exception e) {
             LOGGER.error("get url({}) json response parse error", url, e);
             throw ResponseCode.ERROR.getBusinessException();
