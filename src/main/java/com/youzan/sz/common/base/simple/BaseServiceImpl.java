@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * Created by zhanguo on 16/8/18.
+ * @deprecated  {@link SimpleServiceImpl}
  */
+@Deprecated
 public abstract class BaseServiceImpl implements ToolKits {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
