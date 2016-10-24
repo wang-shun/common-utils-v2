@@ -204,6 +204,14 @@ public class DistributedCoreFilter implements Filter {
                     if (shopId != null) {
                         DistributedContextTools.set(ShopId.class.getCanonicalName(), String.valueOf(shopId));
                     }
+                    final String opAdminId = inv.getAttachment(OpAdminId.class.getCanonicalName());
+                    if (opAdminId != null) {
+                        DistributedContextTools.set(OpAdminId.class.getCanonicalName(), String.valueOf(opAdminId));
+                    }
+                    final String opAdminName = inv.getAttachment(OpAdminName.class.getCanonicalName());
+                    if (opAdminName != null) {
+                        DistributedContextTools.set(OpAdminName.class.getCanonicalName(), String.valueOf(opAdminName));
+                    }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
@@ -223,7 +231,7 @@ public class DistributedCoreFilter implements Filter {
                 String requestIp = DistributedContextTools.getRequestIp();
                 Long KdtId = DistributedContextTools.getKdtId();
                 String deviceId = DistributedContextTools.getDeviceId();
-                final Long bId = DistributedContextTools.getBId();
+                final Long bid = DistributedContextTools.getBId();
                 final Integer aid = DistributedContextTools.getAId();
                 final Long shopId = DistributedContextTools.getShopId();
                 String deviceType = DistributedContextTools.getDeviceType();
@@ -246,8 +254,8 @@ public class DistributedCoreFilter implements Filter {
                 if (aid != null) {
                     inv.setAttachment(Aid.class.getCanonicalName(), String.valueOf(aid));
                 }
-                if (bId != null) {
-                    inv.setAttachment(Bid.class.getCanonicalName(), String.valueOf(bId));
+                if (bid != null) {
+                    inv.setAttachment(Bid.class.getCanonicalName(), String.valueOf(bid));
                 }
                 if (shopId != null) {
                     inv.setAttachment(ShopId.class.getCanonicalName(), String.valueOf(shopId));

@@ -287,6 +287,9 @@ public class CarmenCodec implements Codec2 {
             String bid = parseQueryString.get("bid");
             String shopId = parseQueryString.get("shop_id");
 
+            String opAdminId = parseQueryString.get("op_admin_id");
+            String opAdminName = parseQueryString.get("op_admin_name");
+
             inv.setArguments(new Object[] { methodName,
                                             new String[] { DistributedParamManager.AdminId.getName(),
                                                            DistributedParamManager.RequestIp.getName(),
@@ -295,9 +298,11 @@ public class CarmenCodec implements Codec2 {
                                                            DistributedParamManager.DeviceType.getName(),
                                                            DistributedParamManager.Aid.getName(),
                                                            DistributedParamManager.Bid.getName(),
-                                                           DistributedParamManager.ShopId.getName(), "json" },
+                                                           DistributedParamManager.ShopId.getName(),
+                                                           DistributedParamManager.OpAdminId.getName(),
+                                                           DistributedParamManager.OpAdminName.getName(), "json" },
                                             new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
-                                                           shopId, jsonValue } });
+                                                           shopId, opAdminId, opAdminName, jsonValue } });
             inv.setMethodName(Constants.$INVOKE);
             inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
             Map<String, String> attachments = new HashMap<>();
