@@ -235,6 +235,8 @@ public class DistributedCoreFilter implements Filter {
                 final Integer aid = DistributedContextTools.getAId();
                 final Long shopId = DistributedContextTools.getShopId();
                 String deviceType = DistributedContextTools.getDeviceType();
+                final Long opAdminId = DistributedContextTools.getOpAdminId();
+                final String opAdminName = DistributedContextTools.getOpAdminName();
                 m = inv.getMethodName();
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
@@ -252,21 +254,25 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(DeviceType.class.getCanonicalName(), deviceType + "");
                 }
                 if (aid != null) {
-                    inv.setAttachment(Aid.class.getCanonicalName(), String.valueOf(aid));
+                    inv.setAttachment(Aid.class.getCanonicalName(), aid.toString());
                 }
                 if (bid != null) {
-                    inv.setAttachment(Bid.class.getCanonicalName(), String.valueOf(bid));
+                    inv.setAttachment(Bid.class.getCanonicalName(), bid.toString());
                 }
                 if (shopId != null) {
-                    inv.setAttachment(ShopId.class.getCanonicalName(), String.valueOf(shopId));
+                    inv.setAttachment(ShopId.class.getCanonicalName(), shopId.toString());
                 }
+                if (opAdminId != null)
+                    inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
+                if (opAdminName != null)
+                    inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminName.toString());
 
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
                     isSucess = false;
                 }
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.info("outArgs[{}]", JsonUtils.bean2Json(invoke.getValue()));
+                    LOGGER.debug("outArgs[{}]", JsonUtils.bean2Json(invoke.getValue()));
                 }
                 return invoke;
             } finally {

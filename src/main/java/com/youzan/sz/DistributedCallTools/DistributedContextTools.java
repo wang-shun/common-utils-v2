@@ -221,7 +221,7 @@ public class DistributedContextTools {
     }
 
     //获取操作人名字
-    public static Long getOpAdminName() {
+    public static String getOpAdminName() {
         return get(OpAdminId.class.getCanonicalName());
     }
 
