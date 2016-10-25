@@ -1,7 +1,7 @@
 package com.youzan.sz.common.annotation;
 
-
 import com.youzan.sz.common.enums.RoleEnum;
+import com.youzan.sz.common.model.auth.ResourceEnum;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,6 +17,11 @@ import java.lang.annotation.Target;
 public @interface Authorization {
 
     RoleEnum[] allowedRoles();
+
+    /**
+     * 资源id
+     * */
+    ResourceEnum resource();
 
     //不传,则从DistributedContext上下文中获取,如果上下文中没有,则返回鉴权失败
     String adminId() default "";
