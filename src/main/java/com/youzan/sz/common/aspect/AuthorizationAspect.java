@@ -152,7 +152,7 @@ public class AuthorizationAspect extends BaseAspect {
                 isAllowRole = false;
             }
         }
-        if (!isAllowRole && resourceEnum != null) {//如果权限未通过,尝试一下提权
+        if (!isAllowRole && resourceEnum != null && !resourceEnum.equals(ResourceEnum.NONE)) {//如果权限未通过,尝试一下提权
             return tryGrant(resourceEnum);
         }
         if (LOGGER.isDebugEnabled()) {
@@ -190,7 +190,7 @@ public class AuthorizationAspect extends BaseAspect {
     }
 
     private void doClearGrant(boolean allowAccess, ResourceEnum resource) {
-        if (!allowAccess || resource == null) {
+        if (!allowAccess || resource == null || resource == ResourceEnum.NONE) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("For allowAccess :{} or resource:{} reason ,skip clear grant", allowAccess, resource);
             }
@@ -216,7 +216,7 @@ public class AuthorizationAspect extends BaseAspect {
             LOGGER.warn("数据异常,未从上下文获取到员工信息.adminId:{},bid:{},shopId:{},", adminId, bid, shopId);
             return null;
         }
-        final BaseStaffDTO baseStaffDTO = new BaseStaffDTO(adminId, adminId, shopId);
+        final BaseStaffDTO baseStaffDTO = new BaseStaffDTO(adminId, bid, shopId);
         return baseStaffDTO;
     }
 }
