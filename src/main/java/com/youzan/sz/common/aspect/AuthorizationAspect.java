@@ -4,6 +4,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import com.youzan.sz.common.enums.RoleEnum;
+import com.youzan.sz.common.model.auth.GrantPolicyDTO;
+import com.youzan.sz.common.model.auth.ResourceEnum;
+import com.youzan.sz.common.model.base.BaseStaffDTO;
+import com.youzan.sz.common.service.AuthService;
+import com.youzan.sz.common.util.JsonUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,6 +26,8 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.session.SessionTools;
 
+import javax.annotation.Resource;
+
 /**
  * Created by YANG on 16/4/7.
  */
@@ -29,6 +36,8 @@ import com.youzan.sz.session.SessionTools;
 public class AuthorizationAspect extends BaseAspect {
     private static final Logger LOGGER           = LoggerFactory.getLogger(AuthorizationAspect.class);
     private boolean             ignoreAuthFailed = false;
+    @Resource
+    private AuthService         authService;
 
     public boolean isIgnoreAuthFailed() {
         return ignoreAuthFailed;
@@ -61,11 +70,12 @@ public class AuthorizationAspect extends BaseAspect {
         Object[] args = pjp.getArgs();
         Object shopId = super.parseKey(authorization.shopId(), method, args);
         Object bid = super.parseKey(authorization.bid(), method, args);
+        final ResourceEnum resource = authorization.resource();
 
         // 鉴权
         boolean allowAccess;
         try {
-            allowAccess = this.allowAccess(allowedRoles, shopId, bid);
+            allowAccess = this.allowAccess(allowedRoles, resource, shopId, bid);
         } catch (BusinessException be) {
             throw be;
         } catch (Exception e) {
@@ -93,10 +103,12 @@ public class AuthorizationAspect extends BaseAspect {
                 } else {
                     throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
                 }
+            } finally {//为了避免虽然出现异常,但是执行成功(例如调用超时,但是执行成功),调用一次方法就执行一次按次数操作权限
+                doClearGrant(allowAccess, resource);
             }
         } else {
             // 未通过鉴权
-            if (BaseResponse.class.isAssignableFrom(returnType)) {
+            if (BaseResponse.class.isAssignableFrom(returnType)) {//可能有时候不需要抛出异常
                 return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问", null);
             } else {
                 throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你的角色无权访问");
@@ -108,11 +120,13 @@ public class AuthorizationAspect extends BaseAspect {
      * 是否允许访问
      *
      * @param allowedRoles
+     * @param resourceEnum
      * @return
      */
-    private boolean allowAccess(RoleEnum[] allowedRoles, Object shopId, Object bid) {
+    private boolean allowAccess(RoleEnum[] allowedRoles, ResourceEnum resourceEnum, Object shopId, Object bid) {
+        final Long adminId = DistributedContextTools.getAdminId();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", DistributedContextTools.getAdminId(),
+            LOGGER.info("将要进行鉴权:adminId:{},yzAccount:{}", adminId,
                 SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
         }
         if (shopId != null) {//shopId不为空,需要进行shopId判断
@@ -129,18 +143,80 @@ public class AuthorizationAspect extends BaseAspect {
                 return false;
             }
         }
+        boolean isAllowRole = true;
         if (allowedRoles != null && allowedRoles.length > 0) {
             String roles = SessionTools.getInstance().get(SessionTools.ROLE);
             if (StringUtil.isEmpty(roles) || !Arrays.stream(allowedRoles)
                 .anyMatch(roleEnum -> roleEnum.equals(RoleEnum.valueOf(Integer.valueOf(roles))))) {
                 LOGGER.error("roles验证不通过,当前roles:{},需要roles:{}", roles, allowedRoles);
-                return false;
-
+                isAllowRole = false;
             }
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{}:鉴权成功", DistributedContextTools.getAdminId());
+        if (!isAllowRole && resourceEnum != null) {//如果权限未通过,尝试一下提权
+            return tryGrant(resourceEnum);
         }
-        return true;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{}:鉴权成功", adminId);
+        }
+        return isAllowRole;
+    }
+
+    /*
+    * @return 如果临时授权成功,返回true
+    * */
+    private boolean tryGrant(ResourceEnum resourceEnum) {
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("resource:({}:{}) 支持提权,开始进行提权检查", resourceEnum.getResource(), resourceEnum.getDesc());
+        final BaseStaffDTO baseStaff = getBaseStaff();
+        if (baseStaff == null) {
+            LOGGER.warn("尝试提权失败,从上下文获取到员工信息失败");
+            return false;
+        }
+
+        final GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO(baseStaff);
+        grantPolicyDTO.setResource(resourceEnum.getResource());
+        final BaseResponse baseResponse = authService.AuthByGrant(grantPolicyDTO);
+        if (baseResponse.isSucc()) {
+            return true;
+        }
+        if (ResponseCode.PORTAL_GRANT_INFO_EMPTY.getCode() == baseResponse.getCode()) {//未查询到提权信息,统一返回鉴权失败
+            LOGGER.info("提权尝试失败,未查询到resource:{}提权信息:{}", resourceEnum.getResource(), JsonUtils.toJson(baseResponse));
+            return false;
+        }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("提权尝试失败,返回:{}", JsonUtils.toJson(baseResponse));
+        }
+        throw ResponseCode.getRespondeByCode(baseResponse.getCode()).getBusinessException();
+    }
+
+    private void doClearGrant(boolean allowAccess, ResourceEnum resource) {
+        if (!allowAccess || resource == null) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("For allowAccess :{} or resource:{} reason ,skip clear grant", allowAccess, resource);
+            }
+            return;
+        }
+        final BaseStaffDTO baseStaff = getBaseStaff();
+        if (baseStaff == null) {
+            LOGGER.warn("尝试提权失败|从上下文获取到员工信息失败|直接略过释放:{}", resource);
+            return;
+        }
+        final GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO(baseStaff);
+        grantPolicyDTO.setResource(resource.getResource());
+        final BaseResponse baseResponse = authService.consumerGrantAuth(grantPolicyDTO);
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("consumer auth|result:{}", JsonUtils.toJson(baseResponse));
+    }
+
+    private BaseStaffDTO getBaseStaff() {
+        final Long bid = DistributedContextTools.getBid();
+        final Long shopId = DistributedContextTools.getShopId();
+        final Long adminId = DistributedContextTools.getAdminId();
+        if (adminId == null || shopId == null || bid == null) {
+            LOGGER.warn("数据异常,未从上下文获取到员工信息.adminId:{},bid:{},shopId:{},", adminId, bid, shopId);
+            return null;
+        }
+        final BaseStaffDTO baseStaffDTO = new BaseStaffDTO(adminId, adminId, shopId);
+        return baseStaffDTO;
     }
 }

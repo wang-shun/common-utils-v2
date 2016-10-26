@@ -231,7 +231,7 @@ public class DistributedCoreFilter implements Filter {
                 String requestIp = DistributedContextTools.getRequestIp();
                 Long KdtId = DistributedContextTools.getKdtId();
                 String deviceId = DistributedContextTools.getDeviceId();
-                final Long bid = DistributedContextTools.getBId();
+                final Long bid = DistributedContextTools.getBid();
                 final Integer aid = DistributedContextTools.getAId();
                 final Long shopId = DistributedContextTools.getShopId();
                 String deviceType = DistributedContextTools.getDeviceType();
