@@ -126,7 +126,6 @@ public class SessionTools {
         final String bid = session.get(SessionTools.BID);
         final String shopId = session.get(SessionTools.SHOP_ID);
         final String aid = session.get(SessionTools.AID);
-        //        final String deviceType = session.get(SessionTools.LOGINDEVICE);
         if (bid != null) {
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class,
                 Long.valueOf(bid));
@@ -143,10 +142,6 @@ public class SessionTools {
                     Integer.valueOf(aid));
             }
         }
-        //        if (deviceType != null) {
-        //            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.DeviceType.class,
-        //                deviceType);
-        //        }
         return session;
     }
 

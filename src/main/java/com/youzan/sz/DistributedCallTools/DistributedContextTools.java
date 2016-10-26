@@ -69,6 +69,18 @@ public class DistributedContextTools {
             }
         }
 
+        public static class OpAdminId extends DistributedParam<Long> {
+            public static String getName() {
+                return "distributed.op_admin_id";
+            }
+        }
+
+        public static class OpAdminName extends DistributedParam<String> {
+            public static String getName() {
+                return "distributed.op_admin_name";
+            }
+        }
+
         private static Map<String, Class<?>> cache = new HashMap<>();
 
         static {
@@ -81,6 +93,8 @@ public class DistributedContextTools {
             cache.put(Aid.getName(), Aid.class);
             cache.put(ShopId.getName(), ShopId.class);
             cache.put(Bid.getName(), Bid.class);
+            cache.put(OpAdminId.getName(), OpAdminId.class);
+            cache.put(OpAdminName.getName(), OpAdminName.class);
 
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
@@ -91,6 +105,8 @@ public class DistributedContextTools {
             cache.put(Aid.class.getCanonicalName(), Aid.class);
             cache.put(ShopId.class.getCanonicalName(), ShopId.class);
             cache.put(Bid.class.getCanonicalName(), Bid.class);
+            cache.put(OpAdminId.class.getCanonicalName(), OpAdminId.class);
+            cache.put(OpAdminName.class.getCanonicalName(), OpAdminName.class);
 
         }
 
@@ -176,13 +192,37 @@ public class DistributedContextTools {
     }
 
     //获取应用id
+    /**
+     * 
+     * @deprecated  改个名字
+     * */
+    @Deprecated
     public static Long getBId() {
+        return getBid();
+    }
+
+    //获取应用id
+    public static Long getBid() {
         final Object bid = get(Bid.class.getCanonicalName());
         if (bid instanceof String) {
             return Long.valueOf((String) bid);
         }
         return (Long) bid;
 
+    }
+
+    //获取操作人id
+    public static Long getOpAdminId() {
+        final Object opAdminId = get(OpAdminId.class.getCanonicalName());
+        if (opAdminId instanceof String) {
+            return Long.valueOf((String) opAdminId);
+        }
+        return (Long) opAdminId;
+    }
+
+    //获取操作人名字
+    public static String getOpAdminName() {
+        return get(OpAdminId.class.getCanonicalName());
     }
 
     public static String getRequestIp() {

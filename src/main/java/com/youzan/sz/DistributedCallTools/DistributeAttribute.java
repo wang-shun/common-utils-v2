@@ -5,7 +5,6 @@ import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.interfaces.IShop;
 import com.youzan.sz.common.model.enums.DeviceType;
 import com.youzan.sz.common.response.enums.ResponseCode;
-import com.youzan.sz.session.SessionTools;
 
 /**
  *
@@ -71,6 +70,28 @@ public interface DistributeAttribute extends IShop {
             throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少deviceType");
         }
         return deviceType;
+    }
+
+    /**
+     *管理cp必传字段
+     * */
+    default Long getOpAdminId() {
+        final Long opAdminId = DistributedContextTools.getOpAdminId();
+        if (opAdminId == null || opAdminId == 0) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少opAdminId");
+        }
+        return opAdminId;
+    }
+
+    /**
+     *管理cp拥有
+     * */
+    default String getOpAdminName() {
+        final String opAdminName = DistributedContextTools.getOpAdminName();
+        if (opAdminName == null) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少opAdminName");
+        }
+        return opAdminName;
     }
 
 }
