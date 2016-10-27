@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import com.youzan.sz.common.enums.RoleEnum;
+import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.model.auth.GrantPolicyDTO;
 import com.youzan.sz.common.model.auth.ResourceEnum;
 import com.youzan.sz.common.model.base.BaseStaffDTO;
@@ -76,6 +77,8 @@ public class AuthorizationAspect extends BaseAspect {
         boolean allowAccess;
         try {
             allowAccess = this.allowAccess(allowedRoles, resource, shopId, bid);
+        } catch (BizException be) {//如果throw会丢弃掉data数据
+            return new BaseResponse(be.getCode().intValue(), be.getMessage(), be.getData());
         } catch (BusinessException be) {
             throw be;
         } catch (Exception e) {
@@ -152,7 +155,7 @@ public class AuthorizationAspect extends BaseAspect {
                 isAllowRole = false;
             }
         }
-        if (!isAllowRole && resourceEnum != null) {//如果权限未通过,尝试一下提权
+        if (!isAllowRole && resourceEnum != null && !resourceEnum.equals(ResourceEnum.NONE)) {//如果权限未通过,尝试一下提权
             return tryGrant(resourceEnum);
         }
         if (LOGGER.isDebugEnabled()) {
@@ -186,11 +189,12 @@ public class AuthorizationAspect extends BaseAspect {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("提权尝试失败,返回:{}", JsonUtils.toJson(baseResponse));
         }
-        throw ResponseCode.getRespondeByCode(baseResponse.getCode()).getBusinessException();
+        throw new BizException(ResponseCode.getRespondeByCode(baseResponse.getCode()), baseResponse.getData());
+        //        throw .getBusinessException();
     }
 
     private void doClearGrant(boolean allowAccess, ResourceEnum resource) {
-        if (!allowAccess || resource == null) {
+        if (!allowAccess || resource == null || resource == ResourceEnum.NONE) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("For allowAccess :{} or resource:{} reason ,skip clear grant", allowAccess, resource);
             }
@@ -216,7 +220,7 @@ public class AuthorizationAspect extends BaseAspect {
             LOGGER.warn("数据异常,未从上下文获取到员工信息.adminId:{},bid:{},shopId:{},", adminId, bid, shopId);
             return null;
         }
-        final BaseStaffDTO baseStaffDTO = new BaseStaffDTO(adminId, adminId, shopId);
+        final BaseStaffDTO baseStaffDTO = new BaseStaffDTO(adminId, bid, shopId);
         return baseStaffDTO;
     }
 }

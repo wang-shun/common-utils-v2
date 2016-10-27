@@ -21,7 +21,7 @@ public @interface Authorization {
     /**
      * 资源id
      * */
-    ResourceEnum resource();
+    ResourceEnum resource() default ResourceEnum.NONE;
 
     //不传,则从DistributedContext上下文中获取,如果上下文中没有,则返回鉴权失败
     String adminId() default "";
