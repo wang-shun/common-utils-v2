@@ -70,6 +70,9 @@ public final class HttpUtil {
         return EntityUtils.toString(response.getEntity(), Charset.forName(charset));
     }
 
+
+
+
     /**
      * 使用UTF8 POST
      *
@@ -126,7 +129,9 @@ public final class HttpUtil {
         HttpEntity entity = response.getEntity();
         return EntityUtils.toString(entity, Charset.forName(charset));
     }
-
+    public static String post(Map<String, String> headers, String url, String params, String charset) throws IOException {
+       return url.startsWith("https") == true?post(true,headers,url,params,charset):post(false,headers,url,params,charset);
+    }
     /**
      * 上传文件 utf-8
      *
