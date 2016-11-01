@@ -34,6 +34,10 @@ public class RiskControlLogger {
 
 
     public static final void printLogger(RiskEventEnum riskEventEnum, Map<String,Object> params){
+        if(riskEventEnum==null){
+            LOGGER.info("事件类型为空,不在打印日志,param:{}",params);
+            return;
+        }
         params.put(EVENT_TYPE,riskEventEnum.getValue());
         params.put(EVENT_TIMESTAMP,new Date());
         if(LOGGER.isInfoEnabled()){
