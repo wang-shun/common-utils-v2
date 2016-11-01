@@ -24,6 +24,7 @@ public class RiskControlLogger {
     public static final String AUTH_TYPE="auth_type";
     public static final String PAY_TYPE="pay_type";
     public static final String OPERATOR="operator";
+    public static final String IP="ip";
 
 
 
