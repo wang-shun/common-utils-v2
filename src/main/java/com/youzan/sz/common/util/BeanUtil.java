@@ -1,12 +1,13 @@
 package com.youzan.sz.common.util;
 
-import com.alibaba.dubbo.common.json.JSON;
 import com.youzan.platform.bootstrap.exception.BusinessException;
-import com.youzan.sz.common.model.number.NumberTypes;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.FatalBeanException;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -14,6 +15,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -36,8 +38,8 @@ public class BeanUtil {
             return null;
         }
 
-        T t = BeanUtils.instantiate(destinationClazz);
-        BeanUtils.copyProperties(source, t);
+        T t = MyBeanUtils.instantiate(destinationClazz);
+        MyBeanUtils.copyProperties(source, t);
         return t;
     }
 
@@ -47,7 +49,7 @@ public class BeanUtil {
             return null;
         }
 
-        BeanUtils.copyProperties(source, t);
+        MyBeanUtils.copyProperties(source, t);
         return t;
     }
 
@@ -161,7 +163,7 @@ public class BeanUtil {
                 Method readMethod = descriptor.getReadMethod();
                 Object result = null;
                 try {
-                    result = readMethod.invoke(bean, new Object[0]);
+                    result = readMethod.invoke(bean);
                 } catch (IllegalAccessException e) {
                     LOGGER.warn("BeanUtil Error:{}", e);
                 } catch (InvocationTargetException e) {
@@ -196,29 +198,120 @@ public class BeanUtil {
     }
 
     public static void main(String[] args) throws IllegalAccessException, IntrospectionException,
-                                           InvocationTargetException, InstantiationException {
-        List<StockRunningVO> result = new ArrayList<>();
-        StockRunningVO sr0 = new StockRunningVO();
-        sr0.setBusinessType("盘盈");
-        sr0.setSourceOrderNo(NumberUtils.initNumber(NumberTypes.STOCKCHECK));
-        sr0.setProductName("有赞瓜子");
-        sr0.setCreateTimeDesc("2016-04-01");
-        sr0.setOperatorStaffName("大琼");
-        sr0.setUnit("坨");
-        sr0.setQuantity(10);
-        result.add(sr0);
-        StockRunningVO sr1 = new StockRunningVO();
-        sr1.setBusinessType("盘亏");
-        sr1.setSourceOrderNo(NumberUtils.initNumber(NumberTypes.STOCKCHECK));
-        sr1.setProductName("有赞瓜子");
-        sr1.setCreateTimeDesc("2016-04-02");
-        sr1.setOperatorStaffName("大琼");
-        sr1.setUnit("坨");
-        sr1.setQuantity(-10);
-        result.add(sr1);
-        List<Map> maps = BeanUtil.transListBean2ListMap(result);
-        System.out.println(maps.toString());
-        List<StockRunningVO> e = BeanUtil.transListMap2ListBean(StockRunningVO.class, maps);
-        System.out.println(e.toString());
+            InvocationTargetException, InstantiationException {
+//        List<StockRunningVO> result = new ArrayList<>();
+//        StockRunningVO sr0 = new StockRunningVO();
+//        sr0.setBusinessType("盘盈");
+//        sr0.setSourceOrderNo(NumberUtils.initNumber(NumberTypes.STOCKCHECK));
+//        sr0.setProductName("有赞瓜子");
+//        sr0.setCreateTimeDesc("2016-04-01");
+//        sr0.setOperatorStaffName("大琼");
+//        sr0.setUnit("坨");
+//        sr0.setQuantity(10);
+//        result.add(sr0);
+//        StockRunningVO sr1 = new StockRunningVO();
+//        sr1.setBusinessType("盘亏");
+//        sr1.setSourceOrderNo(NumberUtils.initNumber(NumberTypes.STOCKCHECK));
+//        sr1.setProductName("有赞瓜子");
+//        sr1.setCreateTimeDesc("2016-04-02");
+//        sr1.setOperatorStaffName("大琼");
+//        sr1.setUnit("坨");
+//        sr1.setQuantity(-10);
+//        result.add(sr1);
+//        List<Map> maps = BeanUtil.transListBean2ListMap(result);
+//        System.out.println(maps.toString());
+//        List<StockRunningVO> e = BeanUtil.transListMap2ListBean(StockRunningVO.class, maps);
+//        System.out.println(e.toString());
+
+
+        AA aa = new AA();
+        A a = BeanUtil.copyProperty(aa, A.class);
+        System.out.println(a.getA());
+
+    }
+
+
+    public static class A {
+        private int a = 1;
+
+        public int getA() {
+            return a;
+        }
+
+        public void setA(int a) {
+            this.a = a;
+        }
+    }
+
+    public static class AA {
+        private Integer A;
+
+        public Integer getA() {
+            return A;
+        }
+
+        public void setA(Integer a) {
+            A = a;
+        }
+    }
+
+    private static abstract class MyBeanUtils extends org.springframework.beans.BeanUtils {
+
+        public static void copyProperties(Object source, Object target) throws BeansException {
+            copyProperties(source, target, null, (String[]) null);
+        }
+
+        public static void copyProperties(Object source, Object target, Class<?> editable) throws BeansException {
+            copyProperties(source, target, editable, (String[]) null);
+        }
+
+        public static void copyProperties(Object source, Object target, String... ignoreProperties) throws BeansException {
+            copyProperties(source, target, null, ignoreProperties);
+        }
+
+        private static void copyProperties(Object source, Object target, Class<?> editable, String... ignoreProperties) throws BeansException {
+            Assert.notNull(source, "Source must not be null");
+            Assert.notNull(target, "Target must not be null");
+            Class actualEditable = target.getClass();
+            if (editable != null) {
+                if (!editable.isInstance(target)) {
+                    throw new IllegalArgumentException("Target class [" + target.getClass().getName() + "] not assignable to Editable class [" + editable.getName() + "]");
+                }
+
+                actualEditable = editable;
+            }
+
+            PropertyDescriptor[] targetPds = getPropertyDescriptors(actualEditable);
+            List ignoreList = ignoreProperties != null ? Arrays.asList(ignoreProperties) : null;
+            int var8 = targetPds.length;
+
+            for (int var9 = 0; var9 < var8; ++var9) {
+                PropertyDescriptor targetPd = targetPds[var9];
+                Method writeMethod = targetPd.getWriteMethod();
+                if (writeMethod != null && (ignoreList == null || !ignoreList.contains(targetPd.getName()))) {
+                    PropertyDescriptor sourcePd = getPropertyDescriptor(source.getClass(), targetPd.getName());
+                    if (sourcePd != null) {
+                        Method readMethod = sourcePd.getReadMethod();
+                        if (readMethod != null && ClassUtils.isAssignable(writeMethod.getParameterTypes()[0], readMethod.getReturnType())) {
+                            try {
+                                if (!Modifier.isPublic(readMethod.getDeclaringClass().getModifiers())) {
+                                    readMethod.setAccessible(true);
+                                }
+                                Object value = readMethod.invoke(source);
+                                if (value != null) {
+                                    if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers())) {
+                                        writeMethod.setAccessible(true);
+                                    }
+                                    writeMethod.invoke(target, value);
+                                }
+                            } catch (Throwable var15) {
+                                throw new FatalBeanException("Could not copy property \'" + targetPd.getName() + "\' from source to target", var15);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
     }
 }
