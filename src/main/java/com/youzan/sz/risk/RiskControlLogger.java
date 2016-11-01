@@ -27,6 +27,7 @@ public class RiskControlLogger {
     public static final String IP="ip";
     public static final String SHOP_ID="shop_id";
     public static final String DATA="data";
+    public static final String CARD="card";
 
 
 
