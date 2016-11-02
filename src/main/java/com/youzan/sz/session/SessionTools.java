@@ -34,6 +34,7 @@ public class SessionTools {
     public static final String                        STAFF_NO    = "staffNo";
     public static final String                        STAFF_ID    = "staffId";
     public static final String                        SHOP_ICON   = "shopIcon";
+    public static final String                        SHOP_NAME   = "shopName";
     public static final String                        KDT_ID      = "kdtId";
     public static final String                        LOGINDEVICE = "loginDevice";
     public static final String                        AID         = "aid";        //应用id
