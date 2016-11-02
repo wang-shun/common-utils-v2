@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import java.beans.BeanInfo;
@@ -324,23 +323,20 @@ public class BeanUtil {
         }
 
         private static void copyProperties(Object source, Object target, Class<?> editable, String... ignoreProperties) throws BeansException {
-            Assert.notNull(source, "Source must not be null");
-            Assert.notNull(target, "Target must not be null");
             Class actualEditable = target.getClass();
             if (editable != null) {
                 if (!editable.isInstance(target)) {
                     throw new IllegalArgumentException("Target class [" + target.getClass().getName() + "] not assignable to Editable class [" + editable.getName() + "]");
                 }
-
                 actualEditable = editable;
             }
 
             PropertyDescriptor[] targetPds = getPropertyDescriptors(actualEditable);
             List ignoreList = ignoreProperties != null ? Arrays.asList(ignoreProperties) : null;
-            int var8 = targetPds.length;
+            int length = targetPds.length;
 
-            for (int var9 = 0; var9 < var8; ++var9) {
-                PropertyDescriptor targetPd = targetPds[var9];
+            for (int i = 0; i < length; ++i) {
+                PropertyDescriptor targetPd = targetPds[i];
                 Method writeMethod = targetPd.getWriteMethod();
                 if (writeMethod != null && (ignoreList == null || !ignoreList.contains(targetPd.getName()))) {
                     PropertyDescriptor sourcePd = getPropertyDescriptor(source.getClass(), targetPd.getName());
@@ -358,8 +354,8 @@ public class BeanUtil {
                                     }
                                     writeMethod.invoke(target, value);
                                 }
-                            } catch (Throwable var15) {
-                                throw new FatalBeanException("Could not copy property \'" + targetPd.getName() + "\' from source to target", var15);
+                            } catch (Throwable t) {
+                                throw new FatalBeanException("Could not copy property \'" + targetPd.getName() + "\' from source to target", t);
                             }
                         }
                     }
