@@ -14,20 +14,22 @@ import java.util.Map;
  * Created by jinxiaofei on 16/10/31.
  */
 public class RiskControlLogger {
-    private static final Logger LOGGER= LoggerFactory.getLogger(RiskControlLogger.class);
-    private static final String MODULE_NAME= "freecash";
-    public static final String EVENT_TYPE="event_type";
-    public static final String EVENT_TIMESTAMP="event_timestamp";
-    public static final String DEVICE_ID="device_id";
-    public static final String PHONE="phone";
-    public static final String MONEY="money";//单位分
-    public static final String AUTH_TYPE="auth_type";
-    public static final String PAY_TYPE="pay_type";
-    public static final String OPERATOR="operator";
-    public static final String IP="ip";
-    public static final String SHOP_ID="shop_id";
-    public static final String DATA="data";
-    public static final String CARD="card";
+    private static final Logger LOGGER = LoggerFactory.getLogger(RiskControlLogger.class);
+    private static final String MODULE_NAME = "freecash";
+    public static final String EVENT_TYPE = "event_type";
+    public static final String EVENT_TIMESTAMP = "event_timestamp";
+    public static final String DEVICE_ID = "device_id";
+    public static final String PHONE = "phone";
+    public static final String MONEY = "money";//单位分
+    public static final String AUTH_TYPE = "auth_type";
+    public static final String PAY_TYPE = "pay_type";
+    public static final String OPERATOR = "operator";
+    public static final String IP = "ip";
+    public static final String SHOP_ID = "shop_id";
+    public static final String DATA = "data";
+    public static final String CARD = "card";
+    public static final String TABLE_CARD_CODE = "table_card_id";
+    public static final String OPEN_ID = "open_id";
 
 
 
