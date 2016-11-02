@@ -4,6 +4,7 @@ import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.util.Assert;
@@ -33,23 +34,21 @@ public class BeanUtil {
     }
 
     public static <T> T copyProperty(Object source, Class<T> destinationClazz) {
-
-        if (source == null) {
+        if (source == null || destinationClazz == null) {
             return null;
         }
 
-        T t = MyBeanUtils.instantiate(destinationClazz);
-        MyBeanUtils.copyProperties(source, t);
+        T t = BeanUtils.instantiate(destinationClazz);
+        BeanUtils.copyProperties(source, t);
         return t;
     }
 
     public static <T> T copyProperty(Object source, T t) {
-
-        if (source == null) {
+        if (source == null || t == null) {
             return null;
         }
 
-        MyBeanUtils.copyProperties(source, t);
+        BeanUtils.copyProperties(source, t);
         return t;
     }
 
@@ -64,6 +63,61 @@ public class BeanUtil {
         }
         return result;
     }
+
+    /**
+     * 只拷贝不是null的属性
+     *
+     * @param source
+     * @param destinationClazz
+     * @param <T>
+     * @return
+     */
+    public static <T> T copyNonNullProperty(Object source, Class<T> destinationClazz) {
+        if (source == null || destinationClazz == null) {
+            return null;
+        }
+
+        T t = MyBeanUtils.instantiate(destinationClazz);
+        MyBeanUtils.copyProperties(source, t);
+        return t;
+    }
+
+
+    /**
+     * 只拷贝不是null的属性
+     *
+     * @param source
+     * @return
+     */
+    public static <T> T copyNonNullProperty(Object source, T t) {
+        if (source == null || t == null) {
+            return null;
+        }
+
+        MyBeanUtils.copyProperties(source, t);
+        return t;
+    }
+
+
+    /**
+     * 只拷贝不是null的属性
+     *
+     * @param destinationClazz
+     * @param <T>
+     * @return
+     */
+    public static <T> List<T> copyNonNullPropertyList(List<?> sources, Class<T> destinationClazz) {
+        if (sources == null || sources.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<T> result = new ArrayList<>(sources.size());
+        for (Object obj : sources) {
+            result.add(copyNonNullProperty(obj, destinationClazz));
+        }
+        return result;
+    }
+
 
     /**
      * 将一个 Map 对象转化为一个 JavaBean
@@ -225,7 +279,7 @@ public class BeanUtil {
 
 
         AA aa = new AA();
-        A a = BeanUtil.copyProperty(aa, A.class);
+        A a = BeanUtil.copyNonNullProperty(aa, A.class);
         System.out.println(a.getA());
 
     }
