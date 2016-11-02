@@ -45,9 +45,10 @@ public abstract class BasePhpDelegate {
             StringBuilder sb = new StringBuilder(baseUrl).append(getDefaultDebug());
             if (params != null) {
                 for (String key : params.keySet()) {
-
+                    if(params.get(key) ==null || org.apache.commons.lang3.StringUtils.isEmpty(params.get(key))){
+                        continue;
+                    }
                     sb.append("&").append(key).append("=").append(URLEncoder.encode(params.get(key), StandardCharsets.UTF_8.displayName()));
-
                 }
             }
             return sb.toString();

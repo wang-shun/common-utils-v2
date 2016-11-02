@@ -57,10 +57,10 @@ public class ValidateFlatParamsAspect extends BaseAspect {
             try {
                 return pjp.proceed();
             } catch (BusinessException be) {
-                LOGGER.warn("Error:{}", be);
+                LOGGER.warn("Error:", be);
                 throw be;
             } catch (Throwable e) {
-                LOGGER.warn("Error:{}", e);
+                LOGGER.warn("Error:", e);
                 throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
             }
         }
