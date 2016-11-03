@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.youzan.sz.common.util.DateUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 
@@ -43,7 +44,17 @@ public abstract class BaseBloomProducerHelper<T> extends BaseBloomHelper<T> {
                     lastedLoadDBTime = Long.valueOf(loadTime);
                 }
                 logger.info("current machine get mutex   to load bloomFilter");
-                if (now - lastedLoadDBTime > TimeUnit.DAYS.toMillis(1)) {//1天load一次
+
+                boolean needReload = false;
+                if(DateUtils.getTodayStr().equals("161103") || DateUtils.getTodayStr().equals("161104")
+                        || DateUtils.getTodayStr().equals("161105")){
+                    logger.info("reload admin from db ,for {} " +  DateUtils.getTodayStr());
+                    final String cursorCacheKey = getConfig().getCacheCursor();
+                    jedisTemplate.del(cursorCacheKey);
+                    needReload = true;
+                }
+
+                if ((now - lastedLoadDBTime > TimeUnit.DAYS.toMillis(1)) || needReload) {//1天load一次
                     logger.info("it's time   to load bloomFilter from db");
                     this.bloomFilter = refreshFilter();
                     //设置新的load时间

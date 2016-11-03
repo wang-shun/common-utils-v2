@@ -321,14 +321,15 @@ public class DateUtils {
     public static void main(String[] args) {
         //System.out.println(timestampAtHour(-24));
 
-        List<Date> list = previousMonthDays(new Date());
-        System.out.println(list);
-        try {
-            System.out.println(
-                daysBetweenStartDateAndEndDate(string2Date("2015-12-21 00:00:00"), string2Date("2016-01-20 12:00:00")));
-        } catch (ParseException e) {
-
-        }
+//        List<Date> list = previousMonthDays(new Date());
+//        System.out.println(list);
+//        try {
+//            System.out.println(
+//                daysBetweenStartDateAndEndDate(string2Date("2015-12-21 00:00:00"), string2Date("2016-01-20 12:00:00")));
+//        } catch (ParseException e) {
+//
+//        }
+        System.out.print(getTodayStr());
 
     }
 
