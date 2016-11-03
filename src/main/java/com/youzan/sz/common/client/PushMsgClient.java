@@ -27,34 +27,24 @@ import com.youzan.sz.common.util.SpringUtils;
  * Created by zefa on 16/7/5.
  */
 public final class PushMsgClient {
-    private static PushMsgClient       instance            = null;
-    private static final Object        mutex               = new Object();
     private static final Logger        logger              = LoggerFactory.getLogger(PushMsgClient.class);
     private static PushDelegateService pushDelegateService = null;
 
-    /**
-     * 其实这里多初始化两次没关系
-     * **/
-    public static PushMsgClient getInstance() {
-        if (instance != null) {
-            return instance;
-        }
-        synchronized (mutex) {
-            if (instance == null) {
-                final PushDelegateService delegateService = SpringUtils.getBean(PushDelegateService.class);
-                if (delegateService == null) {
-                    logger.warn(
-                        "the push service not ready, check the service config add pushDelegateService to rpc service");
-                    throw ResponseCode.PUSH_SERVICE_NOT_EXIST.getBusinessException();
-                }
-                instance = new PushMsgClient(delegateService);
-            }
-        }
-        return instance;
+    public static class InstanceHolder {
+        private static final PushMsgClient classInstance = new PushMsgClient();
+
     }
 
-    private PushMsgClient(PushDelegateService delegateService) {
-        pushDelegateService = delegateService;
+    public static PushMsgClient getInstance() {
+        return InstanceHolder.classInstance;
+    }
+
+    private PushMsgClient() {
+        pushDelegateService = SpringUtils.getBean(PushDelegateService.class);
+        if (pushDelegateService == null) {
+            logger.warn("the push service not ready, check the service config add pushDelegateService to rpc service");
+            throw ResponseCode.PUSH_SERVICE_NOT_EXIST.getBusinessException();
+        }
     }
 
     /**

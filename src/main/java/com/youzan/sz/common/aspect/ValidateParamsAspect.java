@@ -70,7 +70,7 @@ public class ValidateParamsAspect extends BaseAspect {
         if (!constraintSet.isEmpty()) {
             String errors = buildErrorMsg(constraintSet);
             if (BaseResponse.class.isAssignableFrom(returnType)) {
-                return new BaseResponse(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
+                return new BaseResponse<>(ResponseCode.PARAMETER_ERROR.getCode(), errors, null);
             } else {
                 throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数错误:\t" + errors);
             }
@@ -78,12 +78,12 @@ public class ValidateParamsAspect extends BaseAspect {
             try {
                 return pjp.proceed();
             } catch (BusinessException be) {
-                LOGGER.warn("Error:{}", be);
+                LOGGER.warn("Error:", be);
                 throw be;
             } catch (Throwable e) {
-                LOGGER.warn("Error:{}", e);
+                LOGGER.warn("Error:", e);
                 if (BaseResponse.class.isAssignableFrom(returnType)) {
-                    return new BaseResponse(ResponseCode.ERROR.getCode(), "系统异常", e);
+                    return new BaseResponse<>(ResponseCode.ERROR.getCode(), "系统异常", e);
                 } else {
                     throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
                 }
@@ -118,7 +118,7 @@ public class ValidateParamsAspect extends BaseAspect {
      * @return
      */
     private Set<ConstraintViolation<Object>> validate(Class[] classes, Object[] args, String[] excludeProperties) {
-        Set<ConstraintViolation<Object>> constraintSet = new HashSet<ConstraintViolation<Object>>();
+        Set<ConstraintViolation<Object>> constraintSet = new HashSet<>();
         for (Object obj : args) {
             if (obj instanceof Collection) {
                 Collection collection = (Collection) obj;
@@ -148,7 +148,9 @@ public class ValidateParamsAspect extends BaseAspect {
         return constraintSet;
     }
 
-    /** 检验
+    /**
+     * 检验
+     *
      * @param classes
      * @param obj
      * @return
