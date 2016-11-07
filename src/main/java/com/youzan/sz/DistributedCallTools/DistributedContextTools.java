@@ -252,6 +252,7 @@ public class DistributedContextTools {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
         }
+//        setAttr(key,value);
         context.put(key.getCanonicalName(), value);
     }
 

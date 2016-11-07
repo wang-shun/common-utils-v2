@@ -24,12 +24,27 @@ public interface PushDelegateService {
 
     /**
      * 幂等,校验票据,不删除
+     * @deprecated {@link PushDelegateService#isValid(PushContextDTO)}
      * */
+    @Deprecated
     BaseResponse<PushContextDTO> validate(PushContextDTO pushContextDTO);
 
     /**
-     * 校验,会销毁凭据
+     * 幂等,校验票据,不删除
+     * 命名方法参考{@link Thread#isInterrupted()} vs{@link Thread#interrupted()}
      * */
+    BaseResponse<PushContextDTO> isValid(PushContextDTO pushContextDTO);
+
+    /**
+     * 校验,成功后会销毁凭据
+     * */
+    BaseResponse<PushContextDTO> valid(PushContextDTO pushContextDTO);
+
+    /**
+     * 
+     *@deprecated {@link PushDelegateService#valid(PushContextDTO)}
+     * */
+    @Deprecated
     BaseResponse<PushContextDTO> validateWithDisposal(PushContextDTO pushContextDTO);
 
     /**

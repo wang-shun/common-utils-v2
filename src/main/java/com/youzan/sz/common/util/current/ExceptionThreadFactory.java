@@ -36,7 +36,7 @@ public class ExceptionThreadFactory implements ThreadFactory {
 
         @Override
         public void uncaughtException(Thread thread, Throwable t) {
-            LOGGER.error("{},execute error", thread.getName(), t);
+            LOGGER.warn("{},execute error", thread.getName(), t);
         }
     }
 

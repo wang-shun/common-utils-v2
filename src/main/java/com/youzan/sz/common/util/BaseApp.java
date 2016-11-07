@@ -43,6 +43,11 @@ public abstract class BaseApp implements DevModeEnable {
         return this.getClass().getSimpleName();
     }
 
+    protected void initCommonConfigs() {
+        //设置通用异常处理器
+        Thread.setDefaultUncaughtExceptionHandler(ExceptionThreadFactory.DEFAULT_EXCEPTION_HANDLER);
+    }
+
     protected void start() {
         preTask();
         doTask();
@@ -68,7 +73,8 @@ public abstract class BaseApp implements DevModeEnable {
     }
 
     protected void preTask() {
-
+        //初始化公用配置
+        initCommonConfigs();
         //startJvmMonitor();
         initSpring();
         //addHook();
