@@ -118,9 +118,7 @@ public final class HttpUtil {
         }
 
         if (headers != null && headers.size() > 0) {
-            headers.entrySet().forEach(e -> {
-                httpPost.setHeader(e.getKey(), e.getValue());
-            });
+            headers.entrySet().forEach(e -> httpPost.setHeader(e.getKey(), e.getValue()));
         }
 
         CloseableHttpResponse response = httpClient.execute(httpPost);
@@ -129,7 +127,7 @@ public final class HttpUtil {
     }
 
     public static String post(Map<String, String> headers, String url, String params, String charset) throws IOException {
-        return url.startsWith("https") == true ? post(true, headers, url, params, charset) : post(false, headers, url, params, charset);
+        return url.startsWith("https") ? post(true, headers, url, params, charset) : post(false, headers, url, params, charset);
     }
 
     /**
