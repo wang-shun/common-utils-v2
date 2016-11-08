@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public final class HttpUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtil.class);
-    private static HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+    private static final HttpClientConnectionManager CONNECTION_MANAGER = new PoolingHttpClientConnectionManager();
     private static final String UTF8 = "UTF-8";
-    private static final int TIME_OUT = 10000;
+    private static final int TIME_OUT = 3000;
 
     /**
      * HTTP POST
@@ -69,8 +69,6 @@ public final class HttpUtil {
         CloseableHttpResponse response = httpClient.execute(httpPost);
         return EntityUtils.toString(response.getEntity(), Charset.forName(charset));
     }
-
-
 
 
     /**
@@ -129,9 +127,11 @@ public final class HttpUtil {
         HttpEntity entity = response.getEntity();
         return EntityUtils.toString(entity, Charset.forName(charset));
     }
+
     public static String post(Map<String, String> headers, String url, String params, String charset) throws IOException {
-       return url.startsWith("https") == true?post(true,headers,url,params,charset):post(false,headers,url,params,charset);
+        return url.startsWith("https") == true ? post(true, headers, url, params, charset) : post(false, headers, url, params, charset);
     }
+
     /**
      * 上传文件 utf-8
      *
@@ -287,7 +287,7 @@ public final class HttpUtil {
     }
 
     private static CloseableHttpClient createHttpClient() {
-        return HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).build();
+        return HttpClients.custom().setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
     }
 
     /**
@@ -303,7 +303,7 @@ public final class HttpUtil {
                 LOGGER.warn("HTTPS SSL 证书未去认证,直接返回的通过认证");
             }
             SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(e);
-            return HttpClients.custom().setSSLSocketFactory(sslsf).setConnectionManager(connManager).setConnectionManagerShared(true).build();
+            return HttpClients.custom().setSSLSocketFactory(sslsf).setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             LOGGER.error("Exception", e);
             return createHttpClient();
