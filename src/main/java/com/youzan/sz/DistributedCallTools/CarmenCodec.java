@@ -179,9 +179,8 @@ public class CarmenCodec implements Codec2 {
                 }
 
                 // 只有对于post方法才需要读取body
-                if (headerLine.length() == 0 && isPostMethod) // End of HTTP
-                // header
-                {
+                if (headerLine.length() == 0 && isPostMethod) { // End of HTTP
+                    // header
                     // Read HTTP body content
                     int contentLength = 0;
 

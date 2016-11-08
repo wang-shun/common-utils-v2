@@ -142,6 +142,9 @@ public class DistributedCoreWebFilter implements Filter {
         if (interface1.getAnnotation(Admin.class) != null) {//暂时不对管理进行鉴权
             return;
         }
+        if (method.getAnnotation(Admin.class) != null) {
+            return;
+        }
         if (method.getAnnotation(WithoutLogging.class) == null && method.getAnnotation(SignOut.class) == null) {
             Map<String, String> map = loadSession();
             //除了不需要session的方法,其他方法都要做登录状态检测.

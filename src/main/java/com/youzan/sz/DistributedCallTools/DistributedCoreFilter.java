@@ -123,7 +123,7 @@ public class DistributedCoreFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
 
         RpcInvocation inv = (RpcInvocation) invocation;
-        String m = "";
+        String method = "";
         Result invoke = null;
         boolean isSucess = true;
         long t = System.currentTimeMillis();
@@ -137,7 +137,7 @@ public class DistributedCoreFilter implements Filter {
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null
                     && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
-                        m = (String) inv.getArguments()[0];
+                        method = (String) inv.getArguments()[0];
                         String[] typesTmp = (String[]) inv.getArguments()[1];
                         Object[] argsTmp = (Object[]) inv.getArguments()[2];
                         List<String> types = new ArrayList<>();
@@ -157,8 +157,8 @@ public class DistributedCoreFilter implements Filter {
                         inv.getArguments()[2] = args.toArray();
 
                         invoke = invoker.invoke(inv);
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), m,
+                        if (LOGGER.isInfoEnabled()) {
+                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method,
                                 inv.getMethodName(), argsTmp);
                         }
 
@@ -221,7 +221,7 @@ public class DistributedCoreFilter implements Filter {
             } finally {
                 // 调用结束后要清理掉分布式上下文，不然会有内存泄露和脏数据
                 DistributedContextTools.clear();
-                LOGGER.info("p:|" + m + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
+                LOGGER.info("p:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
             }
         } else {
             try {
@@ -237,7 +237,7 @@ public class DistributedCoreFilter implements Filter {
                 String deviceType = DistributedContextTools.getDeviceType();
                 final Long opAdminId = DistributedContextTools.getOpAdminId();
                 final String opAdminName = DistributedContextTools.getOpAdminName();
-                m = inv.getMethodName();
+                method = inv.getMethodName();
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
                 }
@@ -276,7 +276,7 @@ public class DistributedCoreFilter implements Filter {
                 }
                 return invoke;
             } finally {
-                LOGGER.info("c:|" + m + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
+                LOGGER.info("c:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
             }
         }
 
