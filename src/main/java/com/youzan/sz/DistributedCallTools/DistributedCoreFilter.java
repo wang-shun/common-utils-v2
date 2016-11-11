@@ -1,13 +1,5 @@
 package com.youzan.sz.DistributedCallTools;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.SPI;
@@ -20,6 +12,12 @@ import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 处理卡门中的通用参数信息，使用方式为，只要卡门传过来的参数类型是distributed.开头的参数都是系统处理范围，不过为了避免滥用，
@@ -29,12 +27,12 @@ import com.youzan.sz.common.util.JsonUtils;
  *
  * @author dft
  */
-@Activate(group = { Constants.PROVIDER, Constants.CONSUMER }, order = -100000)
+@Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -100000)
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
+            .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
 
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
@@ -54,12 +52,12 @@ public class DistributedCoreFilter implements Filter {
             } else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse<>(be.getCode().intValue(),
-                    be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
+                        be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
 
             } else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be),
-                    invoke.getValue());
+                        invoke.getValue());
             } else {
                 br = new BaseResponse<>(ResponseCode.ERROR.getCode(), null, invoke.getValue());
             }
@@ -75,25 +73,19 @@ public class DistributedCoreFilter implements Filter {
             } else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
-            if (((Map) invoke.getValue()).remove("class") != null) {
-                LOGGER.info("remove class succ");
-            }
             if (!BaseResponse.class.getName().equals(invokeClass)) {
                 br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(),
-                    invoke.getValue());
+                        invoke.getValue());
                 rpcResult.setValue(br);
             } else {
                 final Object data = ((Map) invoke.getValue()).get("data");
-                if (data != null && data instanceof HashMap) {
-                    ((HashMap) data).remove("class");
-                }
                 br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"),
-                    (String) ((Map) invoke.getValue()).get("message"), data);
+                        (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
 
         } else if (!(invoke.getValue() instanceof BaseResponse)) {
-            br = new BaseResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
+            br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
             rpcResult.setValue(br);
         }
         rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
@@ -135,7 +127,7 @@ public class DistributedCoreFilter implements Filter {
             try {
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null
-                    && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
+                        && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
                         method = (String) inv.getArguments()[0];
                         String[] typesTmp = (String[]) inv.getArguments()[1];
@@ -159,7 +151,7 @@ public class DistributedCoreFilter implements Filter {
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isInfoEnabled()) {
                             LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method,
-                                inv.getMethodName(), argsTmp);
+                                    inv.getMethodName(), argsTmp);
                         }
 
                         if (invoke.hasException()) {
