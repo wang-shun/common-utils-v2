@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
  * Created by zhanguo on 16/9/13.
  */
 public interface LogTools {
+
+
     default void shopLog(String tag, IShop iShop) {
         if (getLogger().isInfoEnabled())
             getLogger().info("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
@@ -21,6 +23,11 @@ public interface LogTools {
     default void errorShopLog(String tag, IShop iShop) {
         if (getLogger().isErrorEnabled())
             getLogger().error("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
+    }
+
+    default void infoLog(String message, Object... objs) {
+        if (getLogger().isInfoEnabled())
+            getLogger().info(message, objs);
     }
 
     default Logger getLogger() {
