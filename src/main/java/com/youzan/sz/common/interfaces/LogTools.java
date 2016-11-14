@@ -1,10 +1,10 @@
 package com.youzan.sz.common.interfaces;
 
+import com.youzan.sz.common.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * Created by zhanguo on 16/9/13.
  */
 public interface LogTools {
@@ -26,8 +26,13 @@ public interface LogTools {
     }
 
     default void infoLog(String message, Object... objs) {
-        if (getLogger().isInfoEnabled())
-            getLogger().info(message, objs);
+        if (getLogger().isInfoEnabled()) {
+            Object[] params = new Object[objs.length];
+            for (int i = 0; i < objs.length; i++) {
+                params[i] = JsonUtils.toJson(objs[i]);
+            }
+            getLogger().info(message, params);
+        }
     }
 
     default Logger getLogger() {
