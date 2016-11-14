@@ -135,8 +135,13 @@ public class CarmenCodec implements Codec2 {
             for (Object o : arr) {
                 removeClass(o);
             }
-        } else if (data instanceof Collection<?>) {
+        } else if (data instanceof List<?>) {
             List<Object> objects = (List<Object>) data;
+            for (Object o : objects) {
+                removeClass(o);
+            }
+        } else if (data instanceof Set<?>) {
+            Set<Object> objects = (Set<Object>) data;
             for (Object o : objects) {
                 removeClass(o);
             }
