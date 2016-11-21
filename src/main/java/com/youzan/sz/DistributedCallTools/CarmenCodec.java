@@ -148,7 +148,23 @@ public class CarmenCodec implements Codec2 {
         } else if (data instanceof Map<?, ?>) {
             Map<Object, Object> map = (Map<Object, Object>) data;
             map.remove("class");
-            map.entrySet().forEach(e -> removeClass(e.getValue()));
+            Iterator<Map.Entry<Object, Object>> entries = map.entrySet().iterator();
+            while(entries.hasNext()){
+                Map.Entry<Object, Object> entry = entries.next();
+                removeClass(entry.getValue());
+                if(entry.getValue() == null){
+                    entries.remove();
+                }
+                else if(entry.getValue() instanceof  Map<?,?>){
+                   Map innerDate =  ((Map)entry.getValue());
+
+                    if(innerDate.size() ==0 ){
+                        entry.setValue(null);
+                    }
+                }
+            }
+
+           // map.entrySet().forEach(e -> removeClass(e.getValue()) );
         }
     }
 
