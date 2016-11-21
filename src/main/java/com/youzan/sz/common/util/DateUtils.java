@@ -35,13 +35,13 @@ public class DateUtils {
         calendar.set(Calendar.MINUTE, calendar.getActualMaximum(Calendar.MINUTE));
         calendar.set(Calendar.SECOND, calendar.getActualMaximum(Calendar.SECOND));
         calendar.set(Calendar.MILLISECOND, calendar.getActualMaximum(Calendar.MILLISECOND));
-        long endTime = calendar.getTimeInMillis() / 1000;
+        long endTime = calendar.getTimeInMillis();
 
         calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DATE));
         calendar.set(Calendar.HOUR_OF_DAY, calendar.getActualMinimum(Calendar.HOUR_OF_DAY));
         calendar.set(Calendar.MINUTE, calendar.getActualMinimum(Calendar.MINUTE));
         calendar.set(Calendar.SECOND, calendar.getActualMinimum(Calendar.SECOND));
-        long startTime = calendar.getTimeInMillis() / 1000;
+        long startTime = calendar.getTimeInMillis();
 
         TimeRangeBean timeRangeBean = new TimeRangeBean();
         timeRangeBean.setStartTime(startTime);
@@ -59,9 +59,9 @@ public class DateUtils {
      */
     public static TimeRangeBean monthRealRange(int month) {
         Calendar calendar = GregorianCalendar.getInstance();
-        long startTime = calendar.getTimeInMillis() / 1000;
+        long startTime = calendar.getTimeInMillis() ;
         calendar.add(Calendar.MONTH, month);
-        long endTime = calendar.getTimeInMillis() / 1000;
+        long endTime = calendar.getTimeInMillis();
         TimeRangeBean timeRangeBean = new TimeRangeBean();
         if (month > 0) {
             timeRangeBean.setStartTime(startTime);
@@ -102,13 +102,13 @@ public class DateUtils {
      * @param apartDay 相隔天数，0=>当天，-7=>7天前，2=>2天后
      * @return int
      */
-    public static int timestampAtZero(int apartDay) {
+    public static long timestampAtZero(int apartDay) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, apartDay);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
-        return (int) (calendar.getTimeInMillis() / 1000);
+        return calendar.getTimeInMillis();
     }
 
     /**
@@ -116,12 +116,12 @@ public class DateUtils {
      * @param apartHour 相隔小时，0=>当前，-1=>1小时前，1=>1小时后
      * @return int
      */
-    public static int timestampAtHour(int apartHour) {
+    public static long timestampAtHour(int apartHour) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR_OF_DAY, apartHour);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
-        return (int) (calendar.getTimeInMillis() / 1000);
+        return  calendar.getTimeInMillis() ;
     }
 
     /**
@@ -142,7 +142,7 @@ public class DateUtils {
      * @param yyyyMMdd
      * @return int
      */
-    public static int timestampAtZero(String yyyyMMdd) {
+    public static long timestampAtZero(String yyyyMMdd) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         String todayFull = yyyyMMdd + " 00:00:00";
         int time;
@@ -155,8 +155,8 @@ public class DateUtils {
         return time;
     }
 
-    public static int timestampCurrent() {
-        return (int) ((new Date()).getTime() / 1000);
+    public static long timestampCurrent() {
+        return new Date().getTime();
 
     }
 
@@ -329,7 +329,7 @@ public class DateUtils {
 //        } catch (ParseException e) {
 //
 //        }
-        System.out.print(getTodayStr());
+        System.out.print(DateUtils.timestampAtZero(0));
 
     }
 
