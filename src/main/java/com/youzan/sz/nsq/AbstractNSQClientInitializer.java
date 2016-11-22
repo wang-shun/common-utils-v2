@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -79,9 +80,7 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
      * 设置主题
      * */
     public AbstractNSQClientInitializer setTopic(String topic) {
-        if (StringUtils.isEmpty(topic)) {
-            throw new NullPointerException("nsq topic is not null");
-        }
+        Objects.requireNonNull(nsqCodec);
         this.topic = topic;
         return this;
     }
@@ -91,6 +90,7 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
     }
 
     public AbstractNSQClientInitializer setCodec(NSQCodec nsqCodec) {
+        Objects.requireNonNull(nsqCodec);
         this.nsqCodec = nsqCodec;
         return this;
     }

@@ -37,6 +37,8 @@ public abstract class AbstractNSQPubClient extends AbstractNSQClient implements 
         if (object == null) {
             bytes = new byte[0];
         } else {
+            if (nsqCodec == null)
+                logger.warn("nsq codec is null");
             bytes = nsqCodec.encode(object);
         }
         try {
