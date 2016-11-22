@@ -77,7 +77,7 @@ public abstract class BaseApp implements DevModeEnable {
         initCommonConfigs();
         //startJvmMonitor();
         initSpring();
-        //addHook();
+        addHook();
         // com.alibaba.dubbo.container.Main.main(new String[]{});
         InitDistributedTools.init();//启动心跳
     }

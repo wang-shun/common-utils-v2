@@ -12,7 +12,6 @@ import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DubboCountCodec;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.common.response.BaseResponse;
@@ -27,29 +26,26 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @SPI("dubbo")
 public class CarmenCodec implements Codec2 {
-    private static final Logger       LOGGER           = LoggerFactory
-        .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
 
     /**
      *
      */
-    private static final byte[]       CLRF             = new byte[] { 0x0D, 0x0A };
-    public static final String        CARMEN_CODEC     = "CarmenCodec";
-    private static final ObjectMapper om               = new ObjectMapper();
-    private static volatile byte[]    HEATH_CHECK_RESP = null;
-    private static final String       HB_URI           = "_HB_";
+    private static final byte[] CLRF = new byte[]{0x0D, 0x0A};
+    public static final String CARMEN_CODEC = "CarmenCodec";
+    private static final ObjectMapper om = new ObjectMapper();
+    private static volatile byte[] HEATH_CHECK_RESP = null;
+    private static final String HB_URI = "_HB_";
 
     static {
         HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
         om.setSerializationInclusion(JsonInclude.Include.NON_NULL);//默认不导出为空的字段
         om.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
-        //        om.setConfig(SerializationConfig)
     }
 
     private static ByteBuffer encodeRPC(BaseResponse response) {
@@ -84,9 +80,12 @@ public class CarmenCodec implements Codec2 {
             StringBuilder header = new StringBuilder();
             byte[] body = null;
             try {
-                if (response != null && response.getData() != null) {
-                    final JsonInclude annotation = response.getData().getClass().getAnnotation(JsonInclude.class);
-                    if (annotation != null && annotation.value() != null) {//如果含有注解,则按照注解导出
+                if (response.getData() != null) {
+                    // 删除JSON 中的 「class」
+                    removeClass(response.getData());
+
+                    JsonInclude annotation = response.getData().getClass().getAnnotation(JsonInclude.class);
+                    if (annotation != null) {//如果含有注解,则按照注解导出
                         final ObjectMapper objectMapper = new ObjectMapper();
                         objectMapper.setSerializationInclusion(annotation.value());
                         body = ("{\"response\":" + objectMapper.writeValueAsString(response) + "}").getBytes("UTF-8");
@@ -96,8 +95,9 @@ public class CarmenCodec implements Codec2 {
                 if (body == null) {
                     body = ("{\"response\":" + om.writeValueAsString(response) + "}").getBytes("UTF-8");
                 }
-                if (LOGGER.isDebugEnabled())
+                if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("om write json:{}", om.writeValueAsString(response));
+                }
             } catch (Throwable e) {
                 LOGGER.warn("encodeRPC 出错,异常信息:{}", e);
             }
@@ -118,6 +118,54 @@ public class CarmenCodec implements Codec2 {
             LOGGER.warn("encodeRPC 出错,异常信息:{}", e);
         }
         return null;
+    }
+
+    /**
+     * 移除Json中的 「class」属性
+     *
+     * @param data
+     */
+    private static void removeClass(Object data) {
+        if (data == null) {
+            return;
+        }
+
+        if (data.getClass().isArray()) {
+            Object[] arr = (Object[]) data;
+            for (Object o : arr) {
+                removeClass(o);
+            }
+        } else if (data instanceof List<?>) {
+            List<Object> objects = (List<Object>) data;
+            for (Object o : objects) {
+                removeClass(o);
+            }
+        } else if (data instanceof Set<?>) {
+            Set<Object> objects = (Set<Object>) data;
+            for (Object o : objects) {
+                removeClass(o);
+            }
+        } else if (data instanceof Map<?, ?>) {
+            Map<Object, Object> map = (Map<Object, Object>) data;
+            map.remove("class");
+            Iterator<Map.Entry<Object, Object>> entries = map.entrySet().iterator();
+            while(entries.hasNext()){
+                Map.Entry<Object, Object> entry = entries.next();
+                removeClass(entry.getValue());
+                if(entry.getValue() == null){
+                    entries.remove();
+                }
+                else if(entry.getValue() instanceof  Map<?,?>){
+                   Map innerDate =  ((Map)entry.getValue());
+
+                    if(innerDate.size() ==0 ){
+                        entry.setValue(null);
+                    }
+                }
+            }
+
+           // map.entrySet().forEach(e -> removeClass(e.getValue()) );
+        }
     }
 
     private static String readHttpLine(ByteBuffer in) {
@@ -289,21 +337,21 @@ public class CarmenCodec implements Codec2 {
             String opAdminId = parseQueryString.get("op_admin_id");
             String opAdminName = parseQueryString.get("op_admin_name");
 
-            inv.setArguments(new Object[] { methodName,
-                                            new String[] { DistributedParamManager.AdminId.getName(),
-                                                           DistributedParamManager.RequestIp.getName(),
-                                                           DistributedParamManager.KdtId.getName(),
-                                                           DistributedParamManager.DeviceId.getName(),
-                                                           DistributedParamManager.DeviceType.getName(),
-                                                           DistributedParamManager.Aid.getName(),
-                                                           DistributedParamManager.Bid.getName(),
-                                                           DistributedParamManager.ShopId.getName(),
-                                                           DistributedParamManager.OpAdminId.getName(),
-                                                           DistributedParamManager.OpAdminName.getName(), "json" },
-                                            new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
-                                                           shopId, opAdminId, opAdminName, jsonValue } });
+            inv.setArguments(new Object[]{methodName,
+                    new String[]{DistributedParamManager.AdminId.getName(),
+                            DistributedParamManager.RequestIp.getName(),
+                            DistributedParamManager.KdtId.getName(),
+                            DistributedParamManager.DeviceId.getName(),
+                            DistributedParamManager.DeviceType.getName(),
+                            DistributedParamManager.Aid.getName(),
+                            DistributedParamManager.Bid.getName(),
+                            DistributedParamManager.ShopId.getName(),
+                            DistributedParamManager.OpAdminId.getName(),
+                            DistributedParamManager.OpAdminName.getName(), "json"},
+                    new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
+                            shopId, opAdminId, opAdminName, jsonValue}});
             inv.setMethodName(Constants.$INVOKE);
-            inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
+            inv.setParameterTypes(new Class[]{String.class, String[].class, Object[].class});
             Map<String, String> attachments = new HashMap<>();
             attachments.put(Constants.DUBBO_VERSION_KEY, "2.8.4");
             attachments.put(Constants.PATH_KEY, interfaceName);
