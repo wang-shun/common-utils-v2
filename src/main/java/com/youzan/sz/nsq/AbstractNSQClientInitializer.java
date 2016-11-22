@@ -80,7 +80,7 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
      * 设置主题
      * */
     public AbstractNSQClientInitializer setTopic(String topic) {
-        Objects.requireNonNull(nsqCodec);
+        Objects.requireNonNull(topic);
         this.topic = topic;
         return this;
     }

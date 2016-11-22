@@ -55,7 +55,7 @@ public abstract class BaseApp implements DevModeEnable {
         if (isDevModel())
             new TestWrapper(() -> getProjectName());
         if (asyncTasks.size() > 0) {
-            logger.info("开始执行异步任务");
+            logger.info("start execute async task");
             for (Runnable asyncTask : asyncTasks) {
                 final Future<?> submit = executorService.submit(asyncTask);
             }
