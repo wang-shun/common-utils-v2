@@ -31,7 +31,7 @@ public abstract class BaseApp implements DevModeEnable {
     private static ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
         "classpath:config-spring.xml");
     private final List<Runnable>                  asyncTasks         = new ArrayList<>();
-    private final ExecutorService                 executorService    = Executors.newFixedThreadPool(1,
+    private final ExecutorService                 executorService    = Executors.newFixedThreadPool(2,
         ExceptionThreadFactory.DEFAULT_EXCEPTION_FACTORY);;
 
     private void initSpring() {
@@ -57,7 +57,11 @@ public abstract class BaseApp implements DevModeEnable {
         if (asyncTasks.size() > 0) {
             logger.info("start execute async task");
             for (Runnable asyncTask : asyncTasks) {
-                final Future<?> submit = executorService.submit(asyncTask);
+                try {
+                    final Future<?> submit = executorService.submit(asyncTask);
+                } catch (Exception e) {
+                    logger.warn("async execute error", e);
+                }
             }
         }
         try {
@@ -83,11 +87,15 @@ public abstract class BaseApp implements DevModeEnable {
     }
 
     protected void addHook() {
-        String HOOK_NAME = "hook";
-        ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
+        try {
+            String HOOK_NAME = "hook";
+            ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
 
-        if (loader.getExtension(HOOK_NAME) != null) {
-            loader.getExtension(HOOK_NAME).start();
+            if (loader.getExtension(HOOK_NAME) != null) {
+                loader.getExtension(HOOK_NAME).start();
+            }
+        } catch (Throwable e) {
+            logger.warn("add hook error", e);
         }
     }
 
