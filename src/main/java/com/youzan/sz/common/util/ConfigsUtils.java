@@ -18,6 +18,8 @@ public class ConfigsUtils {
 
     public final static String CONTAINER_PROPERTIES_FILE_NAME  = "container.properties";
 
+    public final static String CENTER_PROPERTIES_FILE_NAME  = "configcenter.properties";
+
     public final static String APP_NAME                  = "app.name";
 
     public final static String ZK_ADDRESS                = "zk.address";
