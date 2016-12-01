@@ -18,7 +18,7 @@ public class PermissionsUtil {
     /**
      * 校验重复权限,如果出现重复退出当前jvm
      */
-    public static void checkRightsRepeat() {
+    public static void checkPermissionsRepeat() {
         boolean hasRepeat = false;
         if (rightsMap.size() == 0) {
             synchronized (rightsMap) {
@@ -43,7 +43,7 @@ public class PermissionsUtil {
      * @param collection
      * @return
      */
-    public static  Long[] transferRights2LongArr(Collection <PermissionsEnum> collection){
+    public static  Long[] transferPermissions2LongArr(Collection <PermissionsEnum> collection){
 
         if(CollectionUtils.isEmpty(collection)){
             return null;
@@ -75,9 +75,9 @@ public class PermissionsUtil {
         }
         return rightArr;
     }
-    public static String transferRights2String(Collection <PermissionsEnum> collection){
+    public static String transferPermissions2String(Collection <PermissionsEnum> collection){
 
-        Long [] rights = transferRights2LongArr(collection);
+        Long [] rights = transferPermissions2LongArr(collection);
         if(rights == null){
             return "";
         }
@@ -92,7 +92,7 @@ public class PermissionsUtil {
 
         return rightsStr.toString();
     }
-    public static Long[] transferRigthsStr2LongArr(String rightsStr){
+    public static Long[] transferPermissionsStr2LongArr(String rightsStr){
 
         if(StringUtils.isEmpty(rightsStr)){
             return null;
@@ -120,9 +120,9 @@ public class PermissionsUtil {
 
         for(RolesEnum rolesEnum: RolesEnum.values()){
 
-            String str = transferRights2String(rolesEnum.getPermissions());
+            String str = transferPermissions2String(rolesEnum.getPermissions());
             System.out.println(str);
-            Long[] longr = transferRigthsStr2LongArr(str);
+            Long[] longr = transferPermissionsStr2LongArr(str);
             if(longr != null){
                 for(Long r:longr){
                     System.out.println(Long.toHexString(r));
