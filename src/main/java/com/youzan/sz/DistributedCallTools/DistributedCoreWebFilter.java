@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,18 +51,21 @@ public class DistributedCoreWebFilter implements Filter {
      * @return 如果存在则返回方法，否则返回空
      */
     private Method getMethod(String methodName, int paramCount, Class<?> interf) {
-        String key = interf.getCanonicalName() + methodName + paramCount;
+        String key = interf.getCanonicalName() + methodName;
+        if (paramCount > 0) {
+            key = key + paramCount;
+        }
         if (methodCache.containsKey(key)) {
             return methodCache.get(key);
         }
         Method[] methods = interf.getMethods();
         for (Method method : methods) {
-            if (method.getName().equals(methodName) && method.getParameterTypes().length == paramCount) {
+            if (method.getName().equals(methodName) && (paramCount <= 0 || method.getParameterCount() == paramCount)) {
                 methodCache.put(key, method);
                 return method;
             }
         }
-        return null;
+        return getMethod(methodName, -1, interf); //只按名称再查找一遍
     }
 
     @Override
@@ -97,15 +101,44 @@ public class DistributedCoreWebFilter implements Filter {
                 doAuth(m, method, interface1);
                 String[] types;
                 Object[] args;
+
                 // 解析json中的参数，并进行对应映射
                 if (readValue.isArray()) {
-                    args = new Object[inputParamCount];
-                    types = new String[inputParamCount];
-                    for (int i = 0; i < args.length; i++) {
-                        args[i] = om.readValue(readValue.get(i).toString(), method.getParameterTypes()[i]);
-                        types[i] = method.getParameterTypes()[i].getName();
-                    }
+                    Parameter[] parameters = method.getParameters();
+                    int parameterCount = parameters.length;
+                    args = new Object[parameterCount];
+                    types = new String[parameterCount];
 
+                    if (parameterCount > 0) {
+                        JsonNode jsonNode = readValue.get(0); //取出第一个参数，判断是不是Json对象
+                        Parameter parameter;
+                        Class<?> parameterType;
+
+                        try {
+                            if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
+                                for (int i = 0; i < parameterCount; i++) {
+                                    parameter = parameters[i];
+                                    parameterType = parameter.getType();
+                                    if (parameterType.isPrimitive() || parameterType.equals(String.class)) {
+                                        args[i] = om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
+                                    } else {
+                                        args[i] = om.readValue(jsonNode.toString(), parameterType);
+                                    }
+                                    types[i] = parameterType.getName();
+                                }
+                            } else { //旧的接口传参方式 json=[1,2,3,4]
+                                for (int i = 0; i < parameterCount; i++) {
+                                    parameter = parameters[i];
+                                    parameterType = parameter.getType();
+                                    types[i] = parameterType.getName();
+                                    args[i] = om.readValue(readValue.get(i).toString(), parameterType);
+                                }
+                            }
+                        } catch (NullPointerException | ClassCastException e) {
+                            LOGGER.error("请求失败，可能是参数不正确", e);
+                            throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
+                        }
+                    }
                 } else {
                     args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
                     types = new String[]{method.getParameterTypes()[0].getName()};
