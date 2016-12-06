@@ -254,11 +254,18 @@ public class PhpUtils {
     private static String post(String url, Map<String, String> params) {
         String response;
         try {
-            List<NameValuePair> pairs = new ArrayList<NameValuePair>(params.size());
-            for (Map.Entry<String, String> param : params.entrySet())
-                pairs.add(new BasicNameValuePair(param.getKey(), param.getValue()));
-            final String paramsStr = URLEncodedUtils.format(pairs, UTF_8.name());
-            response = HttpUtil.post(params, url, paramsStr, StandardCharsets.UTF_8.displayName());
+            String paramsStr = null;
+            if (CollectionUtils.isNotEmpty(params)) {
+                List<NameValuePair> pairs = new ArrayList(params.size());
+                for (Map.Entry<String, String> param : params.entrySet())
+                    pairs.add(new BasicNameValuePair(param.getKey(), param.getValue()));
+                paramsStr = URLEncodedUtils.format(pairs, UTF_8.name());
+            }
+            if (url.endsWith("?"))
+                url = url + paramsStr;
+            else
+                url = url + "?" + paramsStr;
+            response = HttpUtil.post(Collections.EMPTY_MAP, url, paramsStr, StandardCharsets.UTF_8.displayName());
         } catch (IOException e) {
             LOGGER.error("php connect url({}) exception", url, e);
             throw ResponseCode.ERROR.getBusinessException();
