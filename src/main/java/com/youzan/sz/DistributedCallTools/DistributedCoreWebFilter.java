@@ -1,14 +1,5 @@
 package com.youzan.sz.DistributedCallTools;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.youzan.sz.common.SignOut;
-import com.youzan.sz.common.anotations.Admin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.SPI;
@@ -17,10 +8,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.sz.common.SignOut;
 import com.youzan.sz.common.annotation.WithoutLogging;
+import com.youzan.sz.common.anotations.Admin;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 1、处理json格式的参数，以方便调用的时候将参数设置成json格式，以方便配置和使用 <br>
@@ -28,29 +28,19 @@ import com.youzan.sz.session.SessionTools;
  *
  * @author dft
  */
-@Activate(group = { Constants.PROVIDER }, order = -90000)
+@Activate(group = {Constants.PROVIDER}, order = -90000)
 @SPI("web_kernel")
 public class DistributedCoreWebFilter implements Filter {
 
-    private static final Logger              LOGGER      = LoggerFactory
-        .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreWebFilter.class);
-    private static final ObjectMapper        om          = new ObjectMapper();
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreWebFilter.class);
+    private static final ObjectMapper om = new ObjectMapper();
     private static final Map<String, Method> methodCache = new HashMap<>();
 
     static {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    //    StaffService staffService = null;
-
-    public DistributedCoreWebFilter() {
-        //        try {
-        // 尝试获取账户服务
-        //            staffService = SpringUtils.getBean(StaffService.class);
-        //        } catch (Throwable e) {
-        //            LOGGER.warn("get the StaffService fail,if donn't need this,just ignore!");
-        //        }
-    }
 
     /**
      * 获取接口的方法，如果是一个新的就先缓存一下
@@ -61,18 +51,21 @@ public class DistributedCoreWebFilter implements Filter {
      * @return 如果存在则返回方法，否则返回空
      */
     private Method getMethod(String methodName, int paramCount, Class<?> interf) {
-        String key = interf.getCanonicalName() + methodName + paramCount;
+        String key = interf.getCanonicalName() + methodName;
+        if (paramCount > 0) {
+            key = key + paramCount;
+        }
         if (methodCache.containsKey(key)) {
             return methodCache.get(key);
         }
         Method[] methods = interf.getMethods();
         for (Method method : methods) {
-            if (method.getName().equals(methodName) && method.getParameterTypes().length == paramCount) {
+            if (method.getName().equals(methodName) && (paramCount <= 0 || method.getParameterCount() == paramCount)) {
                 methodCache.put(key, method);
                 return method;
             }
         }
-        return null;
+        return getMethod(methodName, -1, interf); //只按名称再查找一遍
     }
 
     @Override
@@ -83,7 +76,7 @@ public class DistributedCoreWebFilter implements Filter {
         try {
             do {
                 if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null
-                    || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
+                        || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     break;
                 }
                 String m = (String) inv.getArguments()[0];
@@ -99,27 +92,56 @@ public class DistributedCoreWebFilter implements Filter {
                 Method method = getMethod(m, inputParamCount, interface1);
                 if (null == method) {
                     throw new BusinessException((long) ResponseCode.METHOD_NOT_FOUND.getCode(),
-                        "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:"
-                                                                                                + inputParamCount);
+                            "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:"
+                                    + inputParamCount);
                 }
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
 
                 doAuth(m, method, interface1);
-                String[] types = null;
-                Object[] args = null;
+                String[] types;
+                Object[] args;
+
                 // 解析json中的参数，并进行对应映射
                 if (readValue.isArray()) {
-                    args = new Object[inputParamCount];
-                    types = new String[inputParamCount];
-                    for (int i = 0; i < args.length; i++) {
-                        args[i] = om.readValue(readValue.get(i).toString(), method.getParameterTypes()[i]);
-                        types[i] = method.getParameterTypes()[i].getName();
-                    }
+                    Parameter[] parameters = method.getParameters();
+                    int parameterCount = parameters.length;
+                    args = new Object[parameterCount];
+                    types = new String[parameterCount];
 
+                    if (parameterCount > 0) {
+                        JsonNode jsonNode = readValue.get(0); //取出第一个参数，判断是不是Json对象
+                        Parameter parameter;
+                        Class<?> parameterType;
+
+                        try {
+                            if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
+                                for (int i = 0; i < parameterCount; i++) {
+                                    parameter = parameters[i];
+                                    parameterType = parameter.getType();
+                                    if (parameterType.isPrimitive() || parameterType.equals(String.class)) {
+                                        args[i] = om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
+                                    } else {
+                                        args[i] = om.readValue(jsonNode.toString(), parameterType);
+                                    }
+                                    types[i] = parameterType.getName();
+                                }
+                            } else { //旧的接口传参方式 json=[1,2,3,4]
+                                for (int i = 0; i < parameterCount; i++) {
+                                    parameter = parameters[i];
+                                    parameterType = parameter.getType();
+                                    types[i] = parameterType.getName();
+                                    args[i] = om.readValue(readValue.get(i).toString(), parameterType);
+                                }
+                            }
+                        } catch (NullPointerException | ClassCastException e) {
+                            LOGGER.error("请求失败，可能是参数不正确", e);
+                            throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
+                        }
+                    }
                 } else {
-                    args = new Object[] { om.readValue(readValue.toString(), method.getParameterTypes()[0]) };
-                    types = new String[] { method.getParameterTypes()[0].getName() };
+                    args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
+                    types = new String[]{method.getParameterTypes()[0].getName()};
                 }
 
                 // 保存过滤掉系统参数后的结果
