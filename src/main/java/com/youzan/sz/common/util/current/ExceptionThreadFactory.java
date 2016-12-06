@@ -25,6 +25,11 @@ public class ExceptionThreadFactory implements ThreadFactory {
         threadFactory = DEFAULT_FACTORY;
     }
 
+    public ExceptionThreadFactory(ExceptionHandler exceptionHandler) {
+        this.handler = DEFAULT_EXCEPTION_HANDLER;
+        threadFactory = DEFAULT_FACTORY;
+    }
+
     public ExceptionThreadFactory(ThreadFactory threadFactory) {
         this.threadFactory = threadFactory;
         handler = DEFAULT_EXCEPTION_HANDLER;
