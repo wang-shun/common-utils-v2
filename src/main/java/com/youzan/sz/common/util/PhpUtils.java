@@ -229,7 +229,7 @@ public class PhpUtils {
         String resp = post(url, params);
 
         try {
-            return dealHttpResult(resp, clazz, PropertyNamingStrategy.LOWER_CAMEL_CASE, Collections.EMPTY_MAP, false);
+            return dealHttpResult(resp, clazz, PropertyNamingStrategy.SNAKE_CASE, Collections.EMPTY_MAP, false);
 
         } catch (Exception e) {
             LOGGER.error("deal url ({}) json response parse error", url, e);
