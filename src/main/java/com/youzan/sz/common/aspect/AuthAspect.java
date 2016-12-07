@@ -1,16 +1,19 @@
 package com.youzan.sz.common.aspect;
 
+import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.Auth;
 import com.youzan.sz.common.model.auth.GrantPolicyDTO;
 import com.youzan.sz.common.permission.PermissionsEnum;
 import com.youzan.sz.common.response.BaseResponse;
+import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.service.AuthService;
 import com.youzan.sz.session.SessionTools;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
@@ -22,6 +25,7 @@ import java.lang.reflect.Method;
 /**
  * Created by wangpan on 2016/12/5.
  */
+@Aspect
 public class AuthAspect extends BaseAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthAspect.class);
 
@@ -46,7 +50,28 @@ public class AuthAspect extends BaseAspect {
         PermissionsEnum[] allowedPermissions = auth.allowedPermissions();
         boolean allow = checkPermission(allowedPermissions);
 
-        return false;
+        if (allow) {
+            // 通过鉴权,开始调用业务逻辑方法
+            try {
+                return pjp.proceed();
+            } catch (BusinessException be) {
+                throw be;
+            } catch (Throwable e) {
+                LOGGER.warn("Exception:{}", e);
+                if (BaseResponse.class.isAssignableFrom(returnType)) {
+                    return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
+                } else {
+                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
+                }
+            }
+        } else {
+            // 未通过鉴权
+            if (BaseResponse.class.isAssignableFrom(returnType)) {//可能有时候不需要抛出异常
+                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你无权访问", null);
+            } else {
+                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你无权访问");
+            }
+        }
     }
 
     /**

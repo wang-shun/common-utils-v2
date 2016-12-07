@@ -142,11 +142,14 @@ public class PermissionsUtil {
         List<Long[]> permissions = new ArrayList<>();
         int max = 0;
         for (String permission : permissionsStr) {
-
-            Long[] permissonLong = PermissionsUtil.transferPermissionsStr2LongArr(permission);
-            max = permissonLong == null ? max : permissonLong.length > max ? permissonLong.length : max;
-            if (permissonLong == null) {
-                permissions.add(permissonLong);
+            if(StringUtils.isEmpty(permission)){
+                continue;
+            }
+            Long[] permissonLongArr = PermissionsUtil.transferPermissionsStr2LongArr(permission);
+            System.out.println(permissonLongArr);
+            max = (permissonLongArr == null ? max : permissonLongArr.length > max ? permissonLongArr.length : max);
+            if (permissonLongArr != null && permissonLongArr.length> 0) {
+                permissions.add(permissonLongArr);
             }
         }
         Long[] permissionsLong = new Long[max];
