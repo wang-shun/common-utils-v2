@@ -135,13 +135,11 @@ public class AuthAspect extends BaseAspect {
                if( (userPermissions[permissionsEnum.getPermissionsIndex().getIndex()] & needPermission) != needPermission ) {
                    LOGGER.warn("interface permissons out of user owner permissions,adminId:{},yzAccount:{},need permission:{},owner permisssions:{}", adminId,
                            SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),permissionsEnum,Long.toHexString(needPermission));
-               }else{
-                   return true;
+                   return false;
                }
-
             }
         }
-        return false;
+        return true;
     }
 
 }
