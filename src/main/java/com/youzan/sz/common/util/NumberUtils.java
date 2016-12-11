@@ -137,6 +137,22 @@ public class NumberUtils {
         return !isPositive(number);
     }
 
+    public static <T extends Number> boolean isNotBetween(T min, T max, T current) {
+        return !isBetween(min, max, current);
+    }
+
+    public static <T extends Number> boolean isBetween(T min, T max, T current) {
+        if (current == null) {
+            return false;
+        }
+        if (min instanceof Integer) {
+            return min.intValue() < current.intValue() && max.intValue() > current.intValue();
+        }
+        //向大的转换,不丢失精度
+        return min.longValue() < current.longValue() && max.longValue() > current.longValue();
+
+    }
+
     public static void main(String[] args) throws Throwable {
         for (int i = 0; i < 100; i++) {
             System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
