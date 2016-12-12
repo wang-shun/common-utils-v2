@@ -14,6 +14,7 @@ import com.youzan.sz.common.anotations.Admin;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
+import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +120,7 @@ public class DistributedCoreWebFilter implements Filter {
                                 for (int i = 0; i < parameterCount; i++) {
                                     parameter = parameters[i];
                                     parameterType = parameter.getType();
-                                    if (parameterType.isPrimitive() || parameterType.equals(String.class)) {
+                                    if (ClassUtils.isPrimitiveOrWrapper(parameterType) || parameterType.equals(String.class)) {
                                         args[i] = om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
                                     } else {
                                         args[i] = om.readValue(jsonNode.toString(), parameterType);
