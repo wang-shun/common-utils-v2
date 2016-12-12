@@ -50,14 +50,14 @@ public class PushMsgDTO extends BaseDTO {
     /**批量发送结果*/
     private Map<String, String> result;
 
-    private String soundFile;
+    private String sound;
 
-    public String getSoundFile() {
-        return soundFile;
+    public String getSound() {
+        return sound;
     }
 
-    public void setSoundFile(String soundFile) {
-        this.soundFile = soundFile;
+    public void setSound(String sound) {
+        this.sound = sound;
     }
 
     @NotThreadSafe

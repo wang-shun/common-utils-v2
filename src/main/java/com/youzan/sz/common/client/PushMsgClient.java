@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import com.alibaba.fastjson.JSONObject;
-import com.youzan.sz.common.push.MsgSoundDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +78,7 @@ public final class PushMsgClient {
         pushMsgDTO.setSendType(SendType.ADMIN_ID.getValue());
         pushMsgDTO.addStaffRecv(staffDTO);
         pushMsgDTO.setParams(params);
-        pushMsgDTO.setSoundFile(soundFile);
+        pushMsgDTO.setSound(soundFile);
         pushMsg(pushMsgDTO);
     }
     /**
