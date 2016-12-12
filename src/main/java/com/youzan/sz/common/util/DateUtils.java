@@ -19,7 +19,12 @@ public class DateUtils {
         throw new IllegalAccessError("Utility class");
     }
 
-    private final static SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final  ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<>();
+
+    static {
+        DATE_FORMAT_TL.set(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    }
+
 
     /**
      * 获取按月起止时间戳
@@ -188,7 +193,7 @@ public class DateUtils {
      * @return
      */
     public static String date2String(Date date) {
-        return sf.format(date);
+        return DATE_FORMAT_TL.get().format(date);
     }
 
     /**
@@ -210,7 +215,7 @@ public class DateUtils {
      * @throws ParseException
      */
     public static Date string2Date(String date) throws ParseException {
-        return sf.parse(date);
+        return DATE_FORMAT_TL.get().parse(date);
     }
 
     /**
