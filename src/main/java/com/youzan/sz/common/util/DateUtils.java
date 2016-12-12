@@ -8,6 +8,8 @@ import java.util.*;
 
 /**
  * Created by zefa on 16/5/30.
+ * modified by zhanguo 修改线程安全
+ * 
  */
 public class DateUtils {
 
@@ -59,7 +61,7 @@ public class DateUtils {
      */
     public static TimeRangeBean monthRealRange(int month) {
         Calendar calendar = GregorianCalendar.getInstance();
-        long startTime = calendar.getTimeInMillis() ;
+        long startTime = calendar.getTimeInMillis();
         calendar.add(Calendar.MONTH, month);
         long endTime = calendar.getTimeInMillis();
         TimeRangeBean timeRangeBean = new TimeRangeBean();
@@ -121,7 +123,7 @@ public class DateUtils {
         calendar.add(Calendar.HOUR_OF_DAY, apartHour);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
-        return  calendar.getTimeInMillis() ;
+        return calendar.getTimeInMillis();
     }
 
     /**
@@ -321,14 +323,14 @@ public class DateUtils {
     public static void main(String[] args) {
         //System.out.println(timestampAtHour(-24));
 
-//        List<Date> list = previousMonthDays(new Date());
-//        System.out.println(list);
-//        try {
-//            System.out.println(
-//                daysBetweenStartDateAndEndDate(string2Date("2015-12-21 00:00:00"), string2Date("2016-01-20 12:00:00")));
-//        } catch (ParseException e) {
-//
-//        }
+        //        List<Date> list = previousMonthDays(new Date());
+        //        System.out.println(list);
+        //        try {
+        //            System.out.println(
+        //                daysBetweenStartDateAndEndDate(string2Date("2015-12-21 00:00:00"), string2Date("2016-01-20 12:00:00")));
+        //        } catch (ParseException e) {
+        //
+        //        }
         System.out.print(DateUtils.timestampAtZero(0));
 
     }

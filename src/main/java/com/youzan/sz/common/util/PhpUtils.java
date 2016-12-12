@@ -6,12 +6,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import static com.youzan.sz.jutil.string.StringUtil.UTF_8;
 
 /**
  *
@@ -86,12 +91,12 @@ public class PhpUtils {
             return null;
         }
         try {
-            return dealHttpResult(resp,targetClass,s,jsonTransferFiled,isList);
+            return dealHttpResult(resp, targetClass, s, jsonTransferFiled, isList);
             /*if (resp.contains("\"msg\":")) {//返回结构不一样,需要转换一次
                 final HashMap hashMap = JsonUtils.json2Bean(resp, HashMap.class);
                 Object data = hashMap.get("data");
                 final Object msg = hashMap.getOrDefault("msg", "");
-
+            
                 if (new Integer(0).equals(hashMap.get("code"))) {//返回成功
                     if (data != null && (data instanceof Collection)) {//处理空集合返回
                         if (CollectionUtils.isEmpty((Collection) data)) {
@@ -101,28 +106,28 @@ public class PhpUtils {
                         }
                     }
                 }
-
+            
                 final Object oldMsg = hashMap.remove("msg");
                 hashMap.put("message", oldMsg == null ? "" : oldMsg.toString());
                 resp = JsonUtils.bean2Json(hashMap);
             }
-
+            
             ObjectMapper objectMapper = new ObjectMapper();
             if (s != null) {
                 objectMapper.setPropertyNamingStrategy(s);
             }
             if (jsonTransferFiled != null && jsonTransferFiled.size() != 0) {
                 Iterator entries = jsonTransferFiled.entrySet().iterator();
-
+            
                 while (entries.hasNext()) {
-
+            
                     Map.Entry entry = (Map.Entry) entries.next();
-
+            
                     String key = (String) entry.getKey();
-
+            
                     String value = (String) entry.getValue();
                     resp = resp.replaceAll(key, value);
-
+            
                 }
             }
             JavaType type = null;
@@ -133,7 +138,7 @@ public class PhpUtils {
                 type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetClass);
             }
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+            
             BaseResponse<T> result = objectMapper.readValue(resp, type);
             return result;*/
         } catch (Exception e) {
@@ -145,7 +150,7 @@ public class PhpUtils {
     private static <T> BaseResponse dealHttpResult(String resp, Class<T> targetClass,
 
                                                    PropertyNamingStrategy s, Map<String, String> jsonTransferFiled,
-                                                   Boolean isList) throws  Exception {
+                                                   Boolean isList) throws Exception {
         if (resp == null) {
             return null;
         }
@@ -199,21 +204,32 @@ public class PhpUtils {
 
             BaseResponse<T> result = objectMapper.readValue(resp, type);
             return result;
-        }  catch(Exception e) {
-            LOGGER.error("deal with result ({}) parse error",resp,e);
+        } catch (Exception e) {
+            LOGGER.error("deal with result ({}) parse error", resp, e);
             throw e;
         }
 
     }
 
     public static <T> BaseResponse postWithNamingStrategy(String url, Map<String, String> params, String content,
-                                                          Class<T> targetClass,
-                                                          PropertyNamingStrategy s,
+                                                          Class<T> targetClass, PropertyNamingStrategy s,
                                                           Map<String, String> jsonTransferFiled, Boolean isList) {
         String resp = post(url, params, content);
 
         try {
             return dealHttpResult(resp, targetClass, s, jsonTransferFiled, isList);
+
+        } catch (Exception e) {
+            LOGGER.error("deal url ({}) json response parse error", url, e);
+            throw ResponseCode.ERROR.getBusinessException();
+        }
+    }
+
+    public static <T> BaseResponse postResult(String url, Map<String, String> params, Class<T> clazz) {
+        String resp = post(url, params);
+
+        try {
+            return dealHttpResult(resp, clazz, PropertyNamingStrategy.SNAKE_CASE, Collections.EMPTY_MAP, false);
 
         } catch (Exception e) {
             LOGGER.error("deal url ({}) json response parse error", url, e);
@@ -235,6 +251,35 @@ public class PhpUtils {
     //
     //
     //    }
+    private static String post(String url, Map<String, String> params) {
+        String response;
+        try {
+            String paramsStr = null;
+            if (CollectionUtils.isNotEmpty(params)) {
+                List<NameValuePair> pairs = new ArrayList(params.size());
+                for (Map.Entry<String, String> param : params.entrySet())
+                    pairs.add(new BasicNameValuePair(param.getKey(), param.getValue()));
+                paramsStr = URLEncodedUtils.format(pairs, UTF_8.name());
+            }
+            if (url.endsWith("?"))
+                url = url + paramsStr;
+            else
+                url = url + "?" + paramsStr;
+            response = HttpUtil.post(Collections.EMPTY_MAP, url, paramsStr, StandardCharsets.UTF_8.displayName());
+        } catch (IOException e) {
+            LOGGER.error("php connect url({}) exception", url, e);
+            throw ResponseCode.ERROR.getBusinessException();
+        }
+        if (response == null) {//正常条件get请求不应该返回空值
+            LOGGER.warn("post url({}) repsonse null", url);
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("call php url({}) resp({})", url, response);
+        }
+        return response;
+
+    }
+
     private static String post(String url, Map<String, String> params, String content) {
         String response = null;
         try {

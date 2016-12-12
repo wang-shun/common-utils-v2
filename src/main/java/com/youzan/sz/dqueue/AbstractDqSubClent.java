@@ -62,7 +62,7 @@ public abstract class AbstractDqSubClent<T> extends AbstractDqClient {
         taskList = new ArrayList<PopTask>();
 
         if (threadFactory == null) {
-            threadFactory = new ExceptionThreadFactory(new ExceptionThreadFactory.ExceptionHandler());
+            threadFactory = new ExceptionThreadFactory();
         }
 
         popExecutor = new ThreadPoolExecutor(coreThreads, coreThreads, 0L, TimeUnit.MILLISECONDS,

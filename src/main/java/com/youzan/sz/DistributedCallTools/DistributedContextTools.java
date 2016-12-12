@@ -241,18 +241,15 @@ public class DistributedContextTools {
      *设置属性,有泛型检查
      * */
     public static <T extends DistributedParam<V>, V> void setAttr(Class<T> key, V value) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
-        }
         context.put(key.getCanonicalName(), value);
     }
 
     @Deprecated
     public static <T> void set(Class<?> key, T value) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
-        }
-//        setAttr(key,value);
+//        if (LOGGER.isDebugEnabled()) {
+//            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
+//        }
+        //        setAttr(key,value);
         context.put(key.getCanonicalName(), value);
     }
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.youzan.sz.common.model.enums.BooleanEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +19,9 @@ import java.util.ArrayList;
  */
 public class JsonUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtils.class);
+    private static final Logger       LOGGER              = LoggerFactory.getLogger(JsonUtils.class);
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper              = new ObjectMapper();
     private static final ObjectMapper EXCLUDE_NULL_MAPPER = new ObjectMapper();
 
     static {
@@ -75,7 +76,7 @@ public class JsonUtils {
         try {
             return mapper.readValue(jsonStr, elementClasses);
         } catch (IOException e) {
-            LOGGER.error("json to bean error,source json:{} ", jsonStr, e);
+            LOGGER.warn("json to bean error,source json:{} ", jsonStr, e);
             return null;
         }
     }
@@ -89,6 +90,22 @@ public class JsonUtils {
             return jo;
         }
         return null;
+    }
+
+    public static JSONObject getSingleJson(String key, String value) {
+        final JSONObject jo = new JSONObject(1);
+        jo.put(key, value);
+        return jo;
+    }
+
+    public static JSONObject getSingleJson(String key, Number value) {
+        final JSONObject jo = new JSONObject(1);
+        jo.put(key, value);
+        return jo;
+    }
+
+    public static JSONObject getSingleJson(String key, Boolean value) {
+        return getSingleJson(key, BooleanEnum.atoi(value));
     }
 
     public static void main(String[] args) {
