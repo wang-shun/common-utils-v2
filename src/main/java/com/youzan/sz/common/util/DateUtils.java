@@ -25,7 +25,6 @@ public class DateUtils {
         }
     };
 
-
     /**
      * 获取按月起止时间戳
      * -1 表示 上一月
@@ -265,7 +264,7 @@ public class DateUtils {
 
         List<Date> dates = new ArrayList<>();
         for (int i = calendar1.getMinimum(Calendar.DAY_OF_MONTH); i <= calendar1
-                .getMaximum(Calendar.DAY_OF_MONTH); i++) {
+            .getMaximum(Calendar.DAY_OF_MONTH); i++) {
             calendar1.set(Calendar.DAY_OF_MONTH, i);
             dates.add(calendar1.getTime());
         }
@@ -330,7 +329,7 @@ public class DateUtils {
         List<Date> dates = new ArrayList<>();
 
         calendarStart.get(Calendar.DAY_OF_YEAR);
-        for (; calendarStart.getTimeInMillis() <= calendarEnd.getTimeInMillis(); ) {
+        for (; calendarStart.getTimeInMillis() <= calendarEnd.getTimeInMillis();) {
             dates.add(calendarStart.getTime());
             calendarStart.add(Calendar.DAY_OF_YEAR, +1);
         }
@@ -355,7 +354,6 @@ public class DateUtils {
         System.out.print(DateUtils.date2String(new Date()));
         System.out.print(DateUtils.string2Date("2016-10-12 10:12:00").getTime());
         System.out.print(DateUtils.date2String(new Date()));
-
 
         System.out.print(DateUtils.timestampAtZero(0));
 
