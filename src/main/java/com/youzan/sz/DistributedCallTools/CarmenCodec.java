@@ -159,7 +159,7 @@ public class CarmenCodec implements Codec2 {
                    Map innerDate =  ((Map)entry.getValue());
 
                     if(innerDate.size() ==0 ){
-                        entry.setValue(null);
+                        entries.remove();
                     }
                 }
             }
