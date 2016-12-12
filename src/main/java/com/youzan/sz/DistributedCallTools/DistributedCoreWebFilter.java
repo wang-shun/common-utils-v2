@@ -59,12 +59,20 @@ public class DistributedCoreWebFilter implements Filter {
         if (methodCache.containsKey(key)) {
             return methodCache.get(key);
         }
+        boolean existByName = false; //是否存在该名称的method
         Method[] methods = interf.getMethods();
         for (Method method : methods) {
-            if (method.getName().equals(methodName) && (paramCount <= 0 || method.getParameterCount() == paramCount)) {
-                methodCache.put(key, method);
-                return method;
+            if (method.getName().equals(methodName)) {
+                if (paramCount <= 0 || method.getParameterCount() == paramCount) {
+                    methodCache.put(key, method);
+                    return method;
+                }
+                existByName = true;
             }
+        }
+
+        if (!existByName) {
+            return null;
         }
         return getMethod(methodName, -1, interf); //只按名称再查找一遍
     }
