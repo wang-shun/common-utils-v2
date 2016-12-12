@@ -71,7 +71,7 @@ public final class PushMsgClient {
      *sound 声音的相关配置
      * */
     public void pushAdminIdMsgWithSound(BaseStaffDTO staffDTO, MsgTypeEnum msgTypeEnum, @NotNull String title,
-                               @NotNull String content, Map<String, String> params,MsgSoundDTO msgSoundDTO) {
+                               @NotNull String content, Map<String, String> params,String soundFile) {
         final PushMsgDTO pushMsgDTO = new PushMsgDTO();
         pushMsgDTO.setMsgType(msgTypeEnum.getValue());
         pushMsgDTO.setContent(content);
@@ -79,7 +79,7 @@ public final class PushMsgClient {
         pushMsgDTO.setSendType(SendType.ADMIN_ID.getValue());
         pushMsgDTO.addStaffRecv(staffDTO);
         pushMsgDTO.setParams(params);
-        pushMsgDTO.setMsgSoundDTO(msgSoundDTO);
+        pushMsgDTO.setSoundFile(soundFile);
         pushMsg(pushMsgDTO);
     }
     /**
