@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import com.alibaba.fastjson.JSONObject;
+import com.youzan.sz.common.push.MsgSoundDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +64,24 @@ public final class PushMsgClient {
         pushMsgDTO.setParams(params);
         pushMsg(pushMsgDTO);
     }
-
+    /**
+     * @param staffDTO  为了支持以后多店铺,发送时需要指定bid,shopId,adminId
+     *@param msgTypeEnum 消息类型,前端采用不同的处理逻辑,某些消息不会存储到消息列表
+     *@param content 消息内容
+     *sound 声音的相关配置
+     * */
+    public void pushAdminIdMsgWithSound(BaseStaffDTO staffDTO, MsgTypeEnum msgTypeEnum, @NotNull String title,
+                               @NotNull String content, Map<String, String> params,MsgSoundDTO msgSoundDTO) {
+        final PushMsgDTO pushMsgDTO = new PushMsgDTO();
+        pushMsgDTO.setMsgType(msgTypeEnum.getValue());
+        pushMsgDTO.setContent(content);
+        pushMsgDTO.setTitle(title);
+        pushMsgDTO.setSendType(SendType.ADMIN_ID.getValue());
+        pushMsgDTO.addStaffRecv(staffDTO);
+        pushMsgDTO.setParams(params);
+        pushMsgDTO.setMsgSoundDTO(msgSoundDTO);
+        pushMsg(pushMsgDTO);
+    }
     /**
      * 按照bid+shopId+roleId推送
      * */
