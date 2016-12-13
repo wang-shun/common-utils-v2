@@ -16,6 +16,7 @@ import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -58,12 +59,20 @@ public class DistributedCoreWebFilter implements Filter {
         if (methodCache.containsKey(key)) {
             return methodCache.get(key);
         }
+        boolean existByName = false; //是否存在该名称的method
         Method[] methods = interf.getMethods();
         for (Method method : methods) {
-            if (method.getName().equals(methodName) && (paramCount <= 0 || method.getParameterCount() == paramCount)) {
-                methodCache.put(key, method);
-                return method;
+            if (method.getName().equals(methodName)) {
+                if (paramCount <= 0 || method.getParameterCount() == paramCount) {
+                    methodCache.put(key, method);
+                    return method;
+                }
+                existByName = true;
             }
+        }
+
+        if (!existByName) {
+            return null;
         }
         return getMethod(methodName, -1, interf); //只按名称再查找一遍
     }
@@ -119,7 +128,7 @@ public class DistributedCoreWebFilter implements Filter {
                                 for (int i = 0; i < parameterCount; i++) {
                                     parameter = parameters[i];
                                     parameterType = parameter.getType();
-                                    if (parameterType.isPrimitive() || parameterType.equals(String.class)) {
+                                    if (ClassUtils.isPrimitiveOrWrapper(parameterType) || parameterType.equals(String.class)) {
                                         args[i] = om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
                                     } else {
                                         args[i] = om.readValue(jsonNode.toString(), parameterType);

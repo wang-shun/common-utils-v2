@@ -9,7 +9,6 @@ import java.util.*;
 /**
  * Created by zefa on 16/5/30.
  * modified by zhanguo 修改线程安全
- * 
  */
 public class DateUtils {
 
@@ -19,13 +18,19 @@ public class DateUtils {
         throw new IllegalAccessError("Utility class");
     }
 
-    private final static SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        }
+    };
 
     /**
      * 获取按月起止时间戳
-     *  -1 表示 上一月
-     *  0 表示 当月
-     *  1 表示 下一个月
+     * -1 表示 上一月
+     * 0 表示 当月
+     * 1 表示 下一个月
+     *
      * @param month
      * @return
      */
@@ -56,6 +61,7 @@ public class DateUtils {
      * -1 表示 上一月
      * 0 表示 当月
      * 1 表示 下一个月
+     *
      * @param month
      * @return
      */
@@ -77,6 +83,7 @@ public class DateUtils {
 
     /**
      * 获取距离今天N月
+     *
      * @param month 相隔月数，0=>当月，-7=>7月前，2=>2月后
      * @return Date
      */
@@ -89,6 +96,7 @@ public class DateUtils {
 
     /**
      * 获取距离今天N天
+     *
      * @param day 相隔月数，0=>当天，-7=>7天前，2=>2天后
      * @return Date
      */
@@ -101,6 +109,7 @@ public class DateUtils {
 
     /**
      * 获取距离今天N天 凌晨的时间戳
+     *
      * @param apartDay 相隔天数，0=>当天，-7=>7天前，2=>2天后
      * @return int
      */
@@ -115,6 +124,7 @@ public class DateUtils {
 
     /**
      * 获取距离现在N小时 整点的时间戳
+     *
      * @param apartHour 相隔小时，0=>当前，-1=>1小时前，1=>1小时后
      * @return int
      */
@@ -128,6 +138,7 @@ public class DateUtils {
 
     /**
      * 获取距离现在N小时 整点的时间
+     *
      * @param apartHour 相隔小时，0=>当前，-1=>1小时前，1=>1小时后
      * @return int
      */
@@ -141,6 +152,7 @@ public class DateUtils {
 
     /**
      * 根据yyyyMMdd类型字符串获取当前0点的时间戳
+     *
      * @param yyyyMMdd
      * @return int
      */
@@ -173,6 +185,7 @@ public class DateUtils {
 
     /**
      * 按照指定格式 格式化时间
+     *
      * @param date
      * @param format
      * @return
@@ -184,15 +197,17 @@ public class DateUtils {
 
     /**
      * 按照默认的格式 格式化时间
+     *
      * @param date
      * @return
      */
     public static String date2String(Date date) {
-        return sf.format(date);
+        return DATE_FORMAT_TL.get().format(date);
     }
 
     /**
      * 将字符串时间转化为指定格式的Date类型
+     *
      * @param date
      * @param format
      * @return
@@ -205,16 +220,18 @@ public class DateUtils {
 
     /**
      * 将字符串转化为默认格式的Date类型
+     *
      * @param date
      * @return
      * @throws ParseException
      */
     public static Date string2Date(String date) throws ParseException {
-        return sf.parse(date);
+        return DATE_FORMAT_TL.get().parse(date);
     }
 
     /**
      * 判断是否为同一天,是返回true,否返回false
+     *
      * @param date1
      * @param date2
      * @return
@@ -235,6 +252,7 @@ public class DateUtils {
 
     /**
      * 获取指定时间上一个月的天日期列表
+     *
      * @param date
      * @return
      */
@@ -255,6 +273,7 @@ public class DateUtils {
 
     /**
      * 获取当前时间的小时
+     *
      * @param date
      * @return
      */
@@ -266,6 +285,7 @@ public class DateUtils {
 
     /**
      * 获取当前时间的小时
+     *
      * @param date
      * @return
      */
@@ -284,7 +304,7 @@ public class DateUtils {
     }
 
     /**
-     *初始化当天 时分秒为 00:00:00
+     * 初始化当天 时分秒为 00:00:00
      */
     private static void initCurDataZero(Calendar calendar) {
         calendar.set(Calendar.HOUR, 0);
@@ -294,7 +314,7 @@ public class DateUtils {
     }
 
     /**
-     *获取开始时间和截至时间之间的每一天
+     * 获取开始时间和截至时间之间的每一天
      */
     public static List<Date> daysBetweenStartDateAndEndDate(Date startDate, Date endDate) {
 
@@ -320,7 +340,7 @@ public class DateUtils {
         return date2String(new Date(), "yyMMdd");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
         //System.out.println(timestampAtHour(-24));
 
         //        List<Date> list = previousMonthDays(new Date());
@@ -331,6 +351,10 @@ public class DateUtils {
         //        } catch (ParseException e) {
         //
         //        }
+        System.out.print(DateUtils.date2String(new Date()));
+        System.out.print(DateUtils.string2Date("2016-10-12 10:12:00").getTime());
+        System.out.print(DateUtils.date2String(new Date()));
+
         System.out.print(DateUtils.timestampAtZero(0));
 
     }

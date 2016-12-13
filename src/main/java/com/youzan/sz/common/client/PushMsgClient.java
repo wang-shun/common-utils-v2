@@ -63,7 +63,24 @@ public final class PushMsgClient {
         pushMsgDTO.setParams(params);
         pushMsg(pushMsgDTO);
     }
-
+    /**
+     * @param staffDTO  为了支持以后多店铺,发送时需要指定bid,shopId,adminId
+     *@param msgTypeEnum 消息类型,前端采用不同的处理逻辑,某些消息不会存储到消息列表
+     *@param content 消息内容
+     *sound 声音的相关配置
+     * */
+    public void pushAdminIdMsgWithSound(BaseStaffDTO staffDTO, MsgTypeEnum msgTypeEnum, @NotNull String title,
+                               @NotNull String content, Map<String, String> params,String soundFile) {
+        final PushMsgDTO pushMsgDTO = new PushMsgDTO();
+        pushMsgDTO.setMsgType(msgTypeEnum.getValue());
+        pushMsgDTO.setContent(content);
+        pushMsgDTO.setTitle(title);
+        pushMsgDTO.setSendType(SendType.ADMIN_ID.getValue());
+        pushMsgDTO.addStaffRecv(staffDTO);
+        pushMsgDTO.setParams(params);
+        pushMsgDTO.setSound(soundFile);
+        pushMsg(pushMsgDTO);
+    }
     /**
      * 按照bid+shopId+roleId推送
      * */

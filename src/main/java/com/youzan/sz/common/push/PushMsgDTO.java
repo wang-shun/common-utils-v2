@@ -50,6 +50,16 @@ public class PushMsgDTO extends BaseDTO {
     /**批量发送结果*/
     private Map<String, String> result;
 
+    private String sound;
+
+    public String getSound() {
+        return sound;
+    }
+
+    public void setSound(String sound) {
+        this.sound = sound;
+    }
+
     @NotThreadSafe
     public PushMsgDTO addParams(@NotNull String key, @NotNull String value) {
         if (params == null) {
