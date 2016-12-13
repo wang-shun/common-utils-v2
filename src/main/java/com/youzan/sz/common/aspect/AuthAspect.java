@@ -30,7 +30,7 @@ public class AuthAspect extends BaseAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthAspect.class);
 
     @Resource
-    private AuthService         authService;
+    private AuthService authService;
 
     @Pointcut("@annotation(com.youzan.sz.common.annotation.Auth)")
     public void pointcut() {
@@ -47,7 +47,7 @@ public class AuthAspect extends BaseAspect {
         Auth auth = method.getAnnotation(Auth.class);
         Class<?> returnType = method.getReturnType();
         // 获取注解上传过来的参数
-        PermEnum [] allowedPermissions = auth.allowedPerms();
+        PermEnum[] allowedPermissions = auth.allowedPerms();
         boolean allow = checkPermission(allowedPermissions);
 
         if (allow) {
@@ -76,6 +76,7 @@ public class AuthAspect extends BaseAspect {
 
     /**
      * 如果有权限 返回true 否则 false
+     *
      * @param allowedPermissions
      * @return
      */
@@ -116,24 +117,24 @@ public class AuthAspect extends BaseAspect {
 
         Long[] userPermissions = response.getData();
         if (userPermissions == null || userPermissions.length == 0) {
-            LOGGER.warn("user permissons is null,adminId:{}", adminId);
+            LOGGER.warn("user permissions is null,adminId:{}", adminId);
             return false;
-        }else {
-            if(LOGGER.isInfoEnabled()){
-                LOGGER.info("get user permissons:adminId:{},permission:{}", adminId,userPermissions);
-            }
         }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("get user permissions:adminId:{},permission:{}", adminId, userPermissions);
+        }
+
         for (PermEnum permissionsEnum : allowedPermissions) {
-            if ( (permissionsEnum.getPermInx().getIndex()+1) > userPermissions.length) {
-                LOGGER.warn("interface permissons out of user owner permissions,adminId:{},need permission:{},owner permisssions:{}", adminId,permissionsEnum,userPermissions);
+            if ((permissionsEnum.getPermInx().getIndex() + 1) > userPermissions.length) {
+                LOGGER.warn("interface permissions out of user owner permissions,adminId:{},need permission:{},owner permissions:{}", adminId, permissionsEnum, userPermissions);
                 return false;
-            }else {
-                Long needPermission = permissionsEnum.getPermInx().getValue();
-               if( (userPermissions[permissionsEnum.getPermInx().getIndex()] & needPermission) != needPermission ) {
-                   LOGGER.warn("interface permissons out of user owner permissions,adminId:{},need permission:{},owner permisssions:{}", adminId,permissionsEnum,Long.toHexString(needPermission));
-                   return false;
-               }
             }
+            Long needPermission = permissionsEnum.getPermInx().getValue();
+            if ((userPermissions[permissionsEnum.getPermInx().getIndex()] & needPermission) != needPermission) {
+                LOGGER.warn("interface permissions out of user owner permissions,adminId:{},need permission:{},owner permissions:{}", adminId, permissionsEnum, Long.toHexString(needPermission));
+                return false;
+            }
+
         }
         return true;
     }
