@@ -136,6 +136,9 @@ public class AuthAspect extends BaseAspect {
             }
 
         }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("user permissions check pass :adminId:{},permission:{}", adminId, userPermissions);
+        }
         return true;
     }
 
