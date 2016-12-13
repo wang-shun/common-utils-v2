@@ -97,8 +97,8 @@ public class AuthAspect extends BaseAspect {
         }
         //bid不为空,需要进行bid判断
         //// TODO: 2016/12/13
-        String userBid = SessionTools.getInstance().get(SessionTools.BID);
-        if (StringUtil.isEmpty(userBid)) { //bid不为空,需要进行bid判断
+        Long bid = DistributedContextTools.getBid();
+        if (bid == null) { //bid不为空,需要进行bid判断
             LOGGER.warn("bid can not pass authority.context bid is empty");
             return false;
         }
@@ -109,32 +109,28 @@ public class AuthAspect extends BaseAspect {
             return false;
         }
         GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO();
-        grantPolicyDTO.setBid(Long.valueOf(userBid));
+        grantPolicyDTO.setBid(Long.valueOf(bid));
         grantPolicyDTO.setShopId(shopId);
         grantPolicyDTO.setStaffId(Long.valueOf(Long.valueOf(staffId)));
         BaseResponse<Long[]> response = authService.loadUserPermission(grantPolicyDTO);
 
         Long[] userPermissions = response.getData();
         if (userPermissions == null || userPermissions.length == 0) {
-            LOGGER.warn("user permissons is null,adminId:{},yzAccount:{}", adminId,
-                SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
+            LOGGER.warn("user permissons is null,adminId:{}", adminId);
             return false;
         }else {
             if(LOGGER.isInfoEnabled()){
-                LOGGER.info("get user permissons:adminId:{},yzAccount:{},permission:{}", adminId,
-                        SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),userPermissions);
+                LOGGER.info("get user permissons:adminId:{},permission:{}", adminId,userPermissions);
             }
         }
         for (PermEnum permissionsEnum : allowedPermissions) {
             if ( (permissionsEnum.getPermInx().getIndex()+1) > userPermissions.length) {
-                LOGGER.warn("interface permissons out of user owner permissions,adminId:{},yzAccount:{},need permission:{},owner permisssions:{}", adminId,
-                        SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),permissionsEnum,userPermissions);
+                LOGGER.warn("interface permissons out of user owner permissions,adminId:{},need permission:{},owner permisssions:{}", adminId,permissionsEnum,userPermissions);
                 return false;
             }else {
                 Long needPermission = permissionsEnum.getPermInx().getValue();
                if( (userPermissions[permissionsEnum.getPermInx().getIndex()] & needPermission) != needPermission ) {
-                   LOGGER.warn("interface permissons out of user owner permissions,adminId:{},yzAccount:{},need permission:{},owner permisssions:{}", adminId,
-                           SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),permissionsEnum,Long.toHexString(needPermission));
+                   LOGGER.warn("interface permissons out of user owner permissions,adminId:{},need permission:{},owner permisssions:{}", adminId,permissionsEnum,Long.toHexString(needPermission));
                    return false;
                }
             }
