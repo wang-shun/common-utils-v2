@@ -15,7 +15,7 @@ public class PermissionsUtil {
     private static final Map<PermissionsIndexEnum, PermissionsEnum> rightsMap    = new HashMap<>();
     private static final Logger                                     LOGGER       = LoggerFactory
         .getLogger(PermissionsUtil.class);
-    private static final String                                     RIGHTS_SPLIT = ",";
+    public static final String                                     RIGHTS_SPLIT = ",";
 
     /**
      * 校验重复权限,如果出现重复退出当前jvm
