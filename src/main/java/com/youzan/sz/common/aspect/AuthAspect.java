@@ -5,7 +5,7 @@ import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.Auth;
 import com.youzan.sz.common.model.auth.GrantPolicyDTO;
-import com.youzan.sz.common.permission.PermissionsEnum;
+import com.youzan.sz.common.permission.PermEnum;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.service.AuthService;
@@ -47,7 +47,7 @@ public class AuthAspect extends BaseAspect {
         Auth auth = method.getAnnotation(Auth.class);
         Class<?> returnType = method.getReturnType();
         // 获取注解上传过来的参数
-        PermissionsEnum[] allowedPermissions = auth.allowedPermissions();
+        PermEnum [] allowedPermissions = auth.allowedPerms();
         boolean allow = checkPermission(allowedPermissions);
 
         if (allow) {
@@ -79,7 +79,7 @@ public class AuthAspect extends BaseAspect {
      * @param allowedPermissions
      * @return
      */
-    private boolean checkPermission(PermissionsEnum[] allowedPermissions) {
+    private boolean checkPermission(PermEnum[] allowedPermissions) {
 
         if (allowedPermissions == null || allowedPermissions.length == 0) {
             return true;
@@ -87,16 +87,16 @@ public class AuthAspect extends BaseAspect {
 
         final Long adminId = DistributedContextTools.getAdminId();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("auth user permission:adminId:{},yzAccount:{}", adminId,
-                SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT));
+            LOGGER.info("auth user permission:adminId:{}", adminId);
         }
 
-        String userShopId = SessionTools.getInstance().get(SessionTools.SHOP_ID);
-        if (StringUtil.isEmpty(userShopId)) {//店铺不存在
+        Long shopId = DistributedContextTools.getShopId();
+        if (shopId == null) {//店铺不存在
             LOGGER.warn("shopId can not pass authority,context shopId is empty");
             return false;
         }
         //bid不为空,需要进行bid判断
+        //// TODO: 2016/12/13
         String userBid = SessionTools.getInstance().get(SessionTools.BID);
         if (StringUtil.isEmpty(userBid)) { //bid不为空,需要进行bid判断
             LOGGER.warn("bid can not pass authority.context bid is empty");
@@ -110,7 +110,7 @@ public class AuthAspect extends BaseAspect {
         }
         GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO();
         grantPolicyDTO.setBid(Long.valueOf(userBid));
-        grantPolicyDTO.setShopId(Long.valueOf(Long.valueOf(userShopId)));
+        grantPolicyDTO.setShopId(shopId);
         grantPolicyDTO.setStaffId(Long.valueOf(Long.valueOf(staffId)));
         BaseResponse<Long[]> response = authService.loadUserPermission(grantPolicyDTO);
 
@@ -125,14 +125,14 @@ public class AuthAspect extends BaseAspect {
                         SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),userPermissions);
             }
         }
-        for (PermissionsEnum permissionsEnum : allowedPermissions) {
-            if ( (permissionsEnum.getPermissionsIndex().getIndex()+1) > userPermissions.length) {
+        for (PermEnum permissionsEnum : allowedPermissions) {
+            if ( (permissionsEnum.getPermInx().getIndex()+1) > userPermissions.length) {
                 LOGGER.warn("interface permissons out of user owner permissions,adminId:{},yzAccount:{},need permission:{},owner permisssions:{}", adminId,
                         SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),permissionsEnum,userPermissions);
                 return false;
             }else {
-                Long needPermission = permissionsEnum.getPermissionsIndex().getValue();
-               if( (userPermissions[permissionsEnum.getPermissionsIndex().getIndex()] & needPermission) != needPermission ) {
+                Long needPermission = permissionsEnum.getPermInx().getValue();
+               if( (userPermissions[permissionsEnum.getPermInx().getIndex()] & needPermission) != needPermission ) {
                    LOGGER.warn("interface permissons out of user owner permissions,adminId:{},yzAccount:{},need permission:{},owner permisssions:{}", adminId,
                            SessionTools.getInstance().get(SessionTools.YZ_ACCOUNT),permissionsEnum,Long.toHexString(needPermission));
                    return false;

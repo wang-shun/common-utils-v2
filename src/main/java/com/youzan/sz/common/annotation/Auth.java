@@ -1,6 +1,6 @@
 package com.youzan.sz.common.annotation;
 
-import com.youzan.sz.common.permission.PermissionsEnum;
+import com.youzan.sz.common.permission.PermEnum;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Auth {
-    PermissionsEnum[] allowedPermissions();
+    PermEnum[] allowedPerms();
 }
