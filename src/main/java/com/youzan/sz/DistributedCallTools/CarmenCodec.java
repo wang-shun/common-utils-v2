@@ -1,5 +1,20 @@
 package com.youzan.sz.DistributedCallTools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.remoting.Channel;
@@ -18,35 +33,32 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.monitor.HeathCheck;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.util.*;
 
 @SPI("dubbo")
 public class CarmenCodec implements Codec2 {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
+    public static final String        CARMEN_CODEC     = "CarmenCodec";
+
+    private static final Logger       LOGGER           = LoggerFactory
+        .getLogger(com.youzan.sz.DistributedCallTools.CarmenCodec.class);
 
     /**
      *
      */
-    private static final byte[] CLRF = new byte[]{0x0D, 0x0A};
-    public static final String CARMEN_CODEC = "CarmenCodec";
-    private static final ObjectMapper om = new ObjectMapper();
-    private static volatile byte[] HEATH_CHECK_RESP = null;
-    private static final String HB_URI = "_HB_";
+    private static final byte[]       CLRF             = new byte[] { 0x0D, 0x0A };
+
+    private static final ObjectMapper om               = new ObjectMapper();
+
+    private static final String       HB_URI           = "_HB_";
+
+    private static volatile byte[]    HEATH_CHECK_RESP = null;
 
     static {
         HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
         om.setSerializationInclusion(JsonInclude.Include.NON_NULL);//默认不导出为空的字段
         om.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
     }
+
+    private DubboCountCodec dubboCountCodec = new DubboCountCodec();
 
     private static ByteBuffer encodeRPC(BaseResponse response) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
@@ -120,6 +132,7 @@ public class CarmenCodec implements Codec2 {
         return null;
     }
 
+
     /**
      * 移除Json中的 「class」属性
      *
@@ -149,48 +162,64 @@ public class CarmenCodec implements Codec2 {
             Map<Object, Object> map = (Map<Object, Object>) data;
             map.remove("class");
             Iterator<Map.Entry<Object, Object>> entries = map.entrySet().iterator();
-            while(entries.hasNext()){
+            while (entries.hasNext()) {
                 Map.Entry<Object, Object> entry = entries.next();
                 removeClass(entry.getValue());
-                if(entry.getValue() == null){
+                if (entry.getValue() == null) {
                     entries.remove();
-                }
-                else if(entry.getValue() instanceof  Map<?,?>){
-                   Map innerDate =  ((Map)entry.getValue());
+                } else if (entry.getValue() instanceof Map<?, ?>) {
+                    Map innerDate = ((Map) entry.getValue());
 
-                    if(innerDate.size() ==0 ){
+                    if (innerDate.size() == 0) {
                         entries.remove();
                     }
                 }
             }
 
-           // map.entrySet().forEach(e -> removeClass(e.getValue()) );
+            // map.entrySet().forEach(e -> removeClass(e.getValue()) );
         }
     }
 
-    private static String readHttpLine(ByteBuffer in) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        boolean isLineEnd = false;
-        byte b;
 
-        while (in.remaining() > 0) {
-            if ((b = in.get()) == '\r') {
-                in.get(); // skip '\n'
-                isLineEnd = true;
-                break;
-            } else {
-                baos.write(b);
+    @Override
+    public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
+        //处理心跳
+        if (msg instanceof Response && ((Response) msg).getStatus() == Response.BAD_REQUEST) {
+            Response res = (Response) msg;
+
+            if (res.getErrorMessage().contains(HeathCheck.class.getCanonicalName())) {
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
+            if (res.getErrorMessage().contains("check")) {
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
+            if (res.getErrorMessage().contains("online")) { //上线
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
+            }
+            if (res.getErrorMessage().contains("offline")) { //下线
+                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.HEART_BEAT_FAILED, "NOT OK")).array();
+                buffer.writeBytes(HEATH_CHECK_RESP);
+                return;
             }
         }
 
-        if (!isLineEnd) {
-            return null;
+        if (msg instanceof Response && ((Response) msg).getResult() instanceof RpcResult) {
+            RpcResult res = (RpcResult) ((Response) msg).getResult();
+            // 只处理卡门编解码
+            String CarmenCodec = res.getAttachment(CARMEN_CODEC);
+            if (res.getValue() instanceof BaseResponse && "true".equals(CarmenCodec)) {
+                ByteBuffer encoder = encodeRPC((BaseResponse) res.getValue());
+                buffer.writeBytes(encoder.array());
+                return;
+            }
         }
-
-        return new String(baos.toByteArray());
+        dubboCountCodec.encode(channel, buffer, msg);
     }
 
-    private DubboCountCodec dubboCountCodec = new DubboCountCodec();
 
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
@@ -337,21 +366,21 @@ public class CarmenCodec implements Codec2 {
             String opAdminId = parseQueryString.get("op_admin_id");
             String opAdminName = parseQueryString.get("op_admin_name");
 
-            inv.setArguments(new Object[]{methodName,
-                    new String[]{DistributedParamManager.AdminId.getName(),
-                            DistributedParamManager.RequestIp.getName(),
-                            DistributedParamManager.KdtId.getName(),
-                            DistributedParamManager.DeviceId.getName(),
-                            DistributedParamManager.DeviceType.getName(),
-                            DistributedParamManager.Aid.getName(),
-                            DistributedParamManager.Bid.getName(),
-                            DistributedParamManager.ShopId.getName(),
-                            DistributedParamManager.OpAdminId.getName(),
-                            DistributedParamManager.OpAdminName.getName(), "json"},
-                    new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
-                            shopId, opAdminId, opAdminName, jsonValue}});
+            inv.setArguments(new Object[] { methodName,
+                                            new String[] { DistributedParamManager.AdminId.getName(),
+                                                           DistributedParamManager.RequestIp.getName(),
+                                                           DistributedParamManager.KdtId.getName(),
+                                                           DistributedParamManager.DeviceId.getName(),
+                                                           DistributedParamManager.DeviceType.getName(),
+                                                           DistributedParamManager.Aid.getName(),
+                                                           DistributedParamManager.Bid.getName(),
+                                                           DistributedParamManager.ShopId.getName(),
+                                                           DistributedParamManager.OpAdminId.getName(),
+                                                           DistributedParamManager.OpAdminName.getName(), "json" },
+                                            new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
+                                                           shopId, opAdminId, opAdminName, jsonValue } });
             inv.setMethodName(Constants.$INVOKE);
-            inv.setParameterTypes(new Class[]{String.class, String[].class, Object[].class});
+            inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
             Map<String, String> attachments = new HashMap<>();
             attachments.put(Constants.DUBBO_VERSION_KEY, "2.8.4");
             attachments.put(Constants.PATH_KEY, interfaceName);
@@ -385,44 +414,29 @@ public class CarmenCodec implements Codec2 {
 
     }
 
-    @Override
-    public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
-        //处理心跳
-        if (msg instanceof Response && ((Response) msg).getStatus() == Response.BAD_REQUEST) {
-            Response res = (Response) msg;
 
-            if (res.getErrorMessage().contains(HeathCheck.class.getCanonicalName())) {
-                buffer.writeBytes(HEATH_CHECK_RESP);
-                return;
-            }
-            if (res.getErrorMessage().contains("check")) {
-                buffer.writeBytes(HEATH_CHECK_RESP);
-                return;
-            }
-            if (res.getErrorMessage().contains("online")) { //上线
-                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.SUCCESS, "OK")).array();
-                buffer.writeBytes(HEATH_CHECK_RESP);
-                return;
-            }
-            if (res.getErrorMessage().contains("offline")) { //下线
-                HEATH_CHECK_RESP = encodeRPC(new BaseResponse<>(ResponseCode.HEART_BEAT_FAILED, "NOT OK")).array();
-                buffer.writeBytes(HEATH_CHECK_RESP);
-                return;
+    private static String readHttpLine(ByteBuffer in) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        boolean isLineEnd = false;
+        byte b;
+
+        while (in.remaining() > 0) {
+            if ((b = in.get()) == '\r') {
+                in.get(); // skip '\n'
+                isLineEnd = true;
+                break;
+            } else {
+                baos.write(b);
             }
         }
 
-        if (msg instanceof Response && ((Response) msg).getResult() instanceof RpcResult) {
-            RpcResult res = (RpcResult) ((Response) msg).getResult();
-            // 只处理卡门编解码
-            String CarmenCodec = res.getAttachment(CARMEN_CODEC);
-            if (res.getValue() instanceof BaseResponse && "true".equals(CarmenCodec)) {
-                ByteBuffer encoder = encodeRPC((BaseResponse) res.getValue());
-                buffer.writeBytes(encoder.array());
-                return;
-            }
+        if (!isLineEnd) {
+            return null;
         }
-        dubboCountCodec.encode(channel, buffer, msg);
+
+        return new String(baos.toByteArray());
     }
+
 
     private Map<String, String> parseQueryString(String src) {
         String key = null, value = null;
