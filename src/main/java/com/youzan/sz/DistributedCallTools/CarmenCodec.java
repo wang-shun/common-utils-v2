@@ -444,7 +444,7 @@ public class CarmenCodec implements Codec2 {
             }
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("parse parameter results:", JsonUtils.bean2Json(parameters));
+            LOGGER.debug("parse parameter results:{}", JsonUtils.bean2Json(parameters));
         }
         return parameters;
     }
