@@ -15,19 +15,20 @@ public interface LogTools {
         if (getLogger().isDebugEnabled())
             getLogger().info("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
     }
+    
+    default Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
+    }
 
     default void errorShopLog(String tag, IShop iShop) {
         if (getLogger().isErrorEnabled())
             getLogger().error("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
     }
-
+    
     default void infoLog(String message, Object... objs) {
         if (getLogger().isInfoEnabled()) {
             Object[] params = new Object[objs.length];
             for (int i = 0; i < objs.length; i++) {
-                if (objs[i] instanceof String) {
-                    continue;
-                }
                 params[i] = JsonUtils.toJson(objs[i]);
             }
             getLogger().info(message, params);
@@ -37,10 +38,6 @@ public interface LogTools {
     default void shopLog(String tag, IShop iShop) {
         if (getLogger().isInfoEnabled())
             getLogger().info("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
-    }
-
-    default Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
     }
 
 }
