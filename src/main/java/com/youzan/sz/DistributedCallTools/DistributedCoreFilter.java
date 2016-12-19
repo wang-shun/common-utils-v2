@@ -12,12 +12,14 @@ import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * 处理卡门中的通用参数信息，使用方式为，只要卡门传过来的参数类型是distributed.开头的参数都是系统处理范围，不过为了避免滥用，
@@ -30,15 +32,12 @@ import java.util.Map;
 @Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -100000)
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
-
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
-
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
+    
+    
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
-     *
-     * @param invoke
-     * @return
      */
     Result dealResult(Result invoke, Invocation invocation) {
         // 统一处理返回值，一遍能够达到给卡门使用的要求，同时对于卡门接口就不在返回异常了，统一包装成错误消息
@@ -46,88 +45,86 @@ public class DistributedCoreFilter implements Filter {
         BaseResponse br = null;
         // 对于异常信息，统一进行包装
         if (invoke.hasException()) {
-            if (invoke.getException() instanceof BizException) {
-                BizException be = (BizException) invoke.getException();
+            
+            if (invoke.getException().getCause() instanceof BizException) {
+                BizException be = (BizException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
-            } else if (invoke.getException() instanceof BusinessException) {
+            }else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
-                br = new BaseResponse<>(be.getCode().intValue(),
-                        be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
-
-            } else if (invoke.getException().getCause() instanceof BusinessException) {
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
+                
+            }else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be),
-                        invoke.getValue());
-            } else {
-                br = new BaseResponse<>(ResponseCode.ERROR.getCode(), null, invoke.getValue());
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be), invoke.getValue());
+            }else {
+                br = new BaseResponse<>(ResponseCode.ERROR.getCode(), invoke.getException().getMessage(), invoke.getValue());
             }
             LOGGER.warn("rpc invoke exception:{}", invoke.getException());
             // 变更处理后需要清空原有的异常信息
             rpcResult.setException(null);
             rpcResult.setValue(br);
-        } else if (invoke.getValue() instanceof Map) {
+        }else if (invoke.getValue() instanceof Map) {
             // 这种通用调用返回结果也会被转换成map形式，所以这里要进行进一步判断
             String invokeClass;
             if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
                 invokeClass = (String) ((Map) invoke.getValue()).remove("class");
-            } else {
+            }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
             if (!BaseResponse.class.getName().equals(invokeClass)) {
-                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(),
-                        invoke.getValue());
+                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
                 rpcResult.setValue(br);
-            } else {
+            }else {
                 final Object data = ((Map) invoke.getValue()).get("data");
-                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"),
-                        (String) ((Map) invoke.getValue()).get("message"), data);
+                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"), (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
-
-        } else if (!(invoke.getValue() instanceof BaseResponse)) {
+            
+        }else if (!(invoke.getValue() instanceof BaseResponse)) {
             br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
             rpcResult.setValue(br);
         }
         rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
         return invoke;
     }
-
+    
+    
     public String getThrowableStr(Throwable e) {
         if (e == null) {
             return "";
         }
-
+        
         ArrayWriter aw = new ArrayWriter();
         e.printStackTrace(aw);
         String[] arr = aw.toStringArray();
         if (arr == null) {
             return "";
         }
-
+        
         StringBuilder strBuf = new StringBuilder();
         for (int i = 0; i < arr.length; i++) {
             strBuf.append(arr[i]).append("####");
         }
         return strBuf.toString();
     }
-
+    
+    
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-
+        
         RpcInvocation inv = (RpcInvocation) invocation;
         String method = "";
         Result invoke = null;
         boolean isSucess = true;
         long t = System.currentTimeMillis();
-
+        
         // provider侧的调用处理
         if (inv instanceof DecodeableRpcInvocation || "true".equals(inv.getAttachment(Constants.GENERIC_KEY))) {
             inv.setAttachment(Constants.ASYNC_KEY, "false");
-
+            
             try {
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
-                if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null
-                        && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
+                if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
                         method = (String) inv.getArguments()[0];
                         String[] typesTmp = (String[]) inv.getArguments()[1];
@@ -147,13 +144,12 @@ public class DistributedCoreFilter implements Filter {
                         // 保存过滤掉系统参数后的结果
                         inv.getArguments()[1] = types.toArray(new String[0]);
                         inv.getArguments()[2] = args.toArray();
-
+                        
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isInfoEnabled()) {
-                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method,
-                                    inv.getMethodName(), argsTmp);
+                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method, inv.getMethodName(), argsTmp);
                         }
-
+                        
                         if (invoke.hasException()) {
                             isSucess = false;
                         }
@@ -162,7 +158,7 @@ public class DistributedCoreFilter implements Filter {
                         invoke = new RpcResult(e);
                     }
                     return dealResult(invoke, inv);
-                } else {// 处理普通的rpc调用，即使用dubbo客户端直接调用的场景
+                }else {// 处理普通的rpc调用，即使用dubbo客户端直接调用的场景
                     String adminId = inv.getAttachment(AdminId.class.getCanonicalName());
                     if (null != adminId) {
                         DistributedContextTools.set(AdminId.class, Long.valueOf(adminId));
@@ -184,7 +180,7 @@ public class DistributedCoreFilter implements Filter {
                         DistributedContextTools.set(DeviceType.class, deviceType);
                     }
                     final String aid = inv.getAttachment(Aid.class.getCanonicalName());
-
+                    
                     if (aid != null) {
                         DistributedContextTools.set(Aid.class.getCanonicalName(), String.valueOf(aid));
                     }
@@ -210,12 +206,17 @@ public class DistributedCoreFilter implements Filter {
                     isSucess = false;
                 }
                 return invoke;
+            } catch (Throwable e) {
+                LOGGER.warn("normal rpc invoke fail", e);
+                isSucess = false;
+                return new RpcResult(e);
+                
             } finally {
                 // 调用结束后要清理掉分布式上下文，不然会有内存泄露和脏数据
                 DistributedContextTools.clear();
                 LOGGER.info("p:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
             }
-        } else {
+        }else {
             try {
                 // TODO: 16/6/27 登陆接口访问票据不需要存放上下文
                 // 获取需要传递的平台参数
@@ -258,7 +259,7 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
                 if (opAdminName != null)
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminName.toString());
-
+                
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
                     isSucess = false;
@@ -267,11 +268,15 @@ public class DistributedCoreFilter implements Filter {
                     LOGGER.debug("outArgs[{}]", JsonUtils.bean2Json(invoke.getValue()));
                 }
                 return invoke;
+            } catch (Throwable e) {
+                LOGGER.warn("consumber invoke fail", e);
+                isSucess = false;
+                return new RpcResult(e);
             } finally {
                 LOGGER.info("c:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
             }
         }
-
+        
     }
-
+    
 }
