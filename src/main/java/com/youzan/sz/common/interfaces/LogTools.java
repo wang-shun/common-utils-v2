@@ -1,6 +1,7 @@
 package com.youzan.sz.common.interfaces;
 
 import com.youzan.sz.common.util.JsonUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,11 +10,6 @@ import org.slf4j.LoggerFactory;
  */
 public interface LogTools {
 
-
-    default void shopLog(String tag, IShop iShop) {
-        if (getLogger().isInfoEnabled())
-            getLogger().info("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
-    }
 
     default void debugShopLog(String tag, IShop iShop) {
         if (getLogger().isDebugEnabled())
@@ -29,10 +25,18 @@ public interface LogTools {
         if (getLogger().isInfoEnabled()) {
             Object[] params = new Object[objs.length];
             for (int i = 0; i < objs.length; i++) {
+                if (objs[i] instanceof String) {
+                    continue;
+                }
                 params[i] = JsonUtils.toJson(objs[i]);
             }
             getLogger().info(message, params);
         }
+    }
+    
+    default void shopLog(String tag, IShop iShop) {
+        if (getLogger().isInfoEnabled())
+            getLogger().info("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
     }
 
     default Logger getLogger() {
