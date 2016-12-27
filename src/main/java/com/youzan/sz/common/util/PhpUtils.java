@@ -206,6 +206,24 @@ public class PhpUtils {
     }
     
     
+    /**
+     * form表单提交的方式
+     */
+    public static <T> BaseResponse postFormResult(String url, Map<String, String> params, Class<T> clazz) {
+        final HashMap<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
+        String resp = post(url, headers, params);
+        
+        try {
+            return dealHttpResult(resp, clazz, PropertyNamingStrategy.SNAKE_CASE, Collections.EMPTY_MAP, false);
+            
+        } catch (Exception e) {
+            LOGGER.error("deal url ({}) json response parse error", url, e);
+            throw ResponseCode.ERROR.getBusinessException();
+        }
+    }
+    
+    
     public static String post(String url, Map<String, String> params) {
         String response;
         try {
