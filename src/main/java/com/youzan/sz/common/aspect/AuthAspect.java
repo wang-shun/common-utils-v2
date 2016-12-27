@@ -1,5 +1,18 @@
 package com.youzan.sz.common.aspect;
 
+import java.lang.reflect.Method;
+
+import javax.annotation.Resource;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
@@ -10,17 +23,6 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.service.AuthService;
 import com.youzan.sz.session.SessionTools;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Resource;
-import java.lang.reflect.Method;
 
 /**
  * Created by wangpan on 2016/12/5.
@@ -48,7 +50,8 @@ public class AuthAspect extends BaseAspect {
         Class<?> returnType = method.getReturnType();
         // 获取注解上传过来的参数
         PermEnum[] allowedPermissions = auth.allowedPerms();
-        boolean allow = checkPermission(allowedPermissions);
+        boolean allow = checkPermission(allowedPermissions,
+            method.getDeclaringClass().getName() + "." + method.getName());
 
         if (allow) {
             // 通过鉴权,开始调用业务逻辑方法
@@ -80,7 +83,7 @@ public class AuthAspect extends BaseAspect {
      * @param allowedPermissions
      * @return
      */
-    private boolean checkPermission(PermEnum[] allowedPermissions) {
+    private boolean checkPermission(PermEnum[] allowedPermissions, String name) {
 
         if (allowedPermissions == null || allowedPermissions.length == 0) {
             return true;
@@ -117,7 +120,7 @@ public class AuthAspect extends BaseAspect {
 
         Long[] userPermissions = response.getData();
         if (userPermissions == null || userPermissions.length == 0) {
-            LOGGER.warn("user permissions is null,adminId:{}", adminId);
+            LOGGER.warn("user permissions is null,adminId:{},method:{}", adminId, name);
             return false;
         }
         if (LOGGER.isInfoEnabled()) {
@@ -126,12 +129,16 @@ public class AuthAspect extends BaseAspect {
 
         for (PermEnum permissionsEnum : allowedPermissions) {
             if ((permissionsEnum.getPermInx().getIndex() + 1) > userPermissions.length) {
-                LOGGER.warn("interface permissions out of user owner permissions,adminId:{},need permission:{},owner permissions:{}", adminId, permissionsEnum, userPermissions);
+                LOGGER.warn(
+                    "interface permissions out of user owner permissions,adminId:{},need permission:{},owner permissions:{},method:{}",
+                    adminId, permissionsEnum, userPermissions, name);
                 return false;
             }
             Long needPermission = permissionsEnum.getPermInx().getValue();
             if ((userPermissions[permissionsEnum.getPermInx().getIndex()] & needPermission) != needPermission) {
-                LOGGER.warn("interface permissions out of user owner permissions,adminId:{},need permission:{},owner permissions:{}", adminId, permissionsEnum, Long.toHexString(needPermission));
+                LOGGER.warn(
+                    "interface permissions out of user owner permissions,adminId:{},need permission:{},owner permissions:{},method:{}",
+                    adminId, permissionsEnum, Long.toHexString(needPermission), name);
                 return false;
             }
 
