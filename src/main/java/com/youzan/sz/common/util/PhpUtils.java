@@ -8,7 +8,11 @@ import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 
 import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,6 +206,24 @@ public class PhpUtils {
     }
     
     
+    /**
+     * form表单提交的方式
+     */
+    public static <T> BaseResponse postFormResult(String url, Map<String, String> params, Class<T> clazz) {
+        final HashMap<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
+        String resp = post(url, headers, params);
+        
+        try {
+            return dealHttpResult(resp, clazz, PropertyNamingStrategy.SNAKE_CASE, Collections.EMPTY_MAP, false);
+            
+        } catch (Exception e) {
+            LOGGER.error("deal url ({}) json response parse error", url, e);
+            throw ResponseCode.ERROR.getBusinessException();
+        }
+    }
+    
+    
     public static String post(String url, Map<String, String> params) {
         String response;
         try {
@@ -236,6 +258,25 @@ public class PhpUtils {
         String response = null;
         try {
             response = HttpUtil.post(params, url, content, StandardCharsets.UTF_8.displayName());
+        } catch (IOException e) {
+            LOGGER.error("php connect url({}) exception", url, e);
+            throw ResponseCode.ERROR.getBusinessException();
+        }
+        if (response == null) {//正常条件get请求不应该返回空值
+            LOGGER.warn("post url({}) repsonse null", url);
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("call php url({}) resp({})", url, response);
+        }
+        return response;
+        
+    }
+    
+    
+    private static String post(String url, Map<String, String> headers, Map<String, String> params) {
+        String response = null;
+        try {
+            response = HttpUtil.post(url, headers, params);
         } catch (IOException e) {
             LOGGER.error("php connect url({}) exception", url, e);
             throw ResponseCode.ERROR.getBusinessException();
