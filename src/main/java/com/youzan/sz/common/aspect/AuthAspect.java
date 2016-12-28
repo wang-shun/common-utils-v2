@@ -32,7 +32,7 @@ public class AuthAspect extends BaseAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthAspect.class);
 
     @Resource
-    private AuthService authService;
+    private AuthService         authService;
 
     @Pointcut("@annotation(com.youzan.sz.common.annotation.Auth)")
     public void pointcut() {
