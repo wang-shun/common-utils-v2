@@ -83,13 +83,13 @@ public class PhpUtils {
     
     
     /**
-     * 直接返回通过json解析数据为bean
+     * 直接返回通过json解析数据为beangetget
      *
      * @param url 请求url
      * @param header get请求的heade参数,不需要encoding
      * @throws com.youzan.platform.bootstrap.exception.BusinessException 连接错误,解码错误
      */
-    public static <T> BaseResponse getResultWithNamingStrategy(String url, Map<String, String> header, Class<T> targetClass,
+    public static <T> BaseResponse<T> getResultWithNamingStrategy(String url, Map<String, String> header, Class<T> targetClass,
             
             PropertyNamingStrategy s, Map<String, String> jsonTransferFiled, Boolean isList) {
         String resp = get(url, header);
@@ -111,12 +111,12 @@ public class PhpUtils {
      * @param url 请求url
      * @throws com.youzan.platform.bootstrap.exception.BusinessException 连接错误,解码错误
      */
-    public static <T> BaseResponse getCamelResult(String url, Class<T> targetClass) {
+    public static <T> BaseResponse<T> getCamelResult(String url, Class<T> targetClass) {
         return getResultWithNamingStrategy(url, Collections.EMPTY_MAP, targetClass, PropertyNamingStrategy.SNAKE_CASE, Collections.EMPTY_MAP, false);
     }
     
     
-    private static <T> BaseResponse dealHttpResult(String resp, Class<T> targetClass,
+    private static <T> BaseResponse<T> dealHttpResult(String resp, Class<T> targetClass,
             
             PropertyNamingStrategy s, Map<String, String> jsonTransferFiled, Boolean isList) throws Exception {
         if (resp == null) {
