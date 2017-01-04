@@ -24,6 +24,7 @@ import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.service.AuthService;
 import com.youzan.sz.session.SessionTools;
 
+
 /**
  * Created by wangpan on 2016/12/5.
  */
@@ -55,7 +56,7 @@ public class AuthAspect extends BaseAspect {
 
         if (allow) {
             // 通过鉴权,开始调用业务逻辑方法
-            try {
+            /* try {
                 return pjp.proceed();
             } catch (BusinessException be) {
                 throw be;
@@ -66,7 +67,8 @@ public class AuthAspect extends BaseAspect {
                 } else {
                     throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
                 }
-            }
+            }*/
+            return proceed(pjp, returnType);
         } else {
             // 未通过鉴权
             if (BaseResponse.class.isAssignableFrom(returnType)) {//可能有时候不需要抛出异常
