@@ -6,10 +6,12 @@ import javax.annotation.Resource;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,51 @@ public class AuthAspect extends BaseAspect {
 
     @Before("pointcut()")
     public void before(JoinPoint joinPoint) {
+    }
+
+    @After("pointcut()")
+    public void after(JoinPoint joinPoint) {
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        Auth auth = methodSignature.getMethod().getAnnotation(Auth.class);
+        if (auth.clearCache()) {
+            clearUserPermCatche();
+        }
+    }
+
+    private void clearUserPermCatche() {
+        GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
+        if (grantPolicyDTO == null) {
+            return;
+        }
+        authService.invalidUserPermission(grantPolicyDTO);
+    }
+
+    private GrantPolicyDTO getGrantPolicyDTO() {
+
+        Long shopId = DistributedContextTools.getShopId();
+        if (shopId == null) {//店铺不存在
+            LOGGER.warn("shopId can not pass authority,context shopId is empty");
+            return null;
+        }
+        //bid不为空,需要进行bid判断
+        //// TODO: 2016/12/13
+        Long bid = DistributedContextTools.getBid();
+        if (bid == null) { //bid不为空,需要进行bid判断
+            LOGGER.warn("bid can not pass authority.context bid is empty");
+            return null;
+        }
+
+        String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
+        if (StringUtil.isEmpty(staffId)) { //bid不为空,需要进行bid判断
+            LOGGER.warn("staffId can not pass authority.context staffId is empty");
+            return null;
+        }
+        GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO();
+        grantPolicyDTO.setBid(Long.valueOf(bid));
+        grantPolicyDTO.setShopId(shopId);
+        grantPolicyDTO.setStaffId(Long.valueOf(Long.valueOf(staffId)));
+        return grantPolicyDTO;
+
     }
 
     //检验权限
@@ -79,6 +126,7 @@ public class AuthAspect extends BaseAspect {
         }
     }
 
+
     /**
      * 如果有权限 返回true 否则 false
      *
@@ -95,29 +143,12 @@ public class AuthAspect extends BaseAspect {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("auth user permission:adminId:{}", adminId);
         }
+        GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
 
-        Long shopId = DistributedContextTools.getShopId();
-        if (shopId == null) {//店铺不存在
-            LOGGER.warn("shopId can not pass authority,context shopId is empty");
-            return false;
-        }
-        //bid不为空,需要进行bid判断
-        //// TODO: 2016/12/13
-        Long bid = DistributedContextTools.getBid();
-        if (bid == null) { //bid不为空,需要进行bid判断
-            LOGGER.warn("bid can not pass authority.context bid is empty");
+        if (grantPolicyDTO == null) {
             return false;
         }
 
-        String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
-        if (StringUtil.isEmpty(staffId)) { //bid不为空,需要进行bid判断
-            LOGGER.warn("staffId can not pass authority.context staffId is empty");
-            return false;
-        }
-        GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO();
-        grantPolicyDTO.setBid(Long.valueOf(bid));
-        grantPolicyDTO.setShopId(shopId);
-        grantPolicyDTO.setStaffId(Long.valueOf(Long.valueOf(staffId)));
         BaseResponse<Long[]> response = authService.loadUserPermission(grantPolicyDTO);
 
         Long[] userPermissions = response.getData();
