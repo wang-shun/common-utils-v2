@@ -119,9 +119,9 @@ public class AuthAspect extends BaseAspect {
         } else {
             // 未通过鉴权
             if (BaseResponse.class.isAssignableFrom(returnType)) {//可能有时候不需要抛出异常
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "你无权访问", null);
+                return new BaseResponse(ResponseCode.USER_NO_PERMISSIONS.getCode(), "你无权访问", null);
             } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "你无权访问");
+                throw new BusinessException((long) ResponseCode.USER_NO_PERMISSIONS.getCode(), "你无权访问");
             }
         }
     }

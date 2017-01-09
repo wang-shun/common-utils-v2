@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import com.youzan.sz.common.service.AuthService;
 /**
  * Created by wangpan. Time 03/01/2017 5:45 PM Desc 文件描述
  */
+@Aspect
 public class ShopAuthAspect extends BaseAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShopAuthAspect.class);
@@ -57,9 +59,9 @@ public class ShopAuthAspect extends BaseAspect {
         } else {
             // 未通过鉴权
             if (BaseResponse.class.isAssignableFrom(returnType)) {//可能有时候不需要抛出异常
-                return new BaseResponse(ResponseCode.NO_PERMISSIONS.getCode(), "店铺无权访问", null);
+                return new BaseResponse(ResponseCode.SHOP_NO_PERMISSIONS.getCode(), "此店铺无权访问", null);
             } else {
-                throw new BusinessException((long) ResponseCode.NO_PERMISSIONS.getCode(), "店铺无权访问");
+                throw new BusinessException((long) ResponseCode.SHOP_NO_PERMISSIONS.getCode(), "此店铺无权访问");
             }
         }
     }
