@@ -13,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,11 +34,7 @@ public class EnumTypeHandler<E extends EnumValue> extends BaseTypeHandler<E> {
             throw new IllegalArgumentException("Type argument cannot be null");
         }
         LOGGER.info("EnumType handled type:{}", type);
-        if (type.getEnumConstants() != null) {
-            enumMap = Arrays.stream(type.getEnumConstants()).collect(Collectors.toMap(EnumValue::getValue, Function.identity()));
-        }else {
-            enumMap = Collections.emptyMap();
-        }
+        enumMap = Arrays.stream(type.getEnumConstants()).collect(Collectors.toMap(EnumValue::getValue, Function.identity()));
     }
     
     
