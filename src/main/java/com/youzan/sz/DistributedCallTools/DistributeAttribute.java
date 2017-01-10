@@ -125,4 +125,17 @@ public interface DistributeAttribute extends IShop {
             opName = "未指定操作者,查看是未赋值或切换线程";
         return new BaseOperator(opId, opName);
     }
+    
+    
+    /**
+     * app版本信息
+     */
+    default String getAppVersion() {
+        final String appVersion = DistributedContextTools.getAppVersion();
+        if (StringUtil.isEmpty(appVersion)) {
+            // 这里先不抛出异常信息，只是简单的打印日志信息
+            //throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文缺少opAdminName");
+        }
+        return appVersion;
+    }
 }

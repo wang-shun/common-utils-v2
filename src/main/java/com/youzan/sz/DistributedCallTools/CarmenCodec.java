@@ -28,6 +28,7 @@ import com.alibaba.dubbo.rpc.protocol.dubbo.DubboCountCodec;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -247,6 +248,7 @@ public class CarmenCodec implements Codec2 {
             String param = null;
             int contentLengthHead = -1;
             String version = null;
+            String versionStr = null;
 
             while (true) {
                 headerLine = readHttpLine(buf);
@@ -320,6 +322,17 @@ public class CarmenCodec implements Codec2 {
                 } else
                 // header line
                 {
+                    // 获取app版本信息
+                    if(StringUtil.isEmpty(versionStr)){
+                        boolean hasVersion =  headerLine.indexOf("versionStr")!=-1;
+                        if(hasVersion){
+                            String[] versionArr = headerLine.split(" ");
+                            if(null!=versionArr && versionArr.length==2){
+                                versionStr = versionArr[1];
+                            }
+        
+                        }
+                    }
                     int index = headerLine.indexOf(":");
                     if (index < 0) {
                         break;
@@ -376,9 +389,11 @@ public class CarmenCodec implements Codec2 {
                                                            DistributedParamManager.Bid.getName(),
                                                            DistributedParamManager.ShopId.getName(),
                                                            DistributedParamManager.OpAdminId.getName(),
-                                                           DistributedParamManager.OpAdminName.getName(), "json" },
+                                                           DistributedParamManager.OpAdminName.getName(),
+                                                           DistributedParamManager.AppVersion.getName(),
+                                                           "json" },
                                             new Object[] { adminId, requestIp, kdtId, deviceId, deviceType, aid, bid,
-                                                           shopId, opAdminId, opAdminName, jsonValue } });
+                                                           shopId, opAdminId, opAdminName, versionStr,jsonValue } });
             inv.setMethodName(Constants.$INVOKE);
             inv.setParameterTypes(new Class[] { String.class, String[].class, Object[].class });
             Map<String, String> attachments = new HashMap<>();

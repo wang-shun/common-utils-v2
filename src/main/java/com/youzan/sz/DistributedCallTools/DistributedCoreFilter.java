@@ -200,6 +200,10 @@ public class DistributedCoreFilter implements Filter {
                     if (opAdminName != null) {
                         DistributedContextTools.set(OpAdminName.class.getCanonicalName(), String.valueOf(opAdminName));
                     }
+                    final String appVersion = inv.getAttachment(AppVersion.class.getCanonicalName());
+                    if (appVersion != null) {
+                        DistributedContextTools.set(AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
+                    }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
@@ -230,6 +234,7 @@ public class DistributedCoreFilter implements Filter {
                 String deviceType = DistributedContextTools.getDeviceType();
                 final Long opAdminId = DistributedContextTools.getOpAdminId();
                 final String opAdminName = DistributedContextTools.getOpAdminName();
+                final String appVersion = DistributedContextTools.getAppVersion();
                 method = inv.getMethodName();
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
@@ -259,6 +264,12 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
                 if (opAdminName != null)
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminName.toString());
+    
+                // app版本信息
+                if (appVersion != null){
+                    inv.setAttachment(AppVersion.class.getCanonicalName(), appVersion.toString());
+                }
+                    
                 
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
