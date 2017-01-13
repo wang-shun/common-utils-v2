@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.youzan.sz.common.model.auth.ResourceEnum;
 import com.youzan.sz.common.permission.PermEnum;
 
 /**
@@ -16,4 +17,7 @@ public @interface Auth {
     PermEnum[] allowedPerms();
 
     boolean clearCache() default false;
+
+    /** 资源id*/
+    ResourceEnum resource() default ResourceEnum.NONE;
 }
