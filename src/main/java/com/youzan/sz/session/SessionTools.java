@@ -1,26 +1,23 @@
 package com.youzan.sz.session;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.youzan.platform.util.lang.StringUtil;
-import com.youzan.sz.DistributedCallTools.DistributedContext;
-import com.youzan.sz.common.model.dto.DeleteTicketDTO;
-import com.youzan.sz.common.model.portal.ShopBindDTO;
-import com.youzan.sz.common.response.BaseResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.exceptions.BizException;
+import com.youzan.sz.common.model.dto.DeleteTicketDTO;
 import com.youzan.sz.common.model.oa.DeviceDTO;
+import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.service.SessionService;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.common.util.SpringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SessionTools {
 
@@ -35,17 +32,36 @@ public class SessionTools {
     public static final String                        STAFF_ID    = "staffId";
     public static final String                        SHOP_ICON   = "shopIcon";
     public static final String                        SHOP_NAME   = "shopName";
-    public static final String                        KDT_ID      = "kdtId";
+    
+    public static final String KDT_ID = "kdtId";//绑定网店id
     public static final String                        LOGINDEVICE = "loginDevice";
     public static final String                        AID         = "aid";        //应用id
     public static final String                        CERT_STATUS = "certStatus"; //认证状态.0,未认证,1,个人人工,3,企业认证
 
-    private static com.youzan.sz.session.SessionTools instance    = null;
-    private static Object                             initMutex   = new Object();
-
     private static final Logger                       LOGGER      = LoggerFactory
         .getLogger(com.youzan.sz.session.SessionTools.class);
+    
+    private static com.youzan.sz.session.SessionTools instance = null;
+    
+    private static Object initMutex = new Object();
+
     private static SessionService                     sessionService;
+    
+    
+    private SessionTools() {
+    }
+    
+    
+    /**
+     * 考虑到性能原因,这里不做可见性检查,因为只有刚开始启动时,可能出现可见性问题,稍微晚一会儿获取到sessionService也可以;
+     */
+    public static SessionTools getInstance() {
+        if (sessionService == null) {
+            init();
+        }
+        return instance;
+    }
+
 
     public static void init() {
         synchronized (initMutex) {
@@ -60,24 +76,18 @@ public class SessionTools {
             instance = new com.youzan.sz.session.SessionTools();
         }
     }
-
-    /**
-     * 考虑到性能原因,这里不做可见性检查,因为只有刚开始启动时,可能出现可见性问题,稍微晚一会儿获取到sessionService也可以;
-     * */
-    public static SessionTools getInstance() {
-        if (sessionService == null) {
-            init();
-        }
-        return instance;
+    
+    
+    public void addDevice(String deviceId) {
+        sessionService.addDevice(deviceId);
     }
 
-    private SessionTools() {
-    }
 
     public void createSession() {
         sessionService.createSession();
     }
-
+    
+    
     /**
      * 移除session值(登出用)
      *
@@ -101,7 +111,8 @@ public class SessionTools {
         }
         return baseResponse.isSucc();
     }
-
+    
+    
     /**
      * 读取指定的session信息
      *
@@ -111,7 +122,8 @@ public class SessionTools {
     public String get(String key) {
         return getLocalSession().get(key);
     }
-
+    
+    
     /**
      * 获取session，如果没有加载过就进行加载
      *
@@ -146,29 +158,6 @@ public class SessionTools {
         return session;
     }
 
-    /**
-     * 更新某一个key的值
-     *
-     * @param key
-     * @param value
-     */
-    public void set(String key, String value) {
-        if (StringUtils.isEmpty(value)) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR);
-        }
-        sessionService.set(key, value);
-        getLocalSession().put(key, value);
-    }
-
-    /**
-     * 仅更新本地的session信息
-     *
-     * @param key
-     * @param value
-     */
-    public void setLocal(String key, String value) {
-        getLocalSession().put(key, value);
-    }
 
     /**
      * 获取登陆设备列表
@@ -181,7 +170,8 @@ public class SessionTools {
         }
         return Collections.EMPTY_LIST;
     }
-
+    
+    
     /**
      * 根据设备类型获取设备列表
      * @param deviceType 设备类型
@@ -195,16 +185,33 @@ public class SessionTools {
         }
         return Collections.EMPTY_LIST;
     }
-
+    
+    
+    /**
+     * 更新某一个key的值
+     */
+    public void set(String key, String value) {
+        if (StringUtils.isEmpty(value)) {
+            throw new BizException(ResponseCode.PARAMETER_ERROR);
+        }
+        sessionService.set(key, value);
+        getLocalSession().put(key, value);
+    }
+    
+    
+    /**
+     * 仅更新本地的session信息
+     */
+    public void setLocal(String key, String value) {
+        getLocalSession().put(key, value);
+    }
+    
+    
     public void updateShopBind() {
         final BaseResponse baseResponse = sessionService.updateShopBind();
         if (!baseResponse.isSucc()) {
             LOGGER.warn("update shop bind failed");
         }
-    }
-
-    public void addDevice(String deviceId) {
-        sessionService.addDevice(deviceId);
     }
 
 }
