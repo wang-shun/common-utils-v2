@@ -1,5 +1,7 @@
 package com.youzan.sz.nsq;
 
+import com.google.common.base.Strings;
+
 import com.youzan.nsq.client.entity.NSQConfig;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.common.util.ConfigsUtils;
@@ -61,7 +63,7 @@ public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements 
             this.consumerName = defaultConsumerName;
         }
         
-        if (getNsqConfig().getLookupAddresses() == null || getNsqConfig().getLookupAddresses().length == 0) {
+        if (Strings.isNullOrEmpty(getNsqConfig().getLookupAddresses())) {
             logger.debug("nsq is null,use default set:{}", getLookupDefault());
             getNsqConfig().setLookupAddresses(getLookupDefault());
         }
