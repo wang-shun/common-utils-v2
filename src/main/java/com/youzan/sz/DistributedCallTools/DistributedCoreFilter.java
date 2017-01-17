@@ -3,11 +3,26 @@ package com.youzan.sz.DistributedCallTools;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.SPI;
-import com.alibaba.dubbo.rpc.*;
+import com.alibaba.dubbo.rpc.Filter;
+import com.alibaba.dubbo.rpc.Invocation;
+import com.alibaba.dubbo.rpc.Invoker;
+import com.alibaba.dubbo.rpc.Result;
+import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcInvocation;
+import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
-import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.*;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AdminId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Aid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Bid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceType;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.KdtId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
 import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -258,7 +273,7 @@ public class DistributedCoreFilter implements Filter {
                 if (opAdminId != null)
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
                 if (opAdminName != null)
-                    inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminName.toString());
+                    inv.setAttachment(OpAdminName.class.getCanonicalName(), opAdminName.toString());
                 
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
