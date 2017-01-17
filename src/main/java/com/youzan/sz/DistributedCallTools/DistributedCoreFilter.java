@@ -3,13 +3,7 @@ package com.youzan.sz.DistributedCallTools;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.SPI;
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcInvocation;
-import com.alibaba.dubbo.rpc.RpcResult;
+import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
@@ -215,6 +209,10 @@ public class DistributedCoreFilter implements Filter {
                     if (opAdminName != null) {
                         DistributedContextTools.set(OpAdminName.class.getCanonicalName(), String.valueOf(opAdminName));
                     }
+                    final String appVersion = inv.getAttachment(AppVersion.class.getCanonicalName());
+                    if (appVersion != null) {
+                        DistributedContextTools.set(AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
+                    }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
@@ -245,6 +243,7 @@ public class DistributedCoreFilter implements Filter {
                 String deviceType = DistributedContextTools.getDeviceType();
                 final Long opAdminId = DistributedContextTools.getOpAdminId();
                 final String opAdminName = DistributedContextTools.getOpAdminName();
+                final String appVersion = DistributedContextTools.getAppVersion();
                 method = inv.getMethodName();
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
@@ -274,6 +273,11 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
                 if (opAdminName != null)
                     inv.setAttachment(OpAdminName.class.getCanonicalName(), opAdminName.toString());
+                // app版本信息
+                if (appVersion != null){
+                    inv.setAttachment(AppVersion.class.getCanonicalName(), appVersion.toString());
+                }
+                    
                 
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {

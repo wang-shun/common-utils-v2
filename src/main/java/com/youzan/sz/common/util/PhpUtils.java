@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
@@ -93,8 +94,9 @@ public class PhpUtils {
             LOGGER.error("php connect url({}) exception", url, e);
             throw ResponseCode.ERROR.getBusinessException();
         }
-        if (response == null) {//正常条件get请求不应该返回空值
+        if (StringUtils.isEmpty(response)) {//正常条件get请求不应该返回空值
             LOGGER.warn("get url({}) repsonse null", url);
+            return null;
         }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("call php url({}) resp({})", url, response);
@@ -125,7 +127,7 @@ public class PhpUtils {
 
             PropertyNamingStrategy s, Map<String, String> jsonTransferFiled, Boolean isList) {
         String resp = get(url, header);
-        if (resp == null) {
+        if (StringUtils.isEmpty(resp)) {
             return null;
         }
         try {
