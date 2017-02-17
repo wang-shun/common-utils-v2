@@ -150,7 +150,7 @@ public class AuthAspect extends BaseAspect {
 
         final Long adminId = DistributedContextTools.getAdminId();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("auth user permission:adminId:{}", adminId);
+            LOGGER.info("auth user permission:adminId:{},allowedPermission：{}", adminId, allowedPermissions);
         }
         GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
 
@@ -186,7 +186,8 @@ public class AuthAspect extends BaseAspect {
 
         }
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("user permissions check pass :adminId:{},permission:{}", adminId, userPermissions);
+            LOGGER.info("user permissions check pass :adminId:{},needPermission:{},permission:{}", adminId,
+                allowedPermissions, userPermissions);
         }
         return true;
     }
