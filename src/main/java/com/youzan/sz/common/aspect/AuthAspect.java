@@ -150,7 +150,7 @@ public class AuthAspect extends BaseAspect {
 
         final Long adminId = DistributedContextTools.getAdminId();
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("auth user permission:adminId:{}", adminId);
+            LOGGER.info("auth user permission:adminId:{},allowedPermission：{}", adminId, allowedPermissions);
         }
         GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
 
@@ -186,7 +186,8 @@ public class AuthAspect extends BaseAspect {
 
         }
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("user permissions check pass :adminId:{},permission:{}", adminId, userPermissions);
+            LOGGER.info("user permissions check pass :adminId:{},needPermission:{},permission:{}", adminId,
+                allowedPermissions, userPermissions);
         }
         return true;
     }
@@ -209,7 +210,7 @@ public class AuthAspect extends BaseAspect {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("for resource:{} reason ,skip clear grant", resourceEnum);
             }
-            return true;
+            return false;
         }
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("resource:({}:{}) 支持提权,开始进行提权检查", resourceEnum.getResource(), resourceEnum.getDesc());

@@ -88,7 +88,7 @@ public class BaseTestUtil {
 
     public static class DefaultTestConfig implements BaseTestConf {
         private String defaultProfileProperty = "dev.properties";
-        private String appSimpleName          = null;
+        private String appSimpleName          = "default";
 
         public DefaultTestConfig setSimpleAppName(String appSimpleName) {
             this.appSimpleName = appSimpleName;
