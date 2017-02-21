@@ -1,4 +1,4 @@
-package com.youzan.sz.delay;
+package com.youzan.sz.common.delay;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
 

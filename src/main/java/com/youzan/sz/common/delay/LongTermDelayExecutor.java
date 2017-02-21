@@ -1,4 +1,4 @@
-package com.youzan.sz.delay;
+package com.youzan.sz.common.delay;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
 
@@ -23,19 +23,19 @@ import javax.annotation.PreDestroy;
  * Created by Kid on 16/5/26.
  */
 
-public class DelayExecutor {
+public class LongTermDelayExecutor {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(DelayExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LongTermDelayExecutor.class);
     
-    private static final ThreadPoolExecutor TASK_EXECUTOR;
+    private static final ThreadPoolExecutor LONG_TERM_TASK_EXECUTOR;
     
-    private static final DelayQueue<DelayItem> DELAY_QUEUE = new DelayQueue<>();
+    private static final DelayQueue<DelayItem> LONG_TERM_DELAY_QUEUE = new DelayQueue<>();
     
     private static final ExecutorService LOOP_EXECUTOR = Executors.newSingleThreadExecutor();
     
     static {
         int poolSize = Runtime.getRuntime().availableProcessors() + 1;
-        TASK_EXECUTOR = new DelayThreadPool(1, poolSize, 45, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+        LONG_TERM_TASK_EXECUTOR = new LongTermDelayThreadPool(1, poolSize, 45, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
     }
     
     public void addTask(String taskName, Runnable runnable, int maxRetryTimes, long delayTime, TimeUnit timeUnit) {
@@ -51,17 +51,16 @@ public class DelayExecutor {
     
     
     public void addTask(DelayItem delayItem) {
-        delayItem.setDelayQueue(DELAY_QUEUE);
-        DELAY_QUEUE.offer(delayItem);
+        delayItem.setDelayQueue(LONG_TERM_DELAY_QUEUE);
+        LONG_TERM_DELAY_QUEUE.offer(delayItem);
     }
     
     
     @PreDestroy
     public void destroy() {
         LOOP_EXECUTOR.shutdown();
-        TASK_EXECUTOR.shutdown();
-        
-        LOGGER.info("DelayTaskExecutor & LoopExecutor shutdown.");
+        LONG_TERM_TASK_EXECUTOR.shutdown();
+        LOGGER.info("LongTermDelayTaskExecutor & LoopExecutor shutdown.");
     }
     
     
@@ -70,54 +69,54 @@ public class DelayExecutor {
         LOOP_EXECUTOR.execute(() -> {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    DelayItem item = DELAY_QUEUE.take();
+                    DelayItem item = LONG_TERM_DELAY_QUEUE.take();
                     int executedTimes = item.getExecutedTimes();
                     if (executedTimes >= item.getMaxRetryTimes()) {
-                        LOGGER.info("task [{}-{}] have already try:[{}] times,end task.", item, item.getTaskName(), item.getMaxRetryTimes());
+                        LOGGER.info("task [{}-{}] get the max time:[{}],end task.", item, item.getTaskName(), item.getMaxRetryTimes());
                     }else {
-                        TASK_EXECUTOR.execute(item);
+                        LONG_TERM_TASK_EXECUTOR.execute(item);
                     }
                 }
             } catch (InterruptedException ignored) {
                 Thread.currentThread().interrupt();
             }
         });
-        LOGGER.info("DelayExecutor Loop Thread started...");
+        LOGGER.info("LongTermDelayExecutor Loop Thread started...");
     }
     
     
-    private static class DelayThreadPool extends ThreadPoolExecutor {
+    private static class LongTermDelayThreadPool extends ThreadPoolExecutor {
         
-        public DelayThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+        public LongTermDelayThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
             super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
-            setThreadFactory(new DelayThreadFactory());
-            this.setRejectedExecutionHandler((r, executor) -> LOGGER.error("DelayThreadPool Rejected Runnable:{}", r));
+            setThreadFactory(new LongTermDelayThreadFactory());
+            this.setRejectedExecutionHandler((r, executor) -> LOGGER.error("LongTermDelayThreadPool Rejected Runnable:{}", r));
         }
     }
     
     
-    private static class DelayThreadFactory implements ThreadFactory {
+    private static class LongTermDelayThreadFactory implements ThreadFactory {
         
         @Override
         public Thread newThread(Runnable r) {
-            return new DelayThread(r);
+            return new LongTermDelayThread(r);
         }
     }
     
     
-    private static class DelayThread extends Thread {
+    private static class LongTermDelayThread extends Thread {
         
-        private static final String DEFAULT_NAME = "DelayThread";
+        private static final String DEFAULT_NAME = "LongTermDelayThread";
         
         private static final AtomicLong created = new AtomicLong();
         
         
-        DelayThread(Runnable target) {
+        LongTermDelayThread(Runnable target) {
             this(target, DEFAULT_NAME);
         }
         
         
-        DelayThread(Runnable target, String name) {
+        LongTermDelayThread(Runnable target, String name) {
             super(target, name + "-" + created.incrementAndGet());
             setUncaughtExceptionHandler((t, e) -> {
                 if (e instanceof BusinessException) {
