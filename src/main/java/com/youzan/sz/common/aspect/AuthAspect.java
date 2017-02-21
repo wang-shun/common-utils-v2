@@ -195,6 +195,7 @@ public class AuthAspect extends BaseAspect {
 
         GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
         grantPolicyDTO.setStaffId(DistributedContextTools.getAdminId());
+        grantPolicyDTO.setAdminId(DistributedContextTools.getAdminId());
         return grantPolicyDTO;
 
     }
