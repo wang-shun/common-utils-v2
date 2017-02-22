@@ -1,14 +1,15 @@
 package com.youzan.sz.common.util.test;
 
-import com.youzan.sz.common.util.ConfigsUtils;
-import com.youzan.sz.common.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.youzan.sz.common.util.ConfigsUtils;
+import com.youzan.sz.common.util.FileUtils;
 
 /**
  * Created by wangpan on 16/9/5.
@@ -88,7 +89,7 @@ public class BaseTestUtil {
 
     public static class DefaultTestConfig implements BaseTestConf {
         private String defaultProfileProperty = "dev.properties";
-        private String appSimpleName          = "default";
+        private String appSimpleName          = null;            //"default";
 
         public DefaultTestConfig setSimpleAppName(String appSimpleName) {
             this.appSimpleName = appSimpleName;
@@ -100,10 +101,6 @@ public class BaseTestUtil {
             return this;
         }
 
-        @Override
-        public String getPropertyName() {
-            return defaultProfileProperty;
-        }
 
         /**获得应用简称*/
         public String getAppSimpleName() {
@@ -111,6 +108,11 @@ public class BaseTestUtil {
                 this.appSimpleName = getAppSimpleName(getClass().getClassLoader().getResource("").getFile());
             }
             return appSimpleName;
+        }
+
+        @Override
+        public String getPropertyName() {
+            return defaultProfileProperty;
         }
 
         private static String getAppSimpleName(String filePath) {
