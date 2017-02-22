@@ -71,8 +71,7 @@ public class DelayExecutor {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
                     DelayItem item = DELAY_QUEUE.take();
-                    int executedTimes = item.getExecutedTimes();
-                    if (executedTimes >= item.getMaxRetryTimes()) {
+                    if (item.getExecutedTimes() >= item.getMaxRetryTimes()) {
                         LOGGER.info("task [{}-{}] have already try:[{}] times,end task.", item, item.getTaskName(), item.getMaxRetryTimes());
                     }else {
                         TASK_EXECUTOR.execute(item);

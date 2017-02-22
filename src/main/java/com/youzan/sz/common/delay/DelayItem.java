@@ -100,7 +100,7 @@ public abstract class DelayItem<R> implements Runnable, Delayed, Serializable {
     @Override
     public long getDelay(TimeUnit unit) {
         if (this.getDelayPolicy().equals(DelayPolicy.MULTIPLY_BY_EXECUTED_TIMES)) {
-            return unit.convert(this.getExecutedTimes() * delayTimeInMillis + baseTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+            return unit.convert((this.getExecutedTimes() + 1) * delayTimeInMillis + baseTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         }else {
             return unit.convert(delayTimeInMillis + baseTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         }
