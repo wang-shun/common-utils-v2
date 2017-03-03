@@ -19,33 +19,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SessionTools {
 
-    public static final String                        SESSION     = "session";
-    public static final String                        ADMINID     = "adminId";
-    public static final String                        BID         = "bid";
-    public static final String                        SHOP_ID     = "shopId";
-    public static final String                        YZ_ACCOUNT  = "yzAcc";
-    public static final String                        ROLE        = "role";
-    public static final String                        STAFF_NAME  = "staffName";
-    public static final String                        STAFF_NO    = "staffNo";
-    public static final String                        STAFF_ID    = "staffId";
-    public static final String                        SHOP_ICON   = "shopIcon";
-    public static final String                        SHOP_NAME   = "shopName";
+public class SessionTools {
+    
+    public static final String SESSION = "session";
+    
+    public static final String ADMINID = "adminId";
+    
+    public static final String BID = "bid";
+    
+    public static final String SHOP_ID = "shopId";
+    
+    public static final String YZ_ACCOUNT = "yzAcc";
+    
+    public static final String ROLE = "role";
+    
+    public static final String STAFF_NAME = "staffName";
+    
+    public static final String STAFF_NO = "staffNo";
+    
+    public static final String STAFF_ID = "staffId";
+    
+    public static final String SHOP_ICON = "shopIcon";
+    
+    public static final String SHOP_NAME = "shopName";
     
     public static final String KDT_ID = "kdtId";//绑定网店id
-    public static final String                        LOGINDEVICE = "loginDevice";
-    public static final String                        AID         = "aid";        //应用id
-    public static final String                        CERT_STATUS = "certStatus"; //认证状态.0,未认证,1,个人人工,3,企业认证
-
-    private static final Logger                       LOGGER      = LoggerFactory
-        .getLogger(com.youzan.sz.session.SessionTools.class);
+    
+    public static final String LOGINDEVICE = "loginDevice";
+    
+    public static final String AID = "aid";        //应用id
+    
+    public static final String CERT_STATUS = "certStatus"; //认证状态.0,未认证,1,个人人工,3,企业认证
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.session.SessionTools.class);
     
     private static com.youzan.sz.session.SessionTools instance = null;
     
     private static Object initMutex = new Object();
-
-    private static SessionService                     sessionService;
+    
+    private static SessionService sessionService;
     
     
     private SessionTools() {
@@ -61,8 +74,8 @@ public class SessionTools {
         }
         return instance;
     }
-
-
+    
+    
     public static void init() {
         synchronized (initMutex) {
             if (sessionService != null) {
@@ -81,8 +94,8 @@ public class SessionTools {
     public void addDevice(String deviceId) {
         sessionService.addDevice(deviceId);
     }
-
-
+    
+    
     public void createSession() {
         sessionService.createSession();
     }
@@ -90,8 +103,6 @@ public class SessionTools {
     
     /**
      * 移除session值(登出用)
-     *
-     * @return
      */
     public boolean deleteSession() {
         final DeleteTicketDTO deleteTicketDTO = new DeleteTicketDTO();
@@ -104,7 +115,7 @@ public class SessionTools {
                 LOGGER.debug("delete adminId:{} session succ,clear contexts", adminId);
             }
             DistributedContextTools.clear();
-        } else {
+        }else {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("delete adminId:{} session fail,skip clear contexts", adminId);
             }
@@ -115,9 +126,6 @@ public class SessionTools {
     
     /**
      * 读取指定的session信息
-     *
-     * @param key
-     * @return
      */
     public String get(String key) {
         return getLocalSession().get(key);
@@ -126,8 +134,6 @@ public class SessionTools {
     
     /**
      * 获取session，如果没有加载过就进行加载
-     *
-     * @return
      */
     public Map<String, String> getLocalSession() {
         Map<String, String> session = DistributedContextTools.get(SESSION);
@@ -140,28 +146,24 @@ public class SessionTools {
         final String shopId = session.get(SessionTools.SHOP_ID);
         final String aid = session.get(SessionTools.AID);
         if (bid != null) {
-            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class,
-                Long.valueOf(bid));
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class, Long.valueOf(bid));
         }
         if (shopId != null) {
-            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.ShopId.class,
-                Long.valueOf(shopId));
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.ShopId.class, Long.valueOf(shopId));
         }
         if (aid != null) {
             if (aid.equals("null")) {
                 LOGGER.warn("数据异常,aid({}) is null", aid);
-            } else {
-                DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class,
-                    Integer.valueOf(aid));
+            }else {
+                DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class, Integer.valueOf(aid));
             }
         }
         return session;
     }
-
-
+    
+    
     /**
      * 获取登陆设备列表
-     * @return
      */
     public List<DeviceDTO> getLoginDevice() {
         Map<String, String> session = getLocalSession();
@@ -174,14 +176,13 @@ public class SessionTools {
     
     /**
      * 根据设备类型获取设备列表
+     *
      * @param deviceType 设备类型
-     * @return
      */
     public List<DeviceDTO> getLoginDeviceByDeviceType(int deviceType) {
         Map<String, String> session = getLocalSession();
         if (StringUtils.isNotEmpty(session.get(LOGINDEVICE))) {
-            return JsonUtils.json2ListBean(session.get(LOGINDEVICE), DeviceDTO.class).stream()
-                .filter(deviceDTO -> deviceDTO.getType() == deviceType).collect(Collectors.toList());
+            return JsonUtils.json2ListBean(session.get(LOGINDEVICE), DeviceDTO.class).stream().filter(deviceDTO -> deviceDTO.getType() == deviceType).collect(Collectors.toList());
         }
         return Collections.EMPTY_LIST;
     }
@@ -213,5 +214,5 @@ public class SessionTools {
             LOGGER.warn("update shop bind failed");
         }
     }
-
+    
 }

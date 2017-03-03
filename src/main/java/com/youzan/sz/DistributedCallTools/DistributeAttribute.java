@@ -45,9 +45,10 @@ public interface DistributeAttribute extends IShop {
     @Override
     default Long getShopId() {
         final Long shopId = DistributedContextTools.getShopId();
-        if (shopId == null || shopId == 0) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少shopId");
-        }
+        //这里不考虑shopId=0.因为新版店铺都为0|| shopId == 0
+        //        if (shopId == null ) {
+        //            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少shopId");
+        //        }
         return shopId;
     }
     
