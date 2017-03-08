@@ -151,13 +151,8 @@ public class DistributedCoreWebFilter implements Filter {
                             if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
                                 for (int i = 0; i < parameterCount; i++) {
                                     parameter = parameters[i];
-                                    parameterType = parameter.getType();
-                                    if (ClassUtils.isPrimitiveOrWrapper(parameterType) || parameterType.equals(String.class)) {
-                                        args[i] = om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
-                                    }else {
-                                        args[i] = om.readValue(jsonNode.toString(), parameterType);
-                                    }
-                                    types[i] = parameterType.getName();
+                                    args[i] = resolveParamValue(jsonNode, parameter, parameterCount);
+                                    types[i] = parameter.getType().getName();
                                 }
                             }else { //旧的接口传参方式 json=[1,2,3,4]
                                 for (int i = 0; i < parameterCount; i++) {
@@ -181,25 +176,18 @@ public class DistributedCoreWebFilter implements Filter {
                     
                     if (parameterCount > 0) {
                         Parameter parameter;
-                        Class<?> parameterType;
                         
                         try {
                             for (int i = 0; i < parameterCount; i++) {
                                 parameter = parameters[i];
-                                parameterType = parameter.getType();
-                                if (ClassUtils.isPrimitiveOrWrapper(parameterType) || parameterType.equals(String.class) || parameterCount > 1) {
-                                    args[i] = om.readValue(readValue.get(parameter.getName()).toString(), parameterType);
-                                }else {
-                                    args[i] = om.readValue(readValue.toString(), parameterType);
-                                }
-                                types[i] = parameterType.getName();
+                                args[i] = resolveParamValue(readValue, parameter, parameterCount);
+                                types[i] = parameter.getType().getName();
                             }
                         } catch (NullPointerException | ClassCastException e) {
                             LOGGER.error("请求失败，可能是参数不正确", e);
                             throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                         }
                     }
-                    
                 }else {
                     args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
                     types = new String[]{method.getParameterTypes()[0].getName()};
@@ -231,6 +219,29 @@ public class DistributedCoreWebFilter implements Filter {
             LOGGER.warn("the session not found for {}", DistributedContextTools.getAdminId());
         }
         return null;
+    }
+    
+    
+    /**
+     * resolve 参数值
+     */
+    private Object resolveParamValue(JsonNode jsonNode, Parameter parameter, int parameterCount) throws java.io.IOException {
+        Class<?> parameterType = parameter.getType();
+        if (ClassUtils.isPrimitiveOrWrapper(parameterType) || parameterType.equals(String.class) || parameterCount > 1) {
+            JsonNode node = jsonNode.get(parameter.getName());
+            if (node == null) {
+                if (parameterType.isPrimitive()) {
+                    return 0;
+                }else {
+                    return null;
+                }
+            }else {
+                return om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
+            }
+            
+        }else {
+            return om.readValue(jsonNode.toString(), parameterType);
+        }
     }
     
 }
