@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Authorization {
 
-    RoleEnum[] allowedRoles();
+    RoleEnum[] allowedRoles() default {};
 
     /**
      * 资源id
