@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.youzan.sz</groupId>
         <artifactId>dependency-pom</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
 
     <groupId>com.youzan.sz</groupId>
@@ -38,16 +38,6 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>com.youzan.sz</groupId>-->
-        <!--<artifactId>oa-api</artifactId>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<artifactId>common-utils</artifactId>-->
-        <!--<groupId>com.youzan.sz</groupId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>

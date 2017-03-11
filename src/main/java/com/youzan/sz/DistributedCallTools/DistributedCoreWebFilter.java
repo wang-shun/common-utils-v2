@@ -16,6 +16,7 @@ import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.SignOut;
 import com.youzan.sz.common.annotation.WithoutLogging;
 import com.youzan.sz.common.anotations.Admin;
+import com.youzan.sz.common.anotations.Inner;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
@@ -52,6 +53,9 @@ public class DistributedCoreWebFilter implements Filter {
     
     private void doAuth(String m, Method method, Class<?> interface1) {
         if (interface1.getAnnotation(Admin.class) != null) {//暂时不对管理进行鉴权
+            return;
+        }
+        if (interface1.getAnnotation(Inner.class) != null) {//暂时不对内部进行鉴权
             return;
         }
         if (method.getAnnotation(Admin.class) != null) {
