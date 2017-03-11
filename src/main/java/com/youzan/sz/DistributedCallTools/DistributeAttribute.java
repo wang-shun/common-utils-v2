@@ -39,6 +39,19 @@ public interface DistributeAttribute extends IShop {
         return bid;
     }
     
+    default Long getKdtId() {
+        final Long kdtId = DistributedContextTools.getKdtId();
+        if (kdtId == null) {//如果拿不到,则使用bid
+            final Long bid = DistributedContextTools.getBid();
+            if (bid == null || bid == 0) {
+                throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少kdtId");
+            }else {
+                return bid;
+            }
+        }
+        return kdtId;
+    }
+    
     /**
      * 在指定店铺后就会拥有
      */
@@ -69,7 +82,7 @@ public interface DistributeAttribute extends IShop {
     default String getDeviceType() {
         final String deviceType = DistributedContextTools.getDeviceType();
         if (deviceType == null) {
-            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少deviceType");
+            throw new BizException(ResponseCode.PARAMETER_ERROR, "上下文中缺少deviceType,请选择店铺");
         }
         return deviceType;
     }
