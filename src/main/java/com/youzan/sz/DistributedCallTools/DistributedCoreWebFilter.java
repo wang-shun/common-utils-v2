@@ -99,8 +99,6 @@ public class DistributedCoreWebFilter implements Filter {
             if (method.getName().equals(methodName)) {
                 if (paramCount <= 0 || method.getParameterCount() == paramCount || method.getParameterCount() == objFieldCount) {
                     methodList.add(method);
-                    //methodCache.put(key, method);
-                    //return method;
                 }
             }
         }
@@ -113,10 +111,16 @@ public class DistributedCoreWebFilter implements Filter {
         Method targetMethod = null;
         
         for (Method method : methodList) {
-            if (method.getGenericParameterTypes() != null && !method.getGenericParameterTypes().getClass().getName().equals("[Ljava.lang.Class;")) {//泛型优先
+            if (method.getGenericParameterTypes() != null && !method.getGenericParameterTypes().getClass().getName().equals("[Ljava.lang.Class;")) {//泛型优先,数组先判断一次
                 targetMethod = method;
                 break;
             }
+            
+            if (method.getGenericParameterTypes() != null && method.getGenericParameterTypes().length > 0 && !method.getGenericParameterTypes()[0].getTypeName().equals("java.lang.Object")) {//对象判断一次
+                targetMethod = method;
+                break;
+            }
+            
         }
         if (targetMethod == null)
             targetMethod = methodList.get(0);
