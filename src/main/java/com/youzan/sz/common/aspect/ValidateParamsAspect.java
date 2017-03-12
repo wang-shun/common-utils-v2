@@ -1,7 +1,8 @@
 package com.youzan.sz.common.aspect;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.base.Strings;
+
+import com.alibaba.fastjson.JSON;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools;
 import com.youzan.sz.common.annotation.ValidateParams;
@@ -10,6 +11,7 @@ import com.youzan.sz.common.model.BaseModel;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.SpringUtils;
+
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -19,12 +21,17 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Predicate;
+
 import javax.annotation.Resource;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.function.Predicate;
 
 /**
  * Created with IntelliJ IDEA.
@@ -65,8 +72,14 @@ public class ValidateParamsAspect extends BaseAspect {
         Class[] classes = validateParamsAnnotation.paramClasses();
         Object[] args = pjp.getArgs();
         String[] excludeProperties = validateParamsAnnotation.excludeProperties();
-
-        Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties);
+        String[] includeProperties = validateParamsAnnotation.includeProperties();
+        //如果注解上面校验参数不写的时候，默认校验所有的类
+        if(classes.length==0){
+            classes=method.getParameterTypes();
+        }
+    
+    
+        Set<ConstraintViolation<Object>> constraintSet = validate(classes, args, excludeProperties,includeProperties);
         if (!constraintSet.isEmpty()) {
             String errors = buildErrorMsg(constraintSet);
             if (BaseResponse.class.isAssignableFrom(returnType)) {
@@ -117,8 +130,9 @@ public class ValidateParamsAspect extends BaseAspect {
      * @param args
      * @return
      */
-    private Set<ConstraintViolation<Object>> validate(Class[] classes, Object[] args, String[] excludeProperties) {
+    private Set<ConstraintViolation<Object>> validate(Class[] classes, Object[] args, String[] excludeProperties,String[] includeProperties) {
         Set<ConstraintViolation<Object>> constraintSet = new HashSet<>();
+    
         for (Object obj : args) {
             if (obj instanceof Collection) {
                 Collection collection = (Collection) obj;
@@ -128,6 +142,16 @@ public class ValidateParamsAspect extends BaseAspect {
                 }
             } else {
                 constraintSet.addAll(doValidate(classes, obj));
+            }
+        }
+        if (includeProperties != null) {
+            for (String includeProperty : includeProperties) {
+                for (ConstraintViolation<Object> violation : constraintSet) {
+                    if (!violation.getPropertyPath().toString().equals(includeProperty)) {
+                        constraintSet.remove(violation);
+                        break;
+                    }
+                }
             }
         }
 
@@ -141,6 +165,7 @@ public class ValidateParamsAspect extends BaseAspect {
                 }
             }
         }
+       
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Parameters:{}", JSON.toJSONString(args));
