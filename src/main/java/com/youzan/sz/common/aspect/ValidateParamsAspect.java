@@ -132,6 +132,7 @@ public class ValidateParamsAspect extends BaseAspect {
      */
     private Set<ConstraintViolation<Object>> validate(Class[] classes, Object[] args, String[] excludeProperties,String[] includeProperties) {
         Set<ConstraintViolation<Object>> constraintSet = new HashSet<>();
+        Set<ConstraintViolation<Object>> result = new HashSet<>();
     
         for (Object obj : args) {
             if (obj instanceof Collection) {
@@ -147,8 +148,8 @@ public class ValidateParamsAspect extends BaseAspect {
         if (includeProperties != null) {
             for (String includeProperty : includeProperties) {
                 for (ConstraintViolation<Object> violation : constraintSet) {
-                    if (!violation.getPropertyPath().toString().equals(includeProperty)) {
-                        constraintSet.remove(violation);
+                    if (violation.getPropertyPath().toString().equals(includeProperty)) {
+                        result.add(violation);
                         break;
                     }
                 }
@@ -157,9 +158,9 @@ public class ValidateParamsAspect extends BaseAspect {
 
         if (excludeProperties != null) {
             for (String excludeProperty : excludeProperties) {
-                for (ConstraintViolation<Object> violation : constraintSet) {
+                for (ConstraintViolation<Object> violation : result) {
                     if (violation.getPropertyPath().toString().equals(excludeProperty)) {
-                        constraintSet.remove(violation);
+                        result.remove(violation);
                         break;
                     }
                 }
@@ -170,7 +171,7 @@ public class ValidateParamsAspect extends BaseAspect {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Parameters:{}", JSON.toJSONString(args));
         }
-        return constraintSet;
+        return result;
     }
 
     /**
