@@ -11,6 +11,8 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
+import com.youzan.api.common.response.ListResult;
+import com.youzan.api.common.response.PlainResult;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AdminId;
@@ -86,7 +88,22 @@ public class DistributedCoreFilter implements Filter {
             }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
-            if (!BaseResponse.class.getName().equals(invokeClass)) {
+            if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
+                final Object data = ((Map) invoke.getValue()).get("data");
+                final ListResult listResult = new ListResult();
+                listResult.setCount((Integer) ((Map) invoke.getValue()).get("count"));
+                listResult.setData((List) data);
+                listResult.setCode(ResponseCode.SUCCESS.getCode());
+                listResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
+                rpcResult.setValue(listResult);
+            }else if (PlainResult.class.getName().equals(invokeClass)) {//返回listResult
+                final Object data = ((Map) invoke.getValue()).get("data");
+                final PlainResult plainResult = new PlainResult<>();
+                plainResult.setCode((Integer) ((Map) invoke.getValue()).get("code"));
+                plainResult.setData(data);
+                plainResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
+                rpcResult.setValue(plainResult);
+            }else if (!BaseResponse.class.getName().equals(invokeClass)) {
                 br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
                 rpcResult.setValue(br);
             }else {
