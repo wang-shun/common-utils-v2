@@ -1,15 +1,15 @@
 package com.youzan.sz.common.util.test;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Map;
-import java.util.Properties;
+import com.youzan.sz.common.util.ConfigsUtils;
+import com.youzan.sz.common.util.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.youzan.sz.common.util.ConfigsUtils;
-import com.youzan.sz.common.util.FileUtils;
+import java.io.File;
+import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by wangpan on 16/9/5.
@@ -91,16 +91,6 @@ public class BaseTestUtil {
         private String defaultProfileProperty = "dev.properties";
         private String appSimpleName          = null;            //"default";
 
-        public DefaultTestConfig setSimpleAppName(String appSimpleName) {
-            this.appSimpleName = appSimpleName;
-            return this;
-        }
-
-        public DefaultTestConfig setProperty(String propertyFileName) {
-            this.defaultProfileProperty = propertyFileName;
-            return this;
-        }
-
 
         /**获得应用简称*/
         public String getAppSimpleName() {
@@ -110,11 +100,13 @@ public class BaseTestUtil {
             return appSimpleName;
         }
 
+
         @Override
         public String getPropertyName() {
             return defaultProfileProperty;
         }
-
+    
+    
         private static String getAppSimpleName(String filePath) {
             String[] pathArray = filePath.split(File.separator);
             for (int i = pathArray.length - 1; i > 0; i--) {
@@ -124,6 +116,18 @@ public class BaseTestUtil {
             }
             LOGGER.error("未能识别项目名字,请覆盖获取项目名字方法");
             return null;
+        }
+    
+    
+        public DefaultTestConfig setProperty(String propertyFileName) {
+            this.defaultProfileProperty = propertyFileName;
+            return this;
+        }
+    
+    
+        public DefaultTestConfig setSimpleAppName(String appSimpleName) {
+            this.appSimpleName = appSimpleName;
+            return this;
         }
     }
 }
