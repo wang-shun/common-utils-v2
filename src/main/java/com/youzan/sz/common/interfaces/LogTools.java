@@ -35,6 +35,26 @@ public interface LogTools {
         }
     }
     
+    default void warnLog(String message, Object... objs) {
+        if (getLogger().isErrorEnabled()) {
+            Object[] params = new Object[objs.length];
+            for (int i = 0; i < objs.length; i++) {
+                params[i] = JsonUtils.toJson(objs[i]);
+            }
+            getLogger().error(message, params);
+        }
+    }
+    
+    default void errorLog(String message, Object... objs) {
+        if (getLogger().isErrorEnabled()) {
+            Object[] params = new Object[objs.length];
+            for (int i = 0; i < objs.length; i++) {
+                params[i] = JsonUtils.toJson(objs[i]);
+            }
+            getLogger().error(message, params);
+        }
+    }
+    
     default void shopLog(String tag, IShop iShop) {
         if (getLogger().isInfoEnabled())
             getLogger().info("bid:{},shopId:{}," + tag, iShop.getBid(), iShop.getShopId());
