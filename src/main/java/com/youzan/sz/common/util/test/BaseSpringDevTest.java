@@ -12,9 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
  *
  */
 
-@SuppressWarnings("SpringContextConfigurationInspection")
-@RunWith(ExtendedSpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:config-spring.xml")
 @TestProfile(EnvProfile.DEV)
 public abstract class BaseSpringDevTest extends BaseSpringTest {
     @BeforeClass
