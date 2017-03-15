@@ -1,8 +1,14 @@
 package com.youzan.sz.common.aspect;
 
-import java.lang.reflect.Method;
-
-import javax.annotation.Resource;
+import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools;
+import com.youzan.sz.common.annotation.Auth;
+import com.youzan.sz.common.annotation.ShopAuth;
+import com.youzan.sz.common.model.auth.GrantPolicyDTO;
+import com.youzan.sz.common.permission.PermEnum;
+import com.youzan.sz.common.response.BaseResponse;
+import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.common.service.AuthService;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -13,15 +19,9 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.youzan.platform.bootstrap.exception.BusinessException;
-import com.youzan.sz.DistributedCallTools.DistributedContextTools;
-import com.youzan.sz.common.annotation.Auth;
-import com.youzan.sz.common.annotation.ShopAuth;
-import com.youzan.sz.common.model.auth.GrantPolicyDTO;
-import com.youzan.sz.common.permission.PermEnum;
-import com.youzan.sz.common.response.BaseResponse;
-import com.youzan.sz.common.response.enums.ResponseCode;
-import com.youzan.sz.common.service.AuthService;
+import java.lang.reflect.Method;
+
+import javax.annotation.Resource;
 
 /**
  * Created by wangpan. Time 03/01/2017 5:45 PM Desc 文件描述
@@ -34,13 +34,11 @@ public class ShopAuthAspect extends BaseAspect {
     @Resource
     private AuthService         authService;
 
-    @Pointcut("@annotation(com.youzan.sz.common.annotation.ShopAuth)")
-    public void pointcut() {
-    }
 
     @Before("pointcut()")
     public void before(JoinPoint joinPoint) {
     }
+
 
     //检验权限
     @Around("pointcut()")
@@ -65,6 +63,7 @@ public class ShopAuthAspect extends BaseAspect {
             }
         }
     }
+
 
     private boolean checkPermission(long appId, PermEnum[] allowedPermissions, String methodName) {
         LOGGER.info("method ({}) need appId ({}) perm", methodName, appId);
@@ -94,8 +93,8 @@ public class ShopAuthAspect extends BaseAspect {
         grantPolicyDTO.setBid(Long.valueOf(bid));
         grantPolicyDTO.setShopId(shopId);
         grantPolicyDTO.setAppId(appId);
-        BaseResponse<Long[]> response = authService.loadShopPermission(grantPolicyDTO);
-        Long[] shopPermissions = response.getData();
+        BaseResponse<Boolean> response = authService.checkShopPerms(grantPolicyDTO);
+        Long[] shopPermissions = new Long[10];
         if (shopPermissions == null || shopPermissions.length == 0) {
             LOGGER.warn("shop permissions is null,bid {} shopId {} method:{}", bid, shopId, methodName);
             return false;
@@ -124,5 +123,10 @@ public class ShopAuthAspect extends BaseAspect {
             LOGGER.info("shop permissions check pass bid :{} shopId :{},permission:{}", bid, shopId, shopPermissions);
         }
         return true;
+    }
+    
+    
+    @Pointcut("@annotation(com.youzan.sz.common.annotation.ShopAuth)")
+    public void pointcut() {
     }
 }
