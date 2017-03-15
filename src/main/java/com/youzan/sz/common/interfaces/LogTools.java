@@ -47,13 +47,13 @@ public interface LogTools {
         }
     }
     
-    default void errorLog(String message, Throwable e) {
+    default void errorLog(Throwable e, String message) {
         if (getLogger().isErrorEnabled()) {
             getLogger().error(message, e);
         }
     }
     
-    default void errorLog(String message, Throwable e, Object... objs) {
+    default void errorLog(Throwable e, String message, Object... objs) {
         if (getLogger().isErrorEnabled()) {
             Object[] params = new Object[objs.length];
             for (int i = 0; i < objs.length; i++) {
