@@ -45,6 +45,12 @@ public interface LogTools {
         }
     }
     
+    default void errorLog(String message, Throwable e) {
+        if (getLogger().isErrorEnabled()) {
+            getLogger().error(message, e);
+        }
+    }
+    
     default void errorLog(String message, Object... objs) {
         if (getLogger().isErrorEnabled()) {
             Object[] params = new Object[objs.length];
