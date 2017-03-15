@@ -16,6 +16,7 @@ import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.SignOut;
 import com.youzan.sz.common.annotation.WithoutLogging;
 import com.youzan.sz.common.anotations.Admin;
+import com.youzan.sz.common.anotations.Inner;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
@@ -26,7 +27,9 @@ import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -54,6 +57,9 @@ public class DistributedCoreWebFilter implements Filter {
         if (interface1.getAnnotation(Admin.class) != null) {//暂时不对管理进行鉴权
             return;
         }
+        if (interface1.getAnnotation(Inner.class) != null) {//暂时不对内部进行鉴权
+            return;
+        }
         if (method.getAnnotation(Admin.class) != null) {
             return;
         }
@@ -74,32 +80,52 @@ public class DistributedCoreWebFilter implements Filter {
      * @param methodName 方法名称
      * @param paramCount 参数个数
      * @param interf 接口类
+     * @param objFieldCount 原来的参数计算有问题
      * @return 如果存在则返回方法，否则返回空
      */
-    private Method getMethod(String methodName, int paramCount, Class<?> interf) {
-        String key = interf.getCanonicalName() + methodName;
+    private Method getMethod(String methodName, int paramCount, int objFieldCount, Class<?> interf) {
+        String key = interf.getCanonicalName() + "_" + methodName;
         if (paramCount > 0) {
-            key = key + paramCount;
+            key = key + "_" + paramCount;
         }
         if (methodCache.containsKey(key)) {
             return methodCache.get(key);
         }
-        boolean existByName = false; //是否存在该名称的method
+        //boolean existByName = false; //是否存在该名称的method
         Method[] methods = interf.getMethods();
+        //由于有泛型和继承,这里可能查出多个
+        List<Method> methodList = new ArrayList<>(2);
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
-                if (paramCount <= 0 || method.getParameterCount() == paramCount) {
-                    methodCache.put(key, method);
-                    return method;
+                if (paramCount <= 0 || method.getParameterCount() == paramCount || method.getParameterCount() == objFieldCount) {
+                    methodList.add(method);
                 }
-                existByName = true;
             }
         }
-        
-        if (!existByName) {
+        if (methodList.isEmpty()) {
+            if (paramCount >= 0)
+                return getMethod(methodName, -1, -1, interf);//只按名称再查找一遍
             return null;
         }
-        return getMethod(methodName, -1, interf); //只按名称再查找一遍
+        
+        Method targetMethod = null;
+        
+        for (Method method : methodList) {
+            if (method.getGenericParameterTypes() != null && !method.getGenericParameterTypes().getClass().getName().equals("[Ljava.lang.Class;")) {//泛型优先,数组先判断一次
+                targetMethod = method;
+                break;
+            }
+            
+            if (method.getGenericParameterTypes() != null && method.getGenericParameterTypes().length > 0 && !method.getGenericParameterTypes()[0].getTypeName().equals("java.lang.Object")) {//对象判断一次
+                targetMethod = method;
+                break;
+            }
+            
+        }
+        if (targetMethod == null)
+            targetMethod = methodList.get(0);
+        methodCache.put(key, targetMethod);
+        return targetMethod;
     }
     
     
@@ -123,7 +149,8 @@ public class DistributedCoreWebFilter implements Filter {
                 JsonNode readValue = om.readValue((String) argsTmp[0], JsonNode.class);
                 Class<?> interface1 = invoker.getInterface();
                 int inputParamCount = readValue.isArray() ? readValue.size() : 1;
-                Method method = getMethod(m, inputParamCount, interface1);
+                int objFieldCount = readValue.isArray() && readValue.size() > 0 ? readValue.get(0).size() : 1;
+                Method method = getMethod(m, inputParamCount, objFieldCount, interface1);
                 if (null == method) {
                     throw new BusinessException((long) ResponseCode.METHOD_NOT_FOUND.getCode(), "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:" +
                             inputParamCount);
