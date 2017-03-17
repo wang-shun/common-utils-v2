@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.youzan.api.common.response.ListResult;
-import com.youzan.api.common.response.PlainResult;
 import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.common.response.BaseResponse;
@@ -457,11 +456,13 @@ public class CarmenCodec implements Codec2 {
             
             String opAdminId = parseQueryString.get("op_admin_id");
             String opAdminName = parseQueryString.get("op_admin_name");
+            String noSession = parseQueryString.get("no_session");
             
             inv.setArguments(new Object[]{methodName, new String[]{DistributedParamManager.AdminId.getName(), DistributedParamManager.RequestIp.getName(), DistributedParamManager.KdtId.getName(),
                     DistributedParamManager.DeviceId.getName(), DistributedParamManager.DeviceType.getName(), DistributedParamManager.Aid.getName(), DistributedParamManager.Bid.getName(),
                     DistributedParamManager.ShopId.getName(), DistributedParamManager.OpAdminId.getName(), DistributedParamManager.OpAdminName.getName(), DistributedParamManager.AppVersion.getName
-                    (), "json"}, new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid, shopId, opAdminId, opAdminName, versionStr, jsonValue}});
+                    (), DistributedParamManager.NoSession.getName(), "json"}, new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid, shopId, opAdminId, opAdminName, versionStr,
+                    noSession, jsonValue}});
             inv.setMethodName(Constants.$INVOKE);
             inv.setParameterTypes(new Class[]{String.class, String[].class, Object[].class});
             Map<String, String> attachments = new HashMap<>();
