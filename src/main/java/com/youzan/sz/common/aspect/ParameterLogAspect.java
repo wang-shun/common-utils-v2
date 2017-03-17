@@ -66,17 +66,18 @@ public class ParameterLogAspect extends BaseAspect {
         } finally {
             //入参
             String params = JsonUtils.toJson(pjp.getArgs());
-            StringBuilder sb = new StringBuilder("Call-->: ").append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName()).append(params).append(NEW_LINE);
+            StringBuilder sb = new StringBuilder(NEW_LINE);
+            sb.append("Call  -->: ").append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName()).append(params).append(NEW_LINE);
             //计时
             long executeTime = System.currentTimeMillis() - beginTime;
-            sb.append(" Times-->: ").append(executeTime).append(" ms").append(NEW_LINE);
+            sb.append("Times -->: ").append(executeTime).append(" ms").append(NEW_LINE);
             //出参 鉴于出参可能是很长的数组，考虑到占用内存过大问题需要截断
-            sb.append(" Return-->: ");
+            sb.append("Return-->: ");
             String resultStr = JsonUtils.toJson(result);
             int strSize = 1000;
             if (resultStr != null && resultStr.length() > strSize) {
                 sb.append(resultStr.substring(0, strSize)).append("... ...");
-            } else {
+            }else {
                 sb.append(resultStr);
             }
             sb.append(NEW_LINE);
