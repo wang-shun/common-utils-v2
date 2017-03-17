@@ -4,11 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- *
  * Created by zhanguo on 16/7/27.
  */
 public class FileUtils {
@@ -18,10 +20,10 @@ public class FileUtils {
     public static void copyFile(File sourceFile, File targetFile) {
         // 新建文件输入流并对它进行缓冲
         try (FileInputStream input = new FileInputStream(sourceFile);
-                BufferedInputStream inBuff = new BufferedInputStream(input);
-                // 新建文件输出流并对它进行缓冲    
-                FileOutputStream output = new FileOutputStream(targetFile);
-                BufferedOutputStream outBuff = new BufferedOutputStream(output)) {
+             BufferedInputStream inBuff = new BufferedInputStream(input);
+             // 新建文件输出流并对它进行缓冲
+             FileOutputStream output = new FileOutputStream(targetFile);
+             BufferedOutputStream outBuff = new BufferedOutputStream(output)) {
 
             // 缓冲数组 
             byte[] b = new byte[1024 * 5];
@@ -43,7 +45,84 @@ public class FileUtils {
 
     }
 
-    // 复制文件夹 
+    // 复制文件夹
+    public static void mergeDirectory(String sourceDir, String targetDir) throws Exception {
+
+
+        File[] commonFiles = (new File(sourceDir)).listFiles();
+        if (commonFiles == null || commonFiles.length == 0) {
+            return;
+        }
+        for (File file : commonFiles) {
+
+            if (file.isFile()) {
+
+                File targetFile = new File(new File(targetDir).getAbsolutePath() + File.separator + file.getName());
+
+                Properties properties = new Properties();
+
+                meregeProperties(properties, file);
+
+                if (targetFile.exists()) {
+
+                    meregeProperties(properties, targetFile);
+                }
+                storeProperties(properties, targetFile);
+
+            } else {
+                // 准备复制的源文件夹
+                String dir1 = sourceDir + "/" + file.getName();
+                // 准备复制的目标文件夹
+                String dir2 = targetDir + "/" + file.getName();
+                mergeDirectory(dir1, dir2);
+
+            }
+        }
+
+    }
+
+    protected static void meregeProperties(Properties properties, File source) throws Exception {
+        InputStream is = null;
+        try {
+            is = new FileInputStream(source);
+            Reader r = new InputStreamReader(is, StandardCharsets.UTF_8.displayName());
+            Properties p = new Properties();
+            p.load(r);
+            for (Map.Entry<Object, Object> entry : p.entrySet()) {
+                String key = (String) entry.getKey();
+                String value = (String) entry.getValue();
+                properties.setProperty(key, value);
+
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+
+    }
+
+    protected static void storeProperties(Properties properties, File file) throws Exception {
+        OutputStream os = null;
+        try {
+            os = new FileOutputStream(file);
+            properties.store(os, null);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    // 复制文件夹
     public static void copyDirectiory(String sourceDir, String targetDir) {
         // 新建目标目录 
         (new File(targetDir)).mkdirs();
@@ -55,7 +134,7 @@ public class FileUtils {
                 File sourceFile = file[i];
                 // 目标文件 
                 File targetFile = new File(new File(targetDir).getAbsolutePath() + File.separator + file[i].getName());
-                if(targetFile.exists()){
+                if (targetFile.exists()) {
                     continue;
                 }
                 copyFile(sourceFile, targetFile);

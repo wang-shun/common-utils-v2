@@ -4,15 +4,17 @@ package com.youzan.sz.common.mybatis;
  * Created by YANG on 16/4/11.
  */
 public class Dialect {
-
+    
     public boolean supportsLimit() {
         return false;
     }
-
+    
+    
     public boolean supportsLimitOffset() {
         return supportsLimit();
     }
-
+    
+    
     /**
      * 将sql变成分页sql语句,直接使用offset,limit的值作为占位符.</br> 源代码为:
      * getLimitString(sql,offset,String.valueOf(offset),limit,String.valueOf(limit))
@@ -20,7 +22,8 @@ public class Dialect {
     public String getLimitString(String sql, int offset, int limit) {
         return getLimitString(sql, offset, Integer.toString(offset), limit, Integer.toString(limit));
     }
-
+    
+    
     /**
      * 将sql变成分页sql语句,提供将offset及limit使用占位符(placeholder)替换.
      * <p>
@@ -35,5 +38,5 @@ public class Dialect {
     public String getLimitString(String sql, int offset, String offsetPlaceholder, int limit, String limitPlaceholder) {
         throw new UnsupportedOperationException("paged queries not supported");
     }
-
+    
 }

@@ -15,13 +15,12 @@ import java.util.Set;
  * Created by YANG on 16/4/11.
  */
 
-
 public class JedisTemplate {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JedisTemplate.class);
+    private static final Logger LOGGER      = LoggerFactory.getLogger(JedisTemplate.class);
 
-    private static final Long SET_SUCCESS = 1L;
+    private static final Long   SET_SUCCESS = 1L;
 
-    private JedisPool jedisPool;
+    private JedisPool           jedisPool;
 
     public JedisTemplate(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
@@ -34,7 +33,6 @@ public class JedisTemplate {
     public void setJedisPool(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
     }
-
 
     public <T> T execute(JedisAction<T> jedisAction) throws BusinessException {
         Jedis jedis = null;
@@ -88,7 +86,6 @@ public class JedisTemplate {
         }
     }
 
-
     public boolean del(String... keys) {
         return this.execute((JedisAction<Boolean>) jedis -> jedis.del(keys) > 0);
     }
@@ -97,32 +94,37 @@ public class JedisTemplate {
         return this.execute((JedisAction<String>) jedis -> jedis.get(key));
     }
 
+    public Long ttl(String key) {
+        return this.execute((JedisAction<Long>) jedis -> jedis.ttl(key));
+    }
+
     public Long getAsLong(String key) {
         return this.execute((JedisAction<Long>) jedis -> {
-                    String result = jedis.get(key);
-                    return result != null ? Long.valueOf(result) : null;
-                }
-        );
+            String result = jedis.get(key);
+            return result != null ? Long.valueOf(result) : null;
+        });
     }
 
     public Integer getAsInteger(String key) {
         return this.execute((JedisAction<Integer>) jedis -> {
-                    String result = jedis.get(key);
-                    return result != null ? Integer.valueOf(result) : null;
-                }
-        );
+            String result = jedis.get(key);
+            return result != null ? Integer.valueOf(result) : null;
+        });
     }
 
     public Boolean set(String key, String value) {
-        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.set(key, value)) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.set(key, value)) ? Boolean.TRUE
+            : Boolean.FALSE);
     }
 
     public Boolean setex(String key, String value, int seconds) {
-        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.setex(key, seconds, value)) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.setex(key, seconds, value))
+            ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean setnx(String key, String value) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.setnx(key, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute(
+            (JedisAction<Boolean>) jedis -> jedis.setnx(key, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean setnxex(String key, String value, long seconds) {
@@ -173,7 +175,8 @@ public class JedisTemplate {
     }
 
     public Boolean hmset(String key, Map<String, String> map) {
-        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.hmset(key, map)) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> JedisUtils.isStatusOk(jedis.hmset(key, map)) ? Boolean.TRUE
+            : Boolean.FALSE);
     }
 
     public boolean hsetnx(String key, String field, String value) {
@@ -234,7 +237,6 @@ public class JedisTemplate {
         return this.execute((JedisAction<String>) jedis -> jedis.rpop(key));
     }
 
-
     public String brpop(String key) {
         return this.execute((JedisAction<String>) jedis -> {
             List result = jedis.brpop(key);
@@ -270,15 +272,18 @@ public class JedisTemplate {
     }
 
     public Boolean lremFirst(String key, String value) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.lrem(key, 1L, value).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.lrem(key, 1L, value).equals(SET_SUCCESS)
+            ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean lremAll(String key, String value) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.lrem(key, 0L, value) > 0L ? Boolean.TRUE : Boolean.FALSE);
+        return this
+            .execute((JedisAction<Boolean>) jedis -> jedis.lrem(key, 0L, value) > 0L ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Boolean sadd(String key, String... members) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.sadd(key, members).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.sadd(key, members).equals(SET_SUCCESS) ? Boolean.TRUE
+            : Boolean.FALSE);
     }
 
     public Set<String> smembers(String key) {
@@ -298,7 +303,8 @@ public class JedisTemplate {
     }
 
     public Boolean zadd(String key, double score, String member) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.zadd(key, score, member).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.zadd(key, score, member).equals(SET_SUCCESS)
+            ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public Double zscore(String key, String member) {
@@ -330,7 +336,8 @@ public class JedisTemplate {
     }
 
     public Set<Tuple> zrevrangeWithScores(String key, int start, int end) {
-        return this.execute((JedisAction<Set<Tuple>>) jedis -> jedis.zrevrangeWithScores(key, (long) start, (long) end));
+        return this
+            .execute((JedisAction<Set<Tuple>>) jedis -> jedis.zrevrangeWithScores(key, (long) start, (long) end));
     }
 
     public Set<String> zrangeByScore(String key, double min, double max) {
@@ -350,7 +357,8 @@ public class JedisTemplate {
     }
 
     public Boolean zrem(String key, String... members) {
-        return this.execute((JedisAction<Boolean>) jedis -> jedis.zrem(key, members).equals(SET_SUCCESS) ? Boolean.TRUE : Boolean.FALSE);
+        return this.execute((JedisAction<Boolean>) jedis -> jedis.zrem(key, members).equals(SET_SUCCESS) ? Boolean.TRUE
+            : Boolean.FALSE);
     }
 
     public Long zremrangeByScore(String key, double start, double end) {
@@ -368,7 +376,6 @@ public class JedisTemplate {
     public void expire(String key, int seconds) {
         this.execute((JedisActionNoResult) jedis -> jedis.expire(key, seconds));
     }
-
 
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
         this.execute((JedisActionNoResult) jedis -> jedis.subscribe(jedisPubSub, channels));
@@ -389,7 +396,6 @@ public class JedisTemplate {
     public Map<String, String> pubsubNumSub(String... channels) {
         return this.execute((JedisAction<Map<String, String>>) jedis -> jedis.pubsubNumSub(channels));
     }
-
 
     public Boolean acquireLock(String lock, long timeout) {
         return this.execute((JedisAction<Boolean>) jedis -> {
@@ -422,7 +428,6 @@ public class JedisTemplate {
             }
         });
     }
-
 
     /**
      * 关闭资源`

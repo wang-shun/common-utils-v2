@@ -3,6 +3,7 @@ package com.youzan.sz.common.util;
 import com.youzan.sz.common.interfaces.DevModeEnable;
 import com.youzan.sz.common.util.current.ExceptionThreadFactory;
 import com.youzan.sz.common.util.test.TestWrapper;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  *
@@ -31,8 +33,9 @@ public abstract class BaseApp implements DevModeEnable {
     private static ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
         "classpath:config-spring.xml");
     private final List<Runnable>                  asyncTasks         = new ArrayList<>();
-    private final ExecutorService                 executorService    = Executors.newFixedThreadPool(1,
-        ExceptionThreadFactory.DEFAULT_EXCEPTION_FACTORY);;
+
+    private final ExecutorService                 executorService    = Executors.newFixedThreadPool(2,
+        new ExceptionThreadFactory(new BasicThreadFactory.Builder().namingPattern("base-app-%d").build()));
 
     private void initSpring() {
         // 启动Spring
@@ -55,9 +58,13 @@ public abstract class BaseApp implements DevModeEnable {
         if (isDevModel())
             new TestWrapper(() -> getProjectName());
         if (asyncTasks.size() > 0) {
-            logger.info("开始执行异步任务");
+            logger.info("start execute async task");
             for (Runnable asyncTask : asyncTasks) {
-                final Future<?> submit = executorService.submit(asyncTask);
+                try {
+                    final Future<?> submit = executorService.submit(asyncTask);
+                } catch (Exception e) {
+                    logger.warn("async execute error", e);
+                }
             }
         }
         try {
@@ -83,11 +90,15 @@ public abstract class BaseApp implements DevModeEnable {
     }
 
     protected void addHook() {
-        String HOOK_NAME = "hook";
-        ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
+        try {
+            String HOOK_NAME = "hook";
+            ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
 
-        if (loader.getExtension(HOOK_NAME) != null) {
-            loader.getExtension(HOOK_NAME).start();
+            if (loader.getExtension(HOOK_NAME) != null) {
+                loader.getExtension(HOOK_NAME).start();
+            }
+        } catch (Throwable e) {
+            logger.warn("add hook error", e);
         }
     }
 

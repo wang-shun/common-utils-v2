@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.youzan.sz.common.model.enums.BooleanEnum;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +20,9 @@ import java.util.ArrayList;
  */
 public class JsonUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtils.class);
+    private static final Logger       LOGGER              = LoggerFactory.getLogger(JsonUtils.class);
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper              = new ObjectMapper();
     private static final ObjectMapper EXCLUDE_NULL_MAPPER = new ObjectMapper();
 
     static {
@@ -36,18 +38,6 @@ public class JsonUtils {
         throw new IllegalAccessError("Utility class");
     }
 
-    private static JavaType getCollectionType(Class<?> collectionClass, Class<?> elementClasses) {
-        return mapper.getTypeFactory().constructParametricType(collectionClass, elementClasses);
-    }
-
-    public static <T> ArrayList<T> json2ListBean(String jsonStr, Class<T> elementClasses) {
-        try {
-            return mapper.readValue(jsonStr, getCollectionType(ArrayList.class, elementClasses));
-        } catch (IOException e) {
-            LOGGER.error("json2ListBean ERROR message", e);
-            return null;
-        }
-    }
 
     public static String bean2Json(Object object) {
         try {
@@ -58,27 +48,6 @@ public class JsonUtils {
         }
     }
 
-    public static String toJson(Object object) {
-        try {
-            return EXCLUDE_NULL_MAPPER.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-            LOGGER.error("bean2Json ERROR ,object:{}", object, e);
-            return null;
-        }
-
-    }
-
-    public static <T> T json2Bean(String jsonStr, Class<T> elementClasses) {
-        if (String.class.equals(elementClasses)) {
-            return (T) jsonStr;
-        }
-        try {
-            return mapper.readValue(jsonStr, elementClasses);
-        } catch (IOException e) {
-            LOGGER.error("json to bean error,source json:{} ", jsonStr, e);
-            return null;
-        }
-    }
 
     public static JSONObject getPlainJsonString(String[]... objs) {
         if (objs != null) {
@@ -91,9 +60,71 @@ public class JsonUtils {
         return null;
     }
 
+
+    public static JSONObject getSingleJson(String key, String value) {
+        final JSONObject jo = new JSONObject(1);
+        jo.put(key, value);
+        return jo;
+    }
+    
+    
+    public static JSONObject getSingleJson(String key, Boolean value) {
+        return getSingleJson(key, BooleanEnum.atoi(value));
+    }
+
+
+    public static JSONObject getSingleJson(String key, Number value) {
+        final JSONObject jo = new JSONObject(1);
+        jo.put(key, value);
+        return jo;
+    }
+    
+    
+    public static <T> ArrayList<T> json2ListBean(String jsonStr, Class<T> elementClasses) {
+        try {
+            return mapper.readValue(jsonStr, getCollectionType(ArrayList.class, elementClasses));
+        } catch (IOException e) {
+            LOGGER.error("json2ListBean ERROR message", e);
+            return null;
+        }
+    }
+    
+    
+    private static JavaType getCollectionType(Class<?> collectionClass, Class<?> elementClasses) {
+        return mapper.getTypeFactory().constructParametricType(collectionClass, elementClasses);
+    }
+
+
     public static void main(String[] args) {
 
         System.out.println(JsonUtils.json2Bean("{\"name\":\"基德\",\"age\":99}", String.class));
+    }
+    
+    
+    public static <T> T json2Bean(String jsonStr, Class<T> elementClasses) {
+        if (String.class.equals(elementClasses)) {
+            return (T) jsonStr;
+        }
+        try {
+            return mapper.readValue(jsonStr, elementClasses);
+        } catch (IOException e) {
+            LOGGER.warn("json to bean error,source json:{} ", jsonStr, e);
+            return null;
+        }
+    }
+    
+    
+    public static String toJson(Object object) {
+        try {
+            if (object instanceof String) {
+                return String.valueOf(object);
+            }
+            return EXCLUDE_NULL_MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("bean2Json ERROR ,object:{}", object, e);
+            return null;
+        }
+        
     }
 
 }

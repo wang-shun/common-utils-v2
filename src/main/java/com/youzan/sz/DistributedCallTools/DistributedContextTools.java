@@ -80,6 +80,14 @@ public class DistributedContextTools {
                 return "distributed.op_admin_name";
             }
         }
+    
+        public static class AppVersion extends DistributedParam<String> {
+            public static String getName() {
+                return "distributed.app_version";
+            }
+        }
+        
+        
 
         private static Map<String, Class<?>> cache = new HashMap<>();
 
@@ -95,6 +103,7 @@ public class DistributedContextTools {
             cache.put(Bid.getName(), Bid.class);
             cache.put(OpAdminId.getName(), OpAdminId.class);
             cache.put(OpAdminName.getName(), OpAdminName.class);
+            cache.put(AppVersion.getName(), AppVersion.class);
 
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
@@ -107,6 +116,7 @@ public class DistributedContextTools {
             cache.put(Bid.class.getCanonicalName(), Bid.class);
             cache.put(OpAdminId.class.getCanonicalName(), OpAdminId.class);
             cache.put(OpAdminName.class.getCanonicalName(), OpAdminName.class);
+            cache.put(AppVersion.class.getCanonicalName(), AppVersion.class);
 
         }
 
@@ -222,7 +232,12 @@ public class DistributedContextTools {
 
     //获取操作人名字
     public static String getOpAdminName() {
-        return get(OpAdminId.class.getCanonicalName());
+        return get(OpAdminName.class.getCanonicalName());
+    }
+    
+    // APP版本信息
+    public static String getAppVersion(){
+        return get(AppVersion.class.getCanonicalName());
     }
 
     public static String getRequestIp() {
@@ -241,18 +256,15 @@ public class DistributedContextTools {
      *设置属性,有泛型检查
      * */
     public static <T extends DistributedParam<V>, V> void setAttr(Class<T> key, V value) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
-        }
         context.put(key.getCanonicalName(), value);
     }
 
     @Deprecated
     public static <T> void set(Class<?> key, T value) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
-        }
-//        setAttr(key,value);
+//        if (LOGGER.isDebugEnabled()) {
+//            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
+//        }
+        //        setAttr(key,value);
         context.put(key.getCanonicalName(), value);
     }
 

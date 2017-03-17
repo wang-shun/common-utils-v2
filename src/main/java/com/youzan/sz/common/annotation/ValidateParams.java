@@ -18,4 +18,6 @@ public @interface ValidateParams {
     Class[] paramClasses() default {};
 
     String[] excludeProperties() default {};
+    String[] includeProperties() default {};
+    
 }
