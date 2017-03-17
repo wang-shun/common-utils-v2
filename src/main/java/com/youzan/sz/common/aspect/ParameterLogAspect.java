@@ -77,8 +77,9 @@ public class ParameterLogAspect extends BaseAspect {
             if (resultStr != null && resultStr.length() > strSize) {
                 sb.append(resultStr.substring(0, strSize)).append("... ...");
             } else {
-                sb.append(resultStr).append(NEW_LINE);
+                sb.append(resultStr);
             }
+            sb.append(NEW_LINE);
             
             sb.append(NEW_LINE);
             getLogList().add(sb.toString());
