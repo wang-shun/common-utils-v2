@@ -40,7 +40,7 @@ public class CacheAspect extends BaseAspect {
             try {
                 result = pjp.proceed();
             } catch (Throwable throwable) {
-                LOGGER.warn("Cache Exceptio:{}", throwable);
+                LOGGER.warn("Cache Exception:{}", throwable);
             }
 
             return result;
@@ -60,7 +60,7 @@ public class CacheAspect extends BaseAspect {
                 // 处理泛型
                 Type returnType2 = method.getGenericReturnType();
                 if (returnType2 instanceof ParameterizedType) {
-                    result = JSON.parseObject(strResult, returnType2, new Feature[0]);
+                    result = JSON.parseObject(strResult, returnType2);
                 } else {
                     result = JSON.parseObject(strResult, returnType);
                 }
