@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.youzan.sz</groupId>
         <artifactId>dependency-pom</artifactId>
-        <version>1.0.10-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
 
     <groupId>com.youzan.sz</groupId>
