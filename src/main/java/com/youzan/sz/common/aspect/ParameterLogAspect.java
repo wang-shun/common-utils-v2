@@ -3,26 +3,29 @@ package com.youzan.sz.common.aspect;
 import com.youzan.sz.common.util.JsonUtils;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
  * Created by mingle.
- * Time 2/26/17 5:01 PM
- * Desc 文件描述
+ * Time 2017/3/23 下午7:59
+ * Desc 通过切面以层级记录spring中bean的调用关系及时间
  */
+@Component
 @Aspect
-public class ParameterLogAspect extends BaseAspect {
+public class ParameterLogAspect {
     
     private static final String NEW_LINE = "\r\n";
     
@@ -32,10 +35,9 @@ public class ParameterLogAspect extends BaseAspect {
     
     private ThreadLocal<List<StackLog>> listLocal = new ThreadLocal<>();
     
-    private ThreadLocal<AtomicInteger> levelLocal = new ThreadLocal<>();
-    
     private ThreadLocal<Throwable> throwLocal = new ThreadLocal<>();
     
+    @Value("${log.result:true}")
     private boolean isShowResult = true;
     
     
@@ -43,6 +45,7 @@ public class ParameterLogAspect extends BaseAspect {
     }
     
     
+    @Around("execution(* com.youzan..*.*(..))")
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
         long beginTime = System.currentTimeMillis();
@@ -50,7 +53,6 @@ public class ParameterLogAspect extends BaseAspect {
         StringBuilder sb = new StringBuilder();
         try {
             //记录日志
-            getLevelLocal().incrementAndGet();
             StackLog stackLog = new StackLog();
             sb.append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName());
             stackLog.setMethod(sb.toString());
@@ -107,17 +109,6 @@ public class ParameterLogAspect extends BaseAspect {
                 throwLocal.set(null);
             }
         }
-    }
-    
-    
-    private AtomicInteger getLevelLocal() {
-        
-        AtomicInteger num = levelLocal.get();
-        if (num == null) {
-            num = new AtomicInteger(-1);
-            levelLocal.set(num);
-        }
-        return num;
     }
     
     
@@ -236,5 +227,3 @@ public class ParameterLogAspect extends BaseAspect {
         }
     }
 }
-
-
