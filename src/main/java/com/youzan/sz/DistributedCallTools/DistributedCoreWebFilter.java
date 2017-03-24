@@ -28,9 +28,11 @@ import org.springframework.util.ClassUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -135,10 +137,16 @@ public class DistributedCoreWebFilter implements Filter {
         RpcInvocation inv = (RpcInvocation) invocation;
         // 处理通用invoke方式调用，目前是卡门调用过来的方式
         try {
+            boolean present = false;
+            final Integer noSession = DistributedContextTools.getNoSession();
+            if (noSession != null && noSession.intValue() == 1) {
+                present = true;
+            }
             do {
                 if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     break;
                 }
+                
                 String m = (String) inv.getArguments()[0];
                 String[] typesTmp = (String[]) inv.getArguments()[1];
                 Object[] argsTmp = (Object[]) inv.getArguments()[2];
@@ -158,7 +166,12 @@ public class DistributedCoreWebFilter implements Filter {
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
                 
-                doAuth(m, method, interface1);
+                if (!present)//没有no_session标志
+                    doAuth(m, method, interface1);
+                else {
+                    if (LOGGER.isDebugEnabled())
+                        LOGGER.debug("find no  session flag,just skip");
+                }
                 String[] types;
                 Object[] args;
                 
