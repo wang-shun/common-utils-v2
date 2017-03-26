@@ -236,6 +236,10 @@ public class DistributedCoreFilter implements Filter {
                     if (appVersion != null) {
                         DistributedContextTools.set(DistributedParamManager.AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
                     }
+                    final String noSession = inv.getAttachment(DistributedParamManager.NoSession.class.getCanonicalName());
+                    if (noSession != null) {
+                        DistributedContextTools.set(DistributedParamManager.NoSession.class.getCanonicalName(), String.valueOf(noSession));
+                    }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
@@ -267,6 +271,7 @@ public class DistributedCoreFilter implements Filter {
                 final Long opAdminId = DistributedContextTools.getOpAdminId();
                 final String opAdminName = DistributedContextTools.getOpAdminName();
                 final String appVersion = DistributedContextTools.getAppVersion();
+                final Integer noSession = DistributedContextTools.getNoSession();
                 method = inv.getMethodName();
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
@@ -301,6 +306,9 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(DistributedParamManager.AppVersion.class.getCanonicalName(), appVersion.toString());
                 }
                 
+                if (noSession != null) {
+                    inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
+                }
                 
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {

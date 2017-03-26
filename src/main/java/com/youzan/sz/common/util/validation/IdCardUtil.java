@@ -1,5 +1,8 @@
 package com.youzan.sz.common.util.validation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -12,6 +15,7 @@ import java.util.Map;
  * Created by zhanguo on 2016/10/17.
  */
 public class IdCardUtil {
+    private final static Logger        LOGGER              = LoggerFactory.getLogger(IdCardUtil.class);
     /** 中国公民身份证号码最小长度。 */
     public static final int            CHINA_ID_MIN_LENGTH = 15;
 
@@ -160,6 +164,9 @@ public class IdCardUtil {
      * 验证身份证是否合法
      */
     public static boolean validateCard(String idCard) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("valid id card:{}", idCard);
+        }
         if (idCard == null || idCard.isEmpty()) {
             return false;
         }
@@ -170,12 +177,12 @@ public class IdCardUtil {
         if (validateIdCard15(card)) {
             return true;
         }
-        String[] cardval = validateIdCard10(card);
-        if (cardval != null) {
-            if (cardval[2].equals("true")) {
-                return true;
-            }
-        }
+        //        String[] cardval = validateIdCard10(card);
+        //        if (cardval != null && cardval.length > 1) {
+        //            if (cardval[2].equals("true")) {
+        //                return true;
+        //            }
+        //        }
         return false;
     }
 
