@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +43,7 @@ public class ParameterLogAspect {
     
     
     public ParameterLogAspect() {
+        LOGGER.info("init ParameterLogAspect isShowResult:" + isShowResult);
     }
     
     
@@ -53,60 +55,71 @@ public class ParameterLogAspect {
         StringBuilder sb = new StringBuilder();
         try {
             //记录日志
-            StackLog stackLog = new StackLog();
-            sb.append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName());
-            stackLog.setMethod(sb.toString());
-            String params = JsonUtils.toJson(pjp.getArgs());
-            stackLog.setParams(params);
-            stackLog.setLevel(getStackLocal().size());
-            addStackEnter(stackLog);
+            if (LOGGER.isInfoEnabled()) {
+                StackLog stackLog = new StackLog();
+                sb.append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName());
+                stackLog.setMethod(sb.toString());
+                String params = JsonUtils.toJson(pjp.getArgs());
+                stackLog.setParams(params);
+                stackLog.setLevel(getStackLocal().size());
+                addStackEnter(stackLog);
+            }
+            
             //执行方法
             result = pjp.proceed();
             return result;
         } catch (Throwable t) {
-            if (throwLocal.get() == null) {
-                throwLocal.set(t);
+            if (LOGGER.isInfoEnabled()) {
+                if (throwLocal.get() == null) {
+                    throwLocal.set(t);
+                }
             }
             throw t;
         } finally {
-            //计时
-            long times = System.currentTimeMillis() - beginTime;
-            //出参
-            StackLog stack = getStackLocal().pop();
-            stack.setTimes(times);
-            if (isShowResult) {
-                stack.setResult(JsonUtils.toJson(result));
-            }
-            
-            if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
-                List<StackLog> stackLogList = getListLocal();
-                StackLog first = stackLogList.get(0);
-                double total = (double) first.getTimes();
-                NumberFormat numberFormat = NumberFormat.getInstance();
-                numberFormat.setMaximumFractionDigits(0);
-                StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
-                for (StackLog stackLog : stackLogList) {
-                    String timePercent = numberFormat.format(stackLog.getTimes() / total * 100);
-                    StringBuffer tabSB = new StringBuffer();
-                    for (int t = 0; t < stackLog.getLevel(); t++) {
-                        tabSB.append("\t");
-                    }
-                    String tab = tabSB.toString();
-                    logSB.append(tab).append("method-->").append(stackLog.getMethod()).append(".").append("(").append(stackLog.getParams()).append(")").append(NEW_LINE);
-                    logSB.append(tab).append("elapse-->").append("[").append(stackLog.getTimes()).append("ms ").append(timePercent).append("%]").append(NEW_LINE);
-                    if (isShowResult && stackLog.getResult() != null) {
-                        logSB.append(tab).append("result-->").append(stackLog.getResult()).append(NEW_LINE).append(NEW_LINE);
+            if (LOGGER.isInfoEnabled()) {
+                //计时
+                long times = System.currentTimeMillis() - beginTime;
+                //出参
+                StackLog stack = getStackLocal().pop();
+                stack.setTimes(times);
+                if (isShowResult) {
+                    if (AopUtils.isCglibProxy(result)) {
+                        stack.setResult(result.toString());
+                    }else {
+                        stack.setResult(JsonUtils.toJson(result));
                     }
                 }
-                logSB.append("------------end------------");
-                Throwable t = throwLocal.get();
-                if (t == null) {
-                    LOGGER.info(logSB.toString());
-                }else {
-                    LOGGER.error(logSB.toString(), t);
+                
+                if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
+                    List<StackLog> stackLogList = getListLocal();
+                    StackLog first = stackLogList.get(0);
+                    double total = (double) first.getTimes();
+                    NumberFormat numberFormat = NumberFormat.getInstance();
+                    numberFormat.setMaximumFractionDigits(0);
+                    StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
+                    for (StackLog stackLog : stackLogList) {
+                        String timePercent = numberFormat.format(stackLog.getTimes() / total * 100);
+                        StringBuffer tabSB = new StringBuffer();
+                        for (int t = 0; t < stackLog.getLevel(); t++) {
+                            tabSB.append("\t");
+                        }
+                        String tab = tabSB.toString();
+                        logSB.append(tab).append("method-->").append(stackLog.getMethod()).append(".").append("(").append(stackLog.getParams()).append(")").append(NEW_LINE);
+                        logSB.append(tab).append("elapse-->").append("[").append(stackLog.getTimes()).append("ms ").append(timePercent).append("%]").append(NEW_LINE);
+                        if (isShowResult && stackLog.getResult() != null) {
+                            logSB.append(tab).append("result-->").append(stackLog.getResult()).append(NEW_LINE).append(NEW_LINE);
+                        }
+                    }
+                    logSB.append("------------end------------");
+                    Throwable t = throwLocal.get();
+                    if (t == null) {
+                        LOGGER.info(logSB.toString());
+                    }else {
+                        LOGGER.error(logSB.toString(), t);
+                    }
+                    getListLocal().clear();
+                    throwLocal.set(null);
                 }
-                getListLocal().clear();
-                throwLocal.set(null);
             }
         }
     }
