@@ -80,7 +80,7 @@ public final class CourierClient {
      */
     public void singlePush(String content, String title, String uri, DeviceType deviceType, String pushId, String templateName, Map<String, String> param) {
         Map<String, String> params = new HashMap<>();
-        params.put("app", Common.APPNAME);
+        params.put("app", "cashier");
         params.put("role", "device");
         params.put("content", title);
         params.put("title", content);
