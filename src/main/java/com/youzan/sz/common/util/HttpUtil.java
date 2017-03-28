@@ -355,9 +355,11 @@ public final class HttpUtil {
     
     
     public static void main(String[] args) throws IOException {
-        String url="http://yop-market-qa.s.qima-inc.com/app/v2/listOrder";
+        //String url="http://yop-market-qa.s.qima-inc.com/app/v2/listOrder";
+        String url="www.baidu.com";
         HashMap<String,String> params=new HashMap<>();
         params.put("kdtId","12299");
+        params.put("kw","篮球");
         params.put("beginTime","2016-01-01 00:00:00");
         params.put("endTime","2017-05-01 00:00:00");
         System.out.println(buildParam(url,params));
