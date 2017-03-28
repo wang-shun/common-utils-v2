@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -29,9 +28,9 @@ public abstract class DelayItem<R> implements Runnable, Delayed, Serializable {
     
     private final String taskName;
     
-    private final AtomicInteger executedTimes = new AtomicInteger(0);  // 已执行次数
-    
     private final DelayPolicy delayPolicy;
+    
+    private int executedTimes; // 已执行次数
     
     private DelayQueue<DelayItem> delayQueue;  // 放到对应的延时队列中
     
@@ -113,7 +112,7 @@ public abstract class DelayItem<R> implements Runnable, Delayed, Serializable {
     
     
     public int getExecutedTimes() {
-        return executedTimes.get();
+        return executedTimes;
     }
     
     
@@ -169,7 +168,7 @@ public abstract class DelayItem<R> implements Runnable, Delayed, Serializable {
     
     
     private int increaseExecutedTimes() {
-        return executedTimes.incrementAndGet();
+        return ++executedTimes;
     }
     
     
