@@ -62,6 +62,13 @@ public final class HttpUtil {
     private static final String PROTOCOL="http";
     
     
+    /**
+     *
+     * @param url url
+     * @param params 参数
+     * @return json的结果
+     * @throws IOException
+     */
     public static String getWithParam(String url, Map<String, ?> params) throws IOException {
         
         if (params == null || params.isEmpty()) {
