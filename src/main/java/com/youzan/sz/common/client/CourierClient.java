@@ -5,7 +5,6 @@ import com.youzan.platform.courier.api.PushService;
 import com.youzan.platform.courier.common.MsgChannel;
 import com.youzan.platform.courier.domain.MessageContext;
 import com.youzan.platform.courier.domain.Recipient;
-import com.youzan.sz.common.Common;
 import com.youzan.sz.common.model.enums.DeviceType;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
@@ -82,8 +81,8 @@ public final class CourierClient {
         Map<String, String> params = new HashMap<>();
         params.put("app", "cashier");
         params.put("role", "device");
-        params.put("content", title);
-        params.put("title", content);
+        params.put("content", content);
+        params.put("title", title);
         params.put("badge", "1");
         params.put("uri", uri);
         params.putAll(param);
