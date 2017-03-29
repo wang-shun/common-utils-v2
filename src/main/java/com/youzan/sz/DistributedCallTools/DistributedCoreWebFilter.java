@@ -28,11 +28,9 @@ import org.springframework.util.ClassUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 
 /**
@@ -276,7 +274,7 @@ public class DistributedCoreWebFilter implements Filter {
                     return null;
                 }
             }else {
-                return om.readValue(jsonNode.get(parameter.getName()).toString(), parameterType);
+                return om.readValue(node.toString(), parameterType);
             }
             
         }else {
