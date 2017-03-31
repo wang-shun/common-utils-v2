@@ -1,6 +1,7 @@
 package com.youzan.sz.common.util;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.sz.jutil.string.StringUtil;
 
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
@@ -26,17 +27,23 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
-
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.net.ssl.SSLContext;
 
 
 /**
@@ -52,11 +59,57 @@ public final class HttpUtil {
     
     private static final int TIME_OUT = 3000;
     
+    private static final String PROTOCOL="http";
+    
+    
+    /**
+     *
+     * @param url url
+     * @param params 参数
+     * @return json的结果
+     * @throws IOException
+     */
+    public static String getWithParam(String url, Map<String, ?> params) throws IOException {
+        
+        if (params == null || params.isEmpty()) {
+            return getUsingUTF8(false, url);
+        }
+        String encodeUrl = buildParam(url,params);
+        return getUsingUTF8(false, encodeUrl);
+    }
+    
+    
+    private static String buildParam(String url,Map<String, ?> params) {
+        if(!url.startsWith(PROTOCOL)){
+            url=PROTOCOL+"://"+url;
+        }
+        StringBuilder str = new StringBuilder("?");
+        Set<? extends Map.Entry<String, ?>> keys = params.entrySet();
+        keys.stream().filter(key -> key.getValue() != null && StringUtil.isNotEmpty(key.getValue().toString()))
+                .forEach(key-> str.append(key.getKey()).append("=").append(key.getValue()).append("&"));
+        String urlStr=url+str.subSequence(0,str.length()-1).toString();
+        String result;
+        try {
+            URL  urlEncode=new URL(urlStr);
+            URI uri = new URI(urlEncode.getProtocol(), urlEncode.getUserInfo(), urlEncode.getHost(), urlEncode.getPort(), urlEncode.getPath(), urlEncode.getQuery(), urlEncode.getRef());
+            result=uri.toASCIIString();
+        } catch (MalformedURLException e) {
+            LOGGER.warn("build url occur error",e);
+            return url;
+        } catch (URISyntaxException e) {
+            LOGGER.warn("build url occur error",e);
+            return url;
+        }
+    
+        return result;
+    }
+    
     
     /**
      * HTTP POST
      */
     public static String post(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params, String charset) throws IOException {
+        
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
@@ -81,6 +134,7 @@ public final class HttpUtil {
      * 使用UTF8 POST
      */
     public static String postUsingUTF8(boolean isHttps, String url, Map<String, ?> params) throws IOException {
+        
         return post(isHttps, null, url, params, UTF8);
     }
     
@@ -89,6 +143,7 @@ public final class HttpUtil {
      * 使用UTF8 POST
      */
     public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params) throws IOException {
+        
         return post(isHttps, headers, url, params, UTF8);
     }
     
@@ -98,6 +153,7 @@ public final class HttpUtil {
      */
     
     public static String post(boolean isHttps, Map<String, String> headers, String url, String params, String charset) throws IOException {
+        
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
         httpPost.setConfig(buildRequestConfig());
@@ -116,6 +172,7 @@ public final class HttpUtil {
     
     
     public static String post(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
+        
         final boolean isHttps = url.startsWith("https");
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpPost httpPost = new HttpPost(url);
@@ -141,6 +198,7 @@ public final class HttpUtil {
     
     
     public static String post(Map<String, String> headers, String url, String params, String charset) throws IOException {
+        
         return url.startsWith("https") ? post(true, headers, url, params, charset) : post(false, headers, url, params, charset);
     }
     
@@ -149,6 +207,7 @@ public final class HttpUtil {
      * 上传文件 utf-8
      */
     public static String uploadFile(boolean isHttps, String url, String filePath) throws BusinessException, IOException {
+        
         if (filePath == null || filePath.equals("")) {
             return "";
         }
@@ -160,6 +219,7 @@ public final class HttpUtil {
      * 上传文件 utf-8
      */
     public static String uploadFile(boolean isHttps, String url, File file) throws BusinessException, IOException {
+        
         if (file == null) {
             return "";
         }
@@ -192,6 +252,7 @@ public final class HttpUtil {
      * 使用UTF8 POST
      */
     public static String postUsingUTF8(boolean isHttps, String url, String params) throws IOException {
+        
         return post(isHttps, null, url, params, UTF8);
     }
     
@@ -200,6 +261,7 @@ public final class HttpUtil {
      * 使用UTF8 POST
      */
     public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, String params) throws IOException {
+        
         return post(isHttps, headers, url, params, UTF8);
     }
     
@@ -209,6 +271,7 @@ public final class HttpUtil {
      */
     
     public static String get(boolean isHttps, Map<String, String> headers, String url, String charset) throws IOException {
+        
         CloseableHttpClient httpClient = buildHttpClient(isHttps);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setConfig(buildRequestConfig());
@@ -229,6 +292,7 @@ public final class HttpUtil {
      * 使用UTF8 GET
      */
     public static String getUsingUTF8(boolean isHttps, String url) throws IOException {
+        
         return get(isHttps, null, url, UTF8);
     }
     
@@ -237,11 +301,13 @@ public final class HttpUtil {
      * 使用UTF8 GET
      */
     public static String getUsingUTF8(boolean isHttps, Map<String, String> headers, String url) throws IOException {
+        
         return get(isHttps, headers, url, UTF8);
     }
     
     
     private static RequestConfig buildRequestConfig() {
+        
         return RequestConfig.custom().setConnectionRequestTimeout(TIME_OUT).setConnectTimeout(TIME_OUT).setSocketTimeout(TIME_OUT).build();
     }
     
@@ -253,6 +319,7 @@ public final class HttpUtil {
      */
     
     private static CloseableHttpClient buildHttpClient(boolean isHttps) {
+        
         if (isHttps) {
             return createSSLClient();
         }else {
@@ -262,6 +329,7 @@ public final class HttpUtil {
     
     
     private static CloseableHttpClient createHttpClient() {
+        
         return HttpClients.custom().setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
     }
     
@@ -271,6 +339,7 @@ public final class HttpUtil {
      */
     
     private static CloseableHttpClient createSSLClient() {
+        
         try {
             SSLContext e = (new SSLContextBuilder()).loadTrustMaterial(null, (chain, authType) -> true).build();
             if (LOGGER.isWarnEnabled()) {
@@ -284,4 +353,16 @@ public final class HttpUtil {
         }
     }
     
+    
+    public static void main(String[] args) throws IOException {
+        //String url="http://yop-market-qa.s.qima-inc.com/app/v2/listOrder";
+        String url="www.baidu.com";
+        HashMap<String,String> params=new HashMap<>();
+        params.put("kdtId","12299");
+        params.put("kw","篮球");
+        params.put("beginTime","2016-01-01 00:00:00");
+        params.put("endTime","2017-05-01 00:00:00");
+        System.out.println(buildParam(url,params));
+        System.out.println(getWithParam(url,params));
+    }
 }

@@ -53,94 +53,6 @@ public class DistributedCoreFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
     
     
-    /**
-     * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
-     */
-    Result dealResult(Result invoke, Invocation invocation) {
-        // 统一处理返回值，一遍能够达到给卡门使用的要求，同时对于卡门接口就不在返回异常了，统一包装成错误消息
-        RpcResult rpcResult = (RpcResult) invoke;
-        BaseResponse br = null;
-        // 对于异常信息，统一进行包装
-        if (invoke.hasException()) {
-            
-            if (invoke.getException().getCause() instanceof BizException) {
-                BizException be = (BizException) invoke.getException().getCause();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
-            }else if (invoke.getException() instanceof BusinessException) {
-                BusinessException be = (BusinessException) invoke.getException();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
-                
-            }else if (invoke.getException().getCause() instanceof BusinessException) {
-                BusinessException be = (BusinessException) invoke.getException().getCause();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be), invoke.getValue());
-            }else {
-                br = new BaseResponse<>(ResponseCode.ERROR.getCode(), invoke.getException().getMessage(), invoke.getValue());
-            }
-            LOGGER.warn("rpc invoke exception:{}", invoke.getException());
-            // 变更处理后需要清空原有的异常信息
-            rpcResult.setException(null);
-            rpcResult.setValue(br);
-        }else if (invoke.getValue() instanceof Map) {
-            // 这种通用调用返回结果也会被转换成map形式，所以这里要进行进一步判断
-            String invokeClass;
-            if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
-                invokeClass = (String) ((Map) invoke.getValue()).remove("class");
-            }else {
-                invokeClass = (String) ((Map) invoke.getValue()).get("class");
-            }
-            if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
-                final Object data = ((Map) invoke.getValue()).get("data");
-                final ListResult listResult = new ListResult();
-                listResult.setCount((Integer) ((Map) invoke.getValue()).get("count"));
-                listResult.setData((List) data);
-                listResult.setCode(ResponseCode.SUCCESS.getCode());
-                listResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
-                rpcResult.setValue(listResult);
-            }else if (PlainResult.class.getName().equals(invokeClass)) {//返回listResult
-                final Object data = ((Map) invoke.getValue()).get("data");
-                final PlainResult plainResult = new PlainResult<>();
-                plainResult.setCode((Integer) ((Map) invoke.getValue()).get("code"));
-                plainResult.setData(data);
-                plainResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
-                rpcResult.setValue(plainResult);
-            }else if (!BaseResponse.class.getName().equals(invokeClass)) {
-                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
-                rpcResult.setValue(br);
-            }else {
-                final Object data = ((Map) invoke.getValue()).get("data");
-                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"), (String) ((Map) invoke.getValue()).get("message"), data);
-                rpcResult.setValue(br);
-            }
-            
-        }else if (!(invoke.getValue() instanceof BaseResponse)) {
-            br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
-            rpcResult.setValue(br);
-        }
-        rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
-        return invoke;
-    }
-    
-    
-    public String getThrowableStr(Throwable e) {
-        if (e == null) {
-            return "";
-        }
-        
-        ArrayWriter aw = new ArrayWriter();
-        e.printStackTrace(aw);
-        String[] arr = aw.toStringArray();
-        if (arr == null) {
-            return "";
-        }
-        
-        StringBuilder strBuf = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            strBuf.append(arr[i]).append("####");
-        }
-        return strBuf.toString();
-    }
-    
-    
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         
@@ -179,7 +91,7 @@ public class DistributedCoreFilter implements Filter {
                         
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isInfoEnabled()) {
-                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method, inv.getMethodName(), argsTmp);
+                            LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method, inv.getMethodName(), JsonUtils.bean2Json(argsTmp));
                         }
                         
                         if (invoke.hasException()) {
@@ -327,6 +239,94 @@ public class DistributedCoreFilter implements Filter {
             }
         }
         
+    }
+    
+    
+    /**
+     * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
+     */
+    Result dealResult(Result invoke, Invocation invocation) {
+        // 统一处理返回值，一遍能够达到给卡门使用的要求，同时对于卡门接口就不在返回异常了，统一包装成错误消息
+        RpcResult rpcResult = (RpcResult) invoke;
+        BaseResponse br = null;
+        // 对于异常信息，统一进行包装
+        if (invoke.hasException()) {
+            
+            if (invoke.getException().getCause() instanceof BizException) {
+                BizException be = (BizException) invoke.getException().getCause();
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
+            }else if (invoke.getException() instanceof BusinessException) {
+                BusinessException be = (BusinessException) invoke.getException();
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
+                
+            }else if (invoke.getException().getCause() instanceof BusinessException) {
+                BusinessException be = (BusinessException) invoke.getException().getCause();
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be), invoke.getValue());
+            }else {
+                br = new BaseResponse<>(ResponseCode.ERROR.getCode(), invoke.getException().getMessage(), invoke.getValue());
+            }
+            LOGGER.warn("rpc invoke exception:{}", invoke.getException());
+            // 变更处理后需要清空原有的异常信息
+            rpcResult.setException(null);
+            rpcResult.setValue(br);
+        }else if (invoke.getValue() instanceof Map) {
+            // 这种通用调用返回结果也会被转换成map形式，所以这里要进行进一步判断
+            String invokeClass;
+            if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
+                invokeClass = (String) ((Map) invoke.getValue()).remove("class");
+            }else {
+                invokeClass = (String) ((Map) invoke.getValue()).get("class");
+            }
+            if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
+                final Object data = ((Map) invoke.getValue()).get("data");
+                final ListResult listResult = new ListResult();
+                listResult.setCount((Integer) ((Map) invoke.getValue()).get("count"));
+                listResult.setData((List) data);
+                listResult.setCode(ResponseCode.SUCCESS.getCode());
+                listResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
+                rpcResult.setValue(listResult);
+            }else if (PlainResult.class.getName().equals(invokeClass)) {//返回listResult
+                final Object data = ((Map) invoke.getValue()).get("data");
+                final PlainResult plainResult = new PlainResult<>();
+                plainResult.setCode((Integer) ((Map) invoke.getValue()).get("code"));
+                plainResult.setData(data);
+                plainResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
+                rpcResult.setValue(plainResult);
+            }else if (!BaseResponse.class.getName().equals(invokeClass)) {
+                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
+                rpcResult.setValue(br);
+            }else {
+                final Object data = ((Map) invoke.getValue()).get("data");
+                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"), (String) ((Map) invoke.getValue()).get("message"), data);
+                rpcResult.setValue(br);
+            }
+            
+        }else if (!(invoke.getValue() instanceof BaseResponse)) {
+            br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
+            rpcResult.setValue(br);
+        }
+        rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
+        return invoke;
+    }
+    
+    
+    public String getThrowableStr(Throwable e) {
+        if (e == null) {
+            return "";
+        }
+        
+        ArrayWriter aw = new ArrayWriter();
+        e.printStackTrace(aw);
+        String[] arr = aw.toStringArray();
+        if (arr == null) {
+            return "";
+        }
+        
+        StringBuilder strBuf = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            strBuf.append(arr[i]).append("####");
+        }
+        return strBuf.toString();
     }
     
 }
