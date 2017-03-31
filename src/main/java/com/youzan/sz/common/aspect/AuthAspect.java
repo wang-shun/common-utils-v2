@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -126,7 +128,9 @@ public class AuthAspect extends BaseAspect {
         staffPerm.setShopId(DistributedContextTools.getShopId());
         staffPerm.setIdx(allowedPermissions[0].getPermInx().getIndex());
         staffPerm.setPos(allowedPermissions[0].getPermInx().getPos());
-        staffPerm.setBiz(allowedPermissions[0].getBiz());
+        staffPerm.setBizS(Arrays.asList(allowedPermissions[0].getBiz().split(",")).stream().filter(biz -> {
+            return StringUtil.isNotEmpty(biz);
+        }).collect(Collectors.toList()));
         BaseResponse<Boolean> response = authService.checkStaffPerms(staffPerm);
         if (response.getData() == null) {
             return false;
