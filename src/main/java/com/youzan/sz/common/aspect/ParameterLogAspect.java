@@ -3,8 +3,6 @@ package com.youzan.sz.common.aspect;
 import com.youzan.sz.common.util.JsonUtils;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +23,7 @@ import java.util.Stack;
  * Desc 通过切面以层级记录spring中bean的调用关系及时间
  */
 @Component
-@Aspect
+//@Aspect
 public class ParameterLogAspect {
     
     private static final String NEW_LINE = "\r\n";
@@ -47,7 +45,7 @@ public class ParameterLogAspect {
     }
     
     
-    @Around("execution(* com.youzan..*.*(..))")
+    // @Around("execution(* com.youzan..*.*(..))")
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
         long beginTime = System.currentTimeMillis();
@@ -125,17 +123,6 @@ public class ParameterLogAspect {
     }
     
     
-    private List<StackLog> getListLocal() {
-        
-        List<StackLog> list = listLocal.get();
-        if (list == null) {
-            list = new ArrayList<>();
-            listLocal.set(list);
-        }
-        return list;
-    }
-    
-    
     private Stack<StackLog> getStackLocal() {
         
         Stack<StackLog> stack = stackLocal.get();
@@ -152,6 +139,17 @@ public class ParameterLogAspect {
         list.add(stackLog);
         Stack<StackLog> stack = getStackLocal();
         stack.push(stackLog);
+    }
+    
+    
+    private List<StackLog> getListLocal() {
+        
+        List<StackLog> list = listLocal.get();
+        if (list == null) {
+            list = new ArrayList<>();
+            listLocal.set(list);
+        }
+        return list;
     }
     
     
@@ -178,6 +176,26 @@ public class ParameterLogAspect {
         private String result;
         
         private List<StackLog> list;
+    
+    
+        public int getLevel() {
+            return level;
+        }
+    
+    
+        public void setLevel(int level) {
+            this.level = level;
+        }
+    
+    
+        public List<StackLog> getList() {
+            return list;
+        }
+    
+    
+        public void setList(List<StackLog> list) {
+            this.list = list;
+        }
         
         
         public String getMethod() {
@@ -200,26 +218,6 @@ public class ParameterLogAspect {
         }
         
         
-        public int getLevel() {
-            return level;
-        }
-        
-        
-        public void setLevel(int level) {
-            this.level = level;
-        }
-        
-        
-        public long getTimes() {
-            return times;
-        }
-        
-        
-        public void setTimes(long times) {
-            this.times = times;
-        }
-        
-        
         public String getResult() {
             return result;
         }
@@ -228,15 +226,15 @@ public class ParameterLogAspect {
         public void setResult(String result) {
             this.result = result;
         }
-        
-        
-        public List<StackLog> getList() {
-            return list;
+    
+    
+        public long getTimes() {
+            return times;
         }
-        
-        
-        public void setList(List<StackLog> list) {
-            this.list = list;
+    
+    
+        public void setTimes(long times) {
+            this.times = times;
         }
     }
 }
