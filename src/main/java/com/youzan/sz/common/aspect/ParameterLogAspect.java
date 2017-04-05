@@ -3,12 +3,10 @@ package com.youzan.sz.common.aspect;
 import com.youzan.sz.common.util.JsonUtils;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
@@ -22,9 +20,8 @@ import java.util.Stack;
  * Time 2017/3/23 下午7:59
  * Desc 通过切面以层级记录spring中bean的调用关系及时间
  */
-@Component
-//@Aspect
-public class ParameterLogAspect {
+//@Component
+public class ParameterLogAspect extends BaseAspect{
     
     private static final String NEW_LINE = "\r\n";
     
@@ -47,7 +44,7 @@ public class ParameterLogAspect {
     
     // @Around("execution(* com.youzan..*.*(..))")
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
-        Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+        Method method = this.getMethod(pjp);
         long beginTime = System.currentTimeMillis();
         Object result = null;
         StringBuilder sb = new StringBuilder();
