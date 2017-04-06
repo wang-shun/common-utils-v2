@@ -117,6 +117,8 @@ public class AuthAspect extends BaseAspect {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("auth user permission:adminId:{},allowedPermission：{}", adminId, allowedPermissions);
         }
+        String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
+        
         GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
 
         if (grantPolicyDTO == null) {
@@ -126,6 +128,9 @@ public class AuthAspect extends BaseAspect {
         staffPerm.setKdtId(DistributedContextTools.getBid());
         staffPerm.setAdminId(DistributedContextTools.getAdminId());
         staffPerm.setShopId(DistributedContextTools.getShopId());
+        if (StringUtil.isNotEmpty(staffId)) {
+            staffPerm.setStaffId(Long.valueOf(staffId));
+        }
         staffPerm.setIdx(allowedPermissions[0].getPermInx().getIndex());
         staffPerm.setPos(allowedPermissions[0].getPermInx().getPos());
         staffPerm.setBizS(Arrays.asList(allowedPermissions[0].getBiz().split(",")).stream().filter(biz -> {
