@@ -1,18 +1,19 @@
 package com.youzan.sz.common.push;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.NotNull;
-
+import com.youzan.sz.common.enums.AppEnum;
 import com.youzan.sz.common.model.BaseDTO;
 import com.youzan.sz.common.model.base.BaseStaffDTO;
 import com.youzan.sz.common.model.enums.DeviceType;
 import com.youzan.sz.common.model.oa.device.DeviceTokenQueryDTO;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.util.NotThreadSafe;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -51,6 +52,11 @@ public class PushMsgDTO extends BaseDTO {
     private Map<String, String> result;
 
     private String sound;
+    
+    /**
+     * 为了支持多app使用，需要抽象一层，多个app可以使用，作为业务区分
+     */
+    private Integer aid= AppEnum.FC.getAid();
 
     public String getSound() {
         return sound;
@@ -162,5 +168,17 @@ public class PushMsgDTO extends BaseDTO {
 
     public void setDeviceType(Integer deviceType) {
         this.deviceType = deviceType;
+    }
+    
+    
+    public Integer getAid() {
+        
+        return aid;
+    }
+    
+    
+    public void setAid(Integer aid) {
+        
+        this.aid = aid;
     }
 }
