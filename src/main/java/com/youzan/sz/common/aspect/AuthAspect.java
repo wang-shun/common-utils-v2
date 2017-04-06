@@ -15,6 +15,7 @@ import com.youzan.sz.common.service.AuthService;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
 
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -112,13 +113,14 @@ public class AuthAspect extends BaseAspect {
         if (allowedPermissions == null || allowedPermissions.length == 0) {
             return true;
         }
-
-        final Long adminId = DistributedContextTools.getAdminId();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("auth user permission:adminId:{},allowedPermission：{}", adminId, allowedPermissions);
-        }
         String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
-        
+        final Long adminId = DistributedContextTools.getAdminId();
+    
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("auth user permission:adminId:{},staffId:{},allowedPermission：{}", adminId, staffId, allowedPermissions);
+        }
+    
+    
         GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
 
         if (grantPolicyDTO == null) {
@@ -128,7 +130,7 @@ public class AuthAspect extends BaseAspect {
         staffPerm.setKdtId(DistributedContextTools.getBid());
         staffPerm.setAdminId(DistributedContextTools.getAdminId());
         staffPerm.setShopId(DistributedContextTools.getShopId());
-        if (StringUtil.isNotEmpty(staffId)) {
+        if (StringUtils.isNotEmpty(staffId)) {
             staffPerm.setStaffId(Long.valueOf(staffId));
         }
         staffPerm.setIdx(allowedPermissions[0].getPermInx().getIndex());
