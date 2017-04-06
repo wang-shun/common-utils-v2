@@ -132,6 +132,8 @@ public class AuthAspect extends BaseAspect {
         staffPerm.setShopId(DistributedContextTools.getShopId());
         if (StringUtils.isNotEmpty(staffId)) {
             staffPerm.setStaffId(Long.valueOf(staffId));
+        }else {
+            LOGGER.warn("kdtId ({}),adminId({}) staffId is null", staffPerm.getKdtId(), staffPerm.getAdminId());
         }
         staffPerm.setIdx(allowedPermissions[0].getPermInx().getIndex());
         staffPerm.setPos(allowedPermissions[0].getPermInx().getPos());
