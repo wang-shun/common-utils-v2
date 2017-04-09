@@ -2,12 +2,15 @@ package com.youzan.sz.common.service;
 
 import com.youzan.sz.common.SignOut;
 import com.youzan.sz.common.model.Page;
-import com.youzan.sz.common.push.PushMsgDTO;
 import com.youzan.sz.common.push.PushContextDTO;
+import com.youzan.sz.common.push.PushMsgDTO;
 import com.youzan.sz.common.push.msg.MsgDTO;
 import com.youzan.sz.common.push.msg.MsgPageDTO;
 import com.youzan.sz.common.push.msg.MsgReadDTO;
 import com.youzan.sz.common.response.BaseResponse;
+
+import java.util.List;
+
 
 /**
  *
@@ -62,4 +65,11 @@ public interface PushDelegateService {
      * 标记消息为已读
      * */
     BaseResponse<MsgReadDTO> markRead(MsgReadDTO msgReadDTO);
+    
+    /**
+     * 删除通知
+     * @param msgReadDTO
+     * @return
+     */
+    BaseResponse<List<String>> removeMsg(MsgReadDTO msgReadDTO);
 }

@@ -1,12 +1,13 @@
 package com.youzan.sz.common.push.msg;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  *
  * Created by zhanguo on 2016/10/10.
  */
-public class MsgDTO {
+public class MsgDTO implements Serializable{
     /**
      * 可以用来避免重复发送
      * */

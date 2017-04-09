@@ -100,7 +100,7 @@ public final class HttpUtil {
             LOGGER.warn("build url occur error",e);
             return url;
         }
-    
+        
         return result;
     }
     

@@ -11,7 +11,7 @@ import java.util.Map;
 public class TestJackSon {
     @Test
     public void test(){
-       Map<String,String> map = JacksonFieldUtil.getJsonFiledsValue(People.class);
-        System.out.println(map);
+//       Map<String,String> map = JacksonFieldUtil.getJsonFiledsValue(People.class);
+//        System.out.println(map);
     }
 }
