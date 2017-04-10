@@ -216,7 +216,6 @@ public class AuthAspect extends BaseAspect {
         // 获取注解上传过来的参数
         PermEnum[] allowedPermissions = auth.allowedPerms();
         boolean allow = checkPermission(allowedPermissions, method.getDeclaringClass().getName() + "." + method.getName());
-        allow = true;
         //检查是否被授予临时权限
         if (!allow) {
             allow = tryGrant(auth.resource());
