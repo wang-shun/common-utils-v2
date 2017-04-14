@@ -116,6 +116,11 @@ public abstract class DelayItem<R> implements Runnable, Delayed, Serializable {
     }
     
     
+    public void setExecutedTimes(int executedTimes) {
+        this.executedTimes = executedTimes;
+    }
+    
+    
     protected int getDelayTimeInMillis() {
         return delayTimeInMillis;
     }
