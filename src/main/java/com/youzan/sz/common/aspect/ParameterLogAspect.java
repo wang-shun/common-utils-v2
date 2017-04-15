@@ -3,6 +3,7 @@ package com.youzan.sz.common.aspect;
 import com.youzan.sz.common.util.JsonUtils;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -21,7 +22,7 @@ import java.util.Stack;
  * Desc 通过切面以层级记录spring中bean的调用关系及时间
  */
 //@Component
-public class ParameterLogAspect extends BaseAspect{
+public class ParameterLogAspect {
     
     private static final String NEW_LINE = "\r\n";
     
@@ -33,23 +34,24 @@ public class ParameterLogAspect extends BaseAspect{
     
     private ThreadLocal<Throwable> throwLocal = new ThreadLocal<>();
     
-    @Value("${log.result:true}")
     private boolean isShowResult = true;
+    
+    private int maxLength = 1024;
     
     
     public ParameterLogAspect() {
-        LOGGER.info("init ParameterLogAspect isShowResult:" + isShowResult);
+        LOGGER.info("init isShowResult:" + isShowResult + " max result length: " + maxLength);
     }
     
     
-    // @Around("execution(* com.youzan..*.*(..))")
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
-        Method method = this.getMethod(pjp);
-        long beginTime = System.currentTimeMillis();
         Object result = null;
+        MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
+        Method method = methodSignature.getMethod();
+        long beginTime = System.currentTimeMillis();
         StringBuilder sb = new StringBuilder();
         try {
-            //记录日志
+            //记录日志--入栈
             if (LOGGER.isInfoEnabled()) {
                 StackLog stackLog = new StackLog();
                 sb.append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName());
@@ -77,11 +79,16 @@ public class ParameterLogAspect extends BaseAspect{
                 //出参
                 StackLog stack = getStackLocal().pop();
                 stack.setTimes(times);
+                // TODO: 2017/4/6 判断是否只需要把最后一个返回结果打印出来
                 if (isShowResult) {
                     if (AopUtils.isCglibProxy(result)) {
                         stack.setResult(result.toString());
                     }else {
-                        stack.setResult(JsonUtils.toJson(result));
+                        String json = JsonUtils.toJson(result);
+                        if (json != null && json.length() > maxLength) {
+                            json = json.substring(0, maxLength) + "... ...(result is too long, has been substring, want more? you can set the maxLength)";
+                        }
+                        stack.setResult(json);
                     }
                 }
                 
@@ -160,6 +167,16 @@ public class ParameterLogAspect extends BaseAspect{
     }
     
     
+    public int getMaxLength() {
+        return maxLength;
+    }
+    
+    
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+    }
+    
+    
     private class StackLog {
         
         private String method;
@@ -173,23 +190,23 @@ public class ParameterLogAspect extends BaseAspect{
         private String result;
         
         private List<StackLog> list;
-    
-    
+        
+        
         public int getLevel() {
             return level;
         }
-    
-    
+        
+        
         public void setLevel(int level) {
             this.level = level;
         }
-    
-    
+        
+        
         public List<StackLog> getList() {
             return list;
         }
-    
-    
+        
+        
         public void setList(List<StackLog> list) {
             this.list = list;
         }
@@ -223,15 +240,16 @@ public class ParameterLogAspect extends BaseAspect{
         public void setResult(String result) {
             this.result = result;
         }
-    
-    
+        
+        
         public long getTimes() {
             return times;
         }
-    
-    
+        
+        
         public void setTimes(long times) {
             this.times = times;
         }
+        
     }
 }
