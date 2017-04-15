@@ -43,22 +43,22 @@ public class DistributedContextTools {
     
     
     /**
-     
-     
+ 
+ 
      ic static Long getAdminId() {
         Object obj = get(AdminId.class.getCanonicalName());
         return getLong(obj);
     }
-     
-     
+ 
+ 
      @Sup pressWarnings("unchecked")
      public static <T> T get(String key) {
      return (T) context.get(key);
     }
-     
-     
+ 
+ 
      publ
-     
+ 
      ate static Long getLong(Object obj) {
         if (obj == null) {
             return null;
@@ -73,10 +73,10 @@ public class DistributedContextTools {
         }
         return (Long) obj;
     }
-     
-     
+ 
+ 
      publ
-     
+ 
      应用id
     public static Integer getAId() {
         
@@ -88,16 +88,16 @@ public class DistributedContextTools {
         }
         return (Integer) aid;
     }
-     
-     
+ 
+ 
      publ
-     
+ 
      PP版本信息
      public static String getAppVersion() {
      return get(AppVersion.class.getCanonicalName());
     }
-     
-     
+ 
+ 
      priv
 
      * @deprecated 改个名字
@@ -134,23 +134,23 @@ public class DistributedContextTools {
     
     
     /**
-     
-     
+ 
+ 
      ic static String getDeviceType() {
      return get(DeviceType.class.getCanonicalName());
      }
-     
-     
+ 
+ 
      //获取
-     
+ 
      ic static Long getKdtId() {
      Object obj = get(KdtId.class.getCanonicalName());
      return getLong(obj);
      }
-     
-     
+ 
+ 
      //获取
-     
+ 
      ic static Integer getNoSession() {
      Object obj = get(NoSession.class.getCanonicalName());
      if (obj != null) {
@@ -162,10 +162,10 @@ public class DistributedContextTools {
      }
      return 0;
      }
-     
-     
+ 
+ 
      //获取
-     
+ 
      操作人id
     public static Long getOpAdminId() {
         final Object opAdminId = get(OpAdminId.class.getCanonicalName());
@@ -174,25 +174,25 @@ public class DistributedContextTools {
         }
         return (Long) opAdminId;
     }
-     
-     
+ 
+ 
      // A
-     
+ 
      操作人名字
     public static String getOpAdminName() {
         return get(OpAdminName.class.getCanonicalName());
     }
-     
-     
+ 
+ 
      publ
-     
+ 
      ic static String getRequestIp() {
         return get(RequestIp.class.getCanonicalName());
     }
-     
-     
+ 
+ 
      publ
-     
+ 
      应用id
      public static Long getShopId() {
      final Object shopId = get(ShopId.class.getCanonicalName());
@@ -203,19 +203,19 @@ public class DistributedContextTools {
      }
      return (Long) shopId;
     }
-     
-     
+ 
+ 
      publ
-     
+ 
      ic static void main(String[] args) {
      System.out.println(Long.parseLong(""));
     }
-         
+     
      }
   
     /**
-     
-     
+ 
+ 
      recated
     public static <T> void set(Class<?> key, T value) {
         //        if (LOGGER.isDebugEnabled()) {
@@ -224,15 +224,15 @@ public class DistributedContextTools {
         //        setAttr(key,value);
         context.put(key.getCanonicalName(), value);
     }
-     
-     
+ 
+ 
      @Dep ic static <T> void set(String key, T value) {
         context.put(key, value);
     }
-     
-     
+ 
+ 
      publ
-      
+  
       * 设置属性,有泛型检查
      */
     public static <T extends DistributedParam<V>, V> void setAttr(Class<T> key, V value) {
@@ -241,8 +241,7 @@ public class DistributedContextTools {
     
     
     publ
-    
-    
+
     public static class DistributedParamManager {
         
         private static Map<String, Class<?>> cache = new HashMap<>();
@@ -276,7 +275,7 @@ public class DistributedContextTools {
             cache.put(NoSession.class.getCanonicalName(), NoSession.class);
             
         }
-        
+    
         public static Class<?> get(Class<?> param) {
             return cache.get(param.getCanonicalName());
         }
@@ -359,16 +358,16 @@ public class DistributedContextTools {
                 return "distributed.device_id";
             }
         }
-        
-        
+    
+    
         public static class DeviceType extends DistributedParam<String> {
             
             public static String getName() {
                 return "distributed.device_type";
             }
         }
-        
-        
+    
+    
         public static class OpAdminId extends DistributedParam<Long> {
             
             public static String getName() {
