@@ -9,6 +9,9 @@ import com.youzan.sz.common.push.msg.MsgPageDTO;
 import com.youzan.sz.common.push.msg.MsgReadDTO;
 import com.youzan.sz.common.response.BaseResponse;
 
+import java.util.List;
+
+
 /**
  *
  * Created by zhanguo on 16/8/28.
@@ -62,4 +65,12 @@ public interface PushDelegateService {
      * */
     @Deprecated
     BaseResponse<PushContextDTO> validateWithDisposal(PushContextDTO pushContextDTO);
+    
+    
+    /**
+     * 删除通知
+     * @param msgReadDTO
+     * @return
+     */
+    BaseResponse<List<String>> removeMsg(MsgReadDTO msgReadDTO);
 }
