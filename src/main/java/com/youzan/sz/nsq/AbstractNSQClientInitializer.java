@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by zhanguo on 16/7/29.
  */
-public abstract class AbstractNSQClientInitializer<T> implements ClientInitializer {
+public abstract class AbstractNSQClientInitializer<T extends NSQMsg> implements ClientInitializer {
     
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     

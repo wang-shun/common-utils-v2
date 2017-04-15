@@ -3,7 +3,6 @@ package com.youzan.sz.dqueue.codec.json;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.dqueue.codec.Decode;
 
-
 /**
  * Created by wangpan on 2016/9/30.
  */

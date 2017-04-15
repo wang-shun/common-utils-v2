@@ -63,19 +63,46 @@ public final class HttpUtil {
     
     
     /**
-     *
-     * @param url url
-     * @param params 参数
-     * @return json的结果
-     * @throws IOException
+     * 使用UTF8 GET
      */
-    public static String getWithParam(String url, Map<String, ?> params) throws IOException {
+    public static String getUsingUTF8(boolean isHttps, Map<String, String> headers, String url) throws IOException {
+    
+        return get(isHttps, headers, url, UTF8);
+    }
+    
+    
+    /**
+     * HTTP GET
+     */
+    
+    public static String get(boolean isHttps, Map<String, String> headers, String url, String charset) throws IOException {
         
-        if (params == null || params.isEmpty()) {
-            return getUsingUTF8(false, url);
+        CloseableHttpClient httpClient = buildHttpClient(isHttps);
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.setConfig(buildRequestConfig());
+        
+        if (headers != null && headers.size() > 0) {
+            headers.entrySet().forEach(e -> {
+                httpGet.setHeader(e.getKey(), e.getValue());
+            });
         }
-        String encodeUrl = buildParam(url,params);
-        return getUsingUTF8(false, encodeUrl);
+        
+        CloseableHttpResponse response = httpClient.execute(httpGet);
+        HttpEntity entity = response.getEntity();
+        return EntityUtils.toString(entity, Charset.forName(charset));
+    }
+    
+    
+    public static void main(String[] args) throws IOException {
+        //String url="http://yop-market-qa.s.qima-inc.com/app/v2/listOrder";
+        String url = "www.baidu.com";
+        HashMap<String, String> params = new HashMap<>();
+        params.put("kdtId", "12299");
+        params.put("kw", "篮球");
+        params.put("beginTime", "2016-01-01 00:00:00");
+        params.put("endTime", "2017-05-01 00:00:00");
+        System.out.println(buildParam(url, params));
+        System.out.println(getWithParam(url, params));
     }
     
     
@@ -100,74 +127,34 @@ public final class HttpUtil {
             LOGGER.warn("build url occur error",e);
             return url;
         }
-        
+    
         return result;
     }
     
     
     /**
-     * HTTP POST
+     *
+     * @param url url
+     * @param params 参数
+     * @return json的结果
+     * @throws IOException
      */
-    public static String post(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params, String charset) throws IOException {
-        
-        CloseableHttpClient httpClient = buildHttpClient(isHttps);
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setConfig(buildRequestConfig());
-        if (params != null && params.size() > 0) {
-            StringEntity entity = new StringEntity(JsonUtils.bean2Json(params), charset);
-            entity.setContentType(ContentType.APPLICATION_JSON.getMimeType());
-            httpPost.setEntity(entity);
+    public static String getWithParam(String url, Map<String, ?> params) throws IOException {
+    
+        if (params == null || params.isEmpty()) {
+            return getUsingUTF8(false, url);
         }
-        
-        if (headers != null && headers.size() > 0) {
-            headers.entrySet().forEach(e -> {
-                httpPost.setHeader(e.getKey(), e.getValue());
-            });
-        }
-        
-        CloseableHttpResponse response = httpClient.execute(httpPost);
-        return EntityUtils.toString(response.getEntity(), Charset.forName(charset));
+        String encodeUrl = buildParam(url, params);
+        return getUsingUTF8(false, encodeUrl);
     }
     
     
     /**
-     * 使用UTF8 POST
+     * 使用UTF8 GET
      */
-    public static String postUsingUTF8(boolean isHttps, String url, Map<String, ?> params) throws IOException {
-        
-        return post(isHttps, null, url, params, UTF8);
-    }
+    public static String getUsingUTF8(boolean isHttps, String url) throws IOException {
     
-    
-    /**
-     * 使用UTF8 POST
-     */
-    public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params) throws IOException {
-        
-        return post(isHttps, headers, url, params, UTF8);
-    }
-    
-    
-    /**
-     * HTTP POST
-     */
-    
-    public static String post(boolean isHttps, Map<String, String> headers, String url, String params, String charset) throws IOException {
-        
-        CloseableHttpClient httpClient = buildHttpClient(isHttps);
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setConfig(buildRequestConfig());
-        if (params != null && !params.equals("")) {
-            httpPost.setEntity(new StringEntity(params, charset));
-        }
-        
-        if (headers != null && headers.size() > 0) {
-            headers.entrySet().forEach(e -> httpPost.setHeader(e.getKey(), e.getValue()));
-        }
-        
-        CloseableHttpResponse response = httpClient.execute(httpPost);
-        HttpEntity entity = response.getEntity();
-        return EntityUtils.toString(entity, Charset.forName(charset));
+        return get(isHttps, null, url, UTF8);
     }
     
     
@@ -200,6 +187,138 @@ public final class HttpUtil {
     public static String post(Map<String, String> headers, String url, String params, String charset) throws IOException {
         
         return url.startsWith("https") ? post(true, headers, url, params, charset) : post(false, headers, url, params, charset);
+    }
+    
+    
+    /**
+     * HTTP POST
+     */
+
+    public static String post(boolean isHttps, Map<String, String> headers, String url, String params, String charset) throws IOException {
+        
+        CloseableHttpClient httpClient = buildHttpClient(isHttps);
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.setConfig(buildRequestConfig());
+        if (params != null && !params.equals("")) {
+            httpPost.setEntity(new StringEntity(params, charset));
+        }
+    
+        if (headers != null && headers.size() > 0) {
+            headers.entrySet().forEach(e -> httpPost.setHeader(e.getKey(), e.getValue()));
+        }
+        
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        HttpEntity entity = response.getEntity();
+        return EntityUtils.toString(entity, Charset.forName(charset));
+    }
+    
+    
+    /**
+     * 使用UTF8 POST
+     */
+    public static String postUsingUTF8(boolean isHttps, String url, String params) throws IOException {
+        
+        return post(isHttps, null, url, params, UTF8);
+    }
+    
+    
+    /**
+     * 使用UTF8 POST
+     */
+    public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, String params) throws IOException {
+        
+        return post(isHttps, headers, url, params, UTF8);
+    }
+    
+    
+    /**
+     * 使用UTF8 POST
+     */
+    public static String postUsingUTF8(boolean isHttps, String url, Map<String, ?> params) throws IOException {
+    
+        return post(isHttps, null, url, params, UTF8);
+    }
+    
+    
+    /**
+     * HTTP POST
+     */
+    public static String post(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params, String charset) throws IOException {
+        
+        CloseableHttpClient httpClient = buildHttpClient(isHttps);
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.setConfig(buildRequestConfig());
+        if (params != null && params.size() > 0) {
+            StringEntity entity = new StringEntity(JsonUtils.bean2Json(params), charset);
+            entity.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+            httpPost.setEntity(entity);
+        }
+        
+        if (headers != null && headers.size() > 0) {
+            headers.entrySet().forEach(e -> {
+                httpPost.setHeader(e.getKey(), e.getValue());
+            });
+        }
+        
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        return EntityUtils.toString(response.getEntity(), Charset.forName(charset));
+    }
+    
+    
+    /**
+     * 构建 HttpClient
+     *
+     * @param isHttps 是否是HTTPS
+     */
+    
+    private static CloseableHttpClient buildHttpClient(boolean isHttps) {
+        
+        if (isHttps) {
+            return createSSLClient();
+        }else {
+            return createHttpClient();
+        }
+    }
+    
+    
+    private static RequestConfig buildRequestConfig() {
+        
+        return RequestConfig.custom().setConnectionRequestTimeout(TIME_OUT).setConnectTimeout(TIME_OUT).setSocketTimeout(TIME_OUT).build();
+    }
+    
+    
+    /**
+     * 创建https client
+     */
+    
+    private static CloseableHttpClient createSSLClient() {
+        
+        try {
+            SSLContext e = (new SSLContextBuilder()).loadTrustMaterial(null, (chain, authType) -> true).build();
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("HTTPS SSL 证书未去认证,直接返回的通过认证");
+            }
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(e);
+            return HttpClients.custom().setSSLSocketFactory(sslsf).setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
+        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            LOGGER.error("Exception", e);
+            return createHttpClient();
+        }
+    }
+    
+    
+    private static CloseableHttpClient createHttpClient() {
+        
+        return HttpClients.custom().setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
+    }
+    
+    
+    /**
+     * 使用UTF8 POST
+     */
+    public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, Map<String, ?> params) throws IOException {
+        
+        return post(isHttps, headers, url, params, UTF8);
     }
     
     
@@ -245,124 +364,5 @@ public final class HttpUtil {
             LOGGER.info("uploadFile get result=>" + result);
         }
         return result;
-    }
-    
-    
-    /**
-     * 使用UTF8 POST
-     */
-    public static String postUsingUTF8(boolean isHttps, String url, String params) throws IOException {
-        
-        return post(isHttps, null, url, params, UTF8);
-    }
-    
-    
-    /**
-     * 使用UTF8 POST
-     */
-    public static String postUsingUTF8(boolean isHttps, Map<String, String> headers, String url, String params) throws IOException {
-        
-        return post(isHttps, headers, url, params, UTF8);
-    }
-    
-    
-    /**
-     * HTTP GET
-     */
-    
-    public static String get(boolean isHttps, Map<String, String> headers, String url, String charset) throws IOException {
-        
-        CloseableHttpClient httpClient = buildHttpClient(isHttps);
-        HttpGet httpGet = new HttpGet(url);
-        httpGet.setConfig(buildRequestConfig());
-        
-        if (headers != null && headers.size() > 0) {
-            headers.entrySet().forEach(e -> {
-                httpGet.setHeader(e.getKey(), e.getValue());
-            });
-        }
-        
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        HttpEntity entity = response.getEntity();
-        return EntityUtils.toString(entity, Charset.forName(charset));
-    }
-    
-    
-    /**
-     * 使用UTF8 GET
-     */
-    public static String getUsingUTF8(boolean isHttps, String url) throws IOException {
-        
-        return get(isHttps, null, url, UTF8);
-    }
-    
-    
-    /**
-     * 使用UTF8 GET
-     */
-    public static String getUsingUTF8(boolean isHttps, Map<String, String> headers, String url) throws IOException {
-        
-        return get(isHttps, headers, url, UTF8);
-    }
-    
-    
-    private static RequestConfig buildRequestConfig() {
-        
-        return RequestConfig.custom().setConnectionRequestTimeout(TIME_OUT).setConnectTimeout(TIME_OUT).setSocketTimeout(TIME_OUT).build();
-    }
-    
-    
-    /**
-     * 构建 HttpClient
-     *
-     * @param isHttps 是否是HTTPS
-     */
-    
-    private static CloseableHttpClient buildHttpClient(boolean isHttps) {
-        
-        if (isHttps) {
-            return createSSLClient();
-        }else {
-            return createHttpClient();
-        }
-    }
-    
-    
-    private static CloseableHttpClient createHttpClient() {
-        
-        return HttpClients.custom().setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
-    }
-    
-    
-    /**
-     * 创建https client
-     */
-    
-    private static CloseableHttpClient createSSLClient() {
-        
-        try {
-            SSLContext e = (new SSLContextBuilder()).loadTrustMaterial(null, (chain, authType) -> true).build();
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("HTTPS SSL 证书未去认证,直接返回的通过认证");
-            }
-            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(e);
-            return HttpClients.custom().setSSLSocketFactory(sslsf).setConnectionManager(CONNECTION_MANAGER).setConnectionManagerShared(true).build();
-        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-            LOGGER.error("Exception", e);
-            return createHttpClient();
-        }
-    }
-    
-    
-    public static void main(String[] args) throws IOException {
-        //String url="http://yop-market-qa.s.qima-inc.com/app/v2/listOrder";
-        String url="www.baidu.com";
-        HashMap<String,String> params=new HashMap<>();
-        params.put("kdtId","12299");
-        params.put("kw","篮球");
-        params.put("beginTime","2016-01-01 00:00:00");
-        params.put("endTime","2017-05-01 00:00:00");
-        System.out.println(buildParam(url,params));
-        System.out.println(getWithParam(url,params));
     }
 }

@@ -38,16 +38,6 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>com.youzan.sz</groupId>-->
-        <!--<artifactId>oa-api</artifactId>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<artifactId>common-utils</artifactId>-->
-        <!--<groupId>com.youzan.sz</groupId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>
