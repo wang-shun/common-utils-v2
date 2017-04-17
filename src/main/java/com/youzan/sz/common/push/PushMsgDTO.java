@@ -57,14 +57,15 @@ public class PushMsgDTO extends BaseDTO {
      * 为了支持多app使用，需要抽象一层，多个app可以使用，作为业务区分
      */
     private Integer aid= AppEnum.FC.getAid();
-
-    public String getSound() {
-        return sound;
+    
+    
+    /**
+     * 通过设备号码推送
+     */
+    public PushMsgDTO addDeviceToken(DeviceTokenQueryDTO deviceTokenQueryDTO) {
+        return addRecv(JsonUtils.bean2Json(deviceTokenQueryDTO));
     }
 
-    public void setSound(String sound) {
-        this.sound = sound;
-    }
 
     @NotThreadSafe
     public PushMsgDTO addParams(@NotNull String key, @NotNull String value) {
@@ -74,6 +75,7 @@ public class PushMsgDTO extends BaseDTO {
         params.put(key, value);
         return this;
     }
+
 
     @NotThreadSafe
     /**
@@ -87,10 +89,6 @@ public class PushMsgDTO extends BaseDTO {
         return this;
     }
 
-    private PushMsgDTO addRecv(String recvInfo) {
-        recvList.add(recvInfo);
-        return this;
-    }
 
     /**
      * 通过adminId推送
@@ -98,76 +96,11 @@ public class PushMsgDTO extends BaseDTO {
     public PushMsgDTO addStaffRecv(BaseStaffDTO staffDTO) {
         return addRecv(JsonUtils.toJson(staffDTO));
     }
-
-    /**
-     * 通过设备号码推送
-     * */
-    public PushMsgDTO addDeviceToken(DeviceTokenQueryDTO deviceTokenQueryDTO) {
-        return addRecv(JsonUtils.bean2Json(deviceTokenQueryDTO));
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Integer getSendType() {
-        return sendType;
-    }
-
-    public void setSendType(Integer sendType) {
-        this.sendType = sendType;
-    }
-
-    public Integer getMsgType() {
-        return msgType;
-    }
-
-    public void setMsgType(Integer msgType) {
-        this.msgType = msgType;
-    }
-
-    public Map<String, String> getParams() {
-        return params;
-    }
-
-    public void setParams(Map<String, String> params) {
-        this.params = params;
-    }
-
-    public List<String> getRecvList() {
-        return recvList;
-    }
-
-    public void setRecvList(List<String> recvList) {
-        this.recvList = recvList;
-    }
-
-    public Map<String, String> getResult() {
-        return result;
-    }
-
-    public void setResult(Map<String, String> result) {
-        this.result = result;
-    }
-
-    public Integer getDeviceType() {
-        return deviceType;
-    }
-
-    public void setDeviceType(Integer deviceType) {
-        this.deviceType = deviceType;
+    
+    
+    private PushMsgDTO addRecv(String recvInfo) {
+        recvList.add(recvInfo);
+        return this;
     }
     
     
@@ -180,5 +113,95 @@ public class PushMsgDTO extends BaseDTO {
     public void setAid(Integer aid) {
         
         this.aid = aid;
+    }
+
+
+    public String getContent() {
+        return content;
+    }
+
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+    
+    
+    public Integer getDeviceType() {
+        return deviceType;
+    }
+    
+    
+    public void setDeviceType(Integer deviceType) {
+        this.deviceType = deviceType;
+    }
+    
+    
+    public Integer getMsgType() {
+        return msgType;
+    }
+    
+    
+    public void setMsgType(Integer msgType) {
+        this.msgType = msgType;
+    }
+    
+    
+    public Map<String, String> getParams() {
+        return params;
+    }
+    
+    
+    public void setParams(Map<String, String> params) {
+        this.params = params;
+    }
+    
+    
+    public List<String> getRecvList() {
+        return recvList;
+    }
+    
+    
+    public void setRecvList(List<String> recvList) {
+        this.recvList = recvList;
+    }
+    
+    
+    public Map<String, String> getResult() {
+        return result;
+    }
+    
+    
+    public void setResult(Map<String, String> result) {
+        this.result = result;
+    }
+    
+    
+    public Integer getSendType() {
+        return sendType;
+    }
+    
+    
+    public void setSendType(Integer sendType) {
+        this.sendType = sendType;
+    }
+    
+    
+    public String getSound() {
+        return sound;
+    }
+    
+    
+    public void setSound(String sound) {
+        this.sound = sound;
+    }
+    
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

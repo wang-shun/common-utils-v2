@@ -4,8 +4,8 @@ import com.youzan.sz.nsq.NSQMsg;
 
 import java.util.List;
 
-
 /**
+ *
  * Created by zhanguo on 16/7/30.
  */
 public class DemoStoreMsg extends NSQMsg {
@@ -13,7 +13,6 @@ public class DemoStoreMsg extends NSQMsg {
     private int id;
     
     private String name;
-    
     private List<Integer> shopId;
     
     

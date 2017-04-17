@@ -272,14 +272,11 @@ public class DistributedContextTools {
     
     
     //获取应用id
-    @Deprecated
     public static Long getBid() {
-        Object bid = get(Bid.class.getCanonicalName());
+        final Object bid = get(Bid.class.getCanonicalName());
         if (bid instanceof String) {
             return Long.valueOf((String) bid);
         }
-        if (bid == null)
-            bid = getKdtId();
         return (Long) bid;
         
     }

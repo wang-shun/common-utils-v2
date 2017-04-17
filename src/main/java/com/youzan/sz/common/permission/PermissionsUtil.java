@@ -47,11 +47,11 @@ public class PermissionsUtil {
     
     
     public static void main(String[] ags) {
-        
+
         // RigthsUtil.checkRightsRepeat();
-        
+
         for (RolesEnum rolesEnum : RolesEnum.values()) {
-            
+
             String str = transferPerms2String(rolesEnum.getPerms());
             System.out.println(str);
             Long[] longr = transferPermsStr2LongArr(str);
@@ -60,44 +60,42 @@ public class PermissionsUtil {
                     System.out.println(Long.toHexString(r));
                 }
             }
-            
+
         }
     }
     
     
     /**
      * 权限long arr=>string
-     *
      * @param collection
      * @return
      */
     public static String transferPerms2String(Collection<PermEnum> collection) {
-        
+    
         Long[] rights = transferPerms2LongArr(collection);
         if (rights == null) {
             return "";
         }
         StringBuilder rightsStr = new StringBuilder();
         for (Long right : rights) {
-            
+    
             if (rightsStr.length() != 0) {
                 rightsStr.append(RIGHTS_SPLIT);
             }
             rightsStr.append(right);
         }
-        
+    
         return rightsStr.toString();
     }
     
     
     /**
      * 权限集合转long
-     *
      * @param collection
      * @return
      */
     public static Long[] transferPerms2LongArr(Collection<PermEnum> collection) {
-        
+    
         if (CollectionUtils.isEmpty(collection)) {
             return null;
         }
@@ -110,21 +108,21 @@ public class PermissionsUtil {
         */
         Map<Integer, List<PermEnum>> rightsEnumMap = collection.stream().collect(Collectors.groupingBy(e -> e.getPermInx().getIndex()));
         Integer maxIndex = rightsEnumMap.keySet().stream().max(Integer::compare).orElseGet(null);
-        
+    
         Long[] rightArr = new Long[maxIndex + 1];
-        
+    
         Set set = rightsEnumMap.entrySet();
         Iterator i = set.iterator();
         while (i.hasNext()) {
             Map.Entry<Integer, List<PermEnum>> entry = (Map.Entry<Integer, List<PermEnum>>) i.next();
-            
+    
             if (rightArr[entry.getKey().intValue()] == null) {
                 rightArr[entry.getKey().intValue()] = 0L;
             }
             for (PermEnum rightsEnum : entry.getValue()) {
                 rightArr[entry.getKey().intValue()] = rightsEnum.getPermInx().getValue() | rightArr[entry.getKey().intValue()];
             }
-            
+    
         }
         return rightArr;
     }
@@ -149,6 +147,10 @@ public class PermissionsUtil {
             }
         }
         return stringBuilder.toString();
+        /* List<String> allPermissonStr = Arrays.asList(allPermisssion).stream().map(t -> t.toString())
+            .collect(Collectors.toList());
+        return allPermissonStr.toArray(new String[allPermissonStr.size()]);
+        */
     }
 
 
@@ -237,5 +239,4 @@ public class PermissionsUtil {
         }
         return stringBuilder.toString();
     }
-   
 }
