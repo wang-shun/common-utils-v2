@@ -7,7 +7,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
@@ -34,13 +33,11 @@ public class ParameterLogAspect {
     
     private ThreadLocal<Throwable> throwLocal = new ThreadLocal<>();
     
-    private boolean isShowResult = true;
-    
     private int maxLength = 1024;
     
     
     public ParameterLogAspect() {
-        LOGGER.info("init isShowResult:" + isShowResult + " max result length: " + maxLength);
+        LOGGER.info("init with max result length: " + maxLength);
     }
     
     
@@ -80,16 +77,14 @@ public class ParameterLogAspect {
                 StackLog stack = getStackLocal().pop();
                 stack.setTimes(times);
                 // TODO: 2017/4/6 判断是否只需要把最后一个返回结果打印出来
-                if (isShowResult) {
-                    if (AopUtils.isCglibProxy(result)) {
-                        stack.setResult(result.toString());
-                    }else {
-                        String json = JsonUtils.toJson(result);
-                        if (json != null && json.length() > maxLength) {
-                            json = json.substring(0, maxLength) + "... ...(result is too long, has been substring, want more? you can set the maxLength)";
-                        }
-                        stack.setResult(json);
+                if (AopUtils.isCglibProxy(result)) {
+                    stack.setResult(result.toString());
+                }else {
+                    String json = JsonUtils.toJson(result);
+                    if (json != null && json.length() > maxLength) {
+                        json = json.substring(0, maxLength) + "... ...(result is longer than " + maxLength + " want more? you can set the maxLength)";
                     }
+                    stack.setResult(json);
                 }
                 
                 if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
@@ -108,7 +103,7 @@ public class ParameterLogAspect {
                         String tab = tabSB.toString();
                         logSB.append(tab).append("method-->").append(stackLog.getMethod()).append(".").append("(").append(stackLog.getParams()).append(")").append(NEW_LINE);
                         logSB.append(tab).append("elapse-->").append("[").append(stackLog.getTimes()).append("ms ").append(timePercent).append("%]").append(NEW_LINE);
-                        if (isShowResult && stackLog.getResult() != null) {
+                        if (stackLog.getResult() != null) {
                             logSB.append(tab).append("result-->").append(stackLog.getResult()).append(NEW_LINE).append(NEW_LINE);
                         }
                     }
@@ -154,16 +149,6 @@ public class ParameterLogAspect {
             listLocal.set(list);
         }
         return list;
-    }
-    
-    
-    public boolean isShowResult() {
-        return isShowResult;
-    }
-    
-    
-    public void setShowResult(boolean showResult) {
-        isShowResult = showResult;
     }
     
     
