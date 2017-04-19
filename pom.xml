@@ -7,12 +7,12 @@
     <parent>
         <groupId>com.youzan.sz</groupId>
         <artifactId>dependency-pom</artifactId>
-        <version>1.0.10-SNAPSHOT</version>
+        <version>1.4.0-sam-SNAPSHOT</version>
     </parent>
-
+    <!-- -->
     <groupId>com.youzan.sz</groupId>
     <artifactId>common-utils</artifactId>
-    <version>1.0.10-RELEASE</version>
+    <version>1.4.0-sam-SNAPSHOT</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -41,6 +41,7 @@
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>
+            <version>${base-model.version}</version>
         </dependency>
 
 
@@ -472,6 +473,19 @@
                         <phase>deploy</phase>
                         <goals>
                             <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
                         </goals>
                     </execution>
                 </executions>

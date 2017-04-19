@@ -93,6 +93,10 @@ public class JedisTemplate {
     public String get(String key) {
         return this.execute((JedisAction<String>) jedis -> jedis.get(key));
     }
+    
+    public List<String> get(String[] keys){
+        return this.execute((JedisAction<List<String>>) jedis -> jedis.mget(keys));
+    }
 
     public Long ttl(String key) {
         return this.execute((JedisAction<Long>) jedis -> jedis.ttl(key));
