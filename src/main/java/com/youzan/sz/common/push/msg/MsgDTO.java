@@ -34,6 +34,11 @@ public class MsgDTO implements Serializable{
      * 接收时间
      * */
     private Long                recvDate;
+    
+    /**
+     * 返回给前端的跳转url
+     */
+    private String routerUrl;
 
     public Long getRecvDate() {
         return recvDate;
@@ -113,5 +118,15 @@ public class MsgDTO implements Serializable{
 
     public void setMsgTypeEnum(int msgTypeEnum) {
         this.msgTypeEnum = msgTypeEnum;
+    }
+    
+    
+    public String getRouterUrl() {
+        return routerUrl;
+    }
+    
+    
+    public void setRouterUrl(String routerUrl) {
+        this.routerUrl = routerUrl;
     }
 }
