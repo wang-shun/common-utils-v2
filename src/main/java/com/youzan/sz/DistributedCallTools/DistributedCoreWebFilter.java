@@ -201,7 +201,7 @@ public class DistributedCoreWebFilter implements Filter {
                                 }
                             }
                         } catch (NullPointerException | ClassCastException e) {
-                            LOGGER.error("请求失败，可能是参数不正确", e);
+                            LOGGER.error("请求失败，可能是参数不正确:"+JsonUtils.bean2Json(jsonNode), e);
                             throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                         }
                     }
