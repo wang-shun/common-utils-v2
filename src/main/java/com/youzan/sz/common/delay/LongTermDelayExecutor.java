@@ -35,7 +35,7 @@ public class LongTermDelayExecutor {
     
     static {
         int poolSize = Runtime.getRuntime().availableProcessors() + 1;
-        LONG_TERM_TASK_EXECUTOR = new LongTermDelayThreadPool(1, poolSize, 45, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+        LONG_TERM_TASK_EXECUTOR = new LongTermDelayThreadPool(poolSize, poolSize, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
     }
     
     public void addTask(String taskName, Runnable runnable, int maxRetryTimes, long delayTime, TimeUnit timeUnit) {
