@@ -35,7 +35,7 @@ public class DelayExecutor {
     
     static {
         int poolSize = Runtime.getRuntime().availableProcessors() + 1;
-        TASK_EXECUTOR = new DelayThreadPool(1, poolSize, 45, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+        TASK_EXECUTOR = new DelayThreadPool(poolSize, poolSize, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
     }
     
     public void addTask(String taskName, Runnable runnable, int maxRetryTimes, long delayTime, TimeUnit timeUnit) {
