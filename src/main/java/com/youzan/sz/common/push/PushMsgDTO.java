@@ -58,11 +58,6 @@ public class PushMsgDTO extends BaseDTO {
      */
     private Integer aid= AppEnum.FC.getAid();
     
-    /**
-     * 消息类型图标
-     */
-    private String iconUrl;
-    
     
     /**
      * 通过设备号码推送
@@ -209,14 +204,5 @@ public class PushMsgDTO extends BaseDTO {
     public void setTitle(String title) {
         this.title = title;
     }
-    
-    
-    public String getIconUrl() {
-        return iconUrl;
-    }
-    
-    
-    public void setIconUrl(String iconUrl) {
-        this.iconUrl = iconUrl;
-    }
+ 
 }
