@@ -39,6 +39,11 @@ public class MsgDTO implements Serializable{
      * 返回给前端的跳转url
      */
     private String routerUrl;
+    
+    /**
+     * 消息类型图标
+     */
+    private String iconUrl;
 
     public Long getRecvDate() {
         return recvDate;
@@ -128,5 +133,15 @@ public class MsgDTO implements Serializable{
     
     public void setRouterUrl(String routerUrl) {
         this.routerUrl = routerUrl;
+    }
+    
+    
+    public String getIconUrl() {
+        return iconUrl;
+    }
+    
+    
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 }
