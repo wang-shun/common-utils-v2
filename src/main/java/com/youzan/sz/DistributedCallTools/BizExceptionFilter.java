@@ -16,7 +16,7 @@ import com.alibaba.dubbo.rpc.filter.ExceptionFilter;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.*;
 import com.youzan.sz.common.ext.ExtExceptionFilter;
-import com.youzan.sz.common.ext.ExtPointManager;
+import com.youzan.sz.common.ext.ExtManager;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
@@ -47,7 +47,7 @@ public class BizExceptionFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
     
         // 有扩展的，走扩展流程，替换原来的处理流程
-        ExtExceptionFilter extExceptionFilter = ExtPointManager.getExtExceptionFilter();
+        ExtExceptionFilter extExceptionFilter = ExtManager.getExtExceptionFilter();
         if(extExceptionFilter != null){
             if(logger.isInfoEnabled()){
                 logger.info("invocation:"+ ReflectionToStringBuilder.toString(invocation));
