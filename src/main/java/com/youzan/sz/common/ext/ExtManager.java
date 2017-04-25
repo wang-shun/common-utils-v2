@@ -19,10 +19,8 @@ public class ExtManager {
     /**
      *
      * @param extpoint
-     * @throws SQLException
      */
-    public static synchronized void register(Extpoint extpoint)
-            throws SQLException {
+    public static synchronized void register(Extpoint extpoint){
         
         if(extpoint != null) {
             if(extpoint instanceof ExtExceptionFilter){
