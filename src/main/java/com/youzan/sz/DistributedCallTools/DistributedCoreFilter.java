@@ -257,11 +257,11 @@ public class DistributedCoreFilter implements Filter {
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
             }else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(invoke.getException()), invoke.getValue());
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
                 
             }else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
-                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage() + "####" + getThrowableStr(be), invoke.getValue());
+                br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
             }else {
                 br = new BaseResponse<>(ResponseCode.ERROR.getCode(), invoke.getException().getMessage(), invoke.getValue());
             }
