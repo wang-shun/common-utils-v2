@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 
 /**
@@ -52,7 +53,40 @@ public class DistributedCoreWebFilter implements Filter {
     
     private static final Map<String, Method> methodCache = new HashMap<>();
     
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
     private static final String MDC_TRACE = "MDC_TRACE";
+    
+    private boolean isLogMdc(){
+        return LOGGER.isInfoEnabled();
+    }
+    
+    
+    /**
+     * 设置请求的唯一key，方便日志的grep
+     */
+    private void initLogMdc(){
+        if(isLogMdc()){
+            Stack<Integer> stack = stackLocal.get();
+            if(stack.isEmpty()){
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            }
+            
+            stack.push(1);
+        }
+    }
+    
+    private void clearLogMdc(){
+        if(isLogMdc()){
+            Stack<Integer> stack = stackLocal.get();
+            stack.pop();
+            if(stack.isEmpty()){
+                // 设置请求的唯一key，方便日志的grep
+                MDC.remove(MDC_TRACE);
+                stackLocal.remove();
+            }
+        }
+    }
     
     static {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -141,7 +175,7 @@ public class DistributedCoreWebFilter implements Filter {
         // 处理通用invoke方式调用，目前是卡门调用过来的方式
         try {
             // 设置请求的唯一key，方便日志的grep
-            MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            initLogMdc();
             
             boolean present = false;
             final Integer noSession = DistributedContextTools.getNoSession();
@@ -247,7 +281,7 @@ public class DistributedCoreWebFilter implements Filter {
             while (false);
         } catch (Throwable e) {
             LOGGER.warn("distributed  error", e);
-            MDC.remove(MDC_TRACE);
+            clearLogMdc();
             throw new RuntimeException(e);
         }
         
@@ -258,7 +292,7 @@ public class DistributedCoreWebFilter implements Filter {
             }
             return result;
         }finally {
-            MDC.remove(MDC_TRACE);
+            clearLogMdc();
         }
         
     }
