@@ -49,9 +49,6 @@ public class BizExceptionFilter implements Filter {
         // 有扩展的，走扩展流程，替换原来的处理流程
         ExtExceptionFilter extExceptionFilter = ExtManager.getExtExceptionFilter();
         if(extExceptionFilter != null){
-            if(logger.isInfoEnabled()){
-                logger.info("invocation:"+ ReflectionToStringBuilder.toString(invocation));
-            }
             return extExceptionFilter.invoke(invoker, invocation);
         }
         
