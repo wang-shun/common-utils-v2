@@ -29,9 +29,11 @@ import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.common.util.MdcUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +54,7 @@ public class DistributedCoreFilter implements Filter {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
     
-    
+    private static final String MDC_TRACE = "MDC_TRACE";
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         
@@ -67,6 +69,8 @@ public class DistributedCoreFilter implements Filter {
             inv.setAttachment(Constants.ASYNC_KEY, "false");
             
             try {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
@@ -167,9 +171,12 @@ public class DistributedCoreFilter implements Filter {
                 // 调用结束后要清理掉分布式上下文，不然会有内存泄露和脏数据
                 DistributedContextTools.clear();
                 LOGGER.info("p:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
+                MDC.remove(MDC_TRACE);
             }
         }else {
             try {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
                 // TODO: 16/6/27 登陆接口访问票据不需要存放上下文
                 // 获取需要传递的平台参数
                 Long adminId = DistributedContextTools.getAdminId();
@@ -236,6 +243,7 @@ public class DistributedCoreFilter implements Filter {
                 return new RpcResult(e);
             } finally {
                 LOGGER.info("c:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
+                MDC.remove(MDC_TRACE);
             }
         }
         

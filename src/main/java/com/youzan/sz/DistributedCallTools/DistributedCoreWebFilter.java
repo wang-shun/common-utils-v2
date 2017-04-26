@@ -19,10 +19,12 @@ import com.youzan.sz.common.anotations.Admin;
 import com.youzan.sz.common.anotations.Inner;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.common.util.MdcUtil;
 import com.youzan.sz.session.SessionTools;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
@@ -49,6 +51,8 @@ public class DistributedCoreWebFilter implements Filter {
     private static final ObjectMapper om = new ObjectMapper();
     
     private static final Map<String, Method> methodCache = new HashMap<>();
+    
+    private static final String MDC_TRACE = "MDC_TRACE";
     
     static {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -136,6 +140,9 @@ public class DistributedCoreWebFilter implements Filter {
         RpcInvocation inv = (RpcInvocation) invocation;
         // 处理通用invoke方式调用，目前是卡门调用过来的方式
         try {
+            // 设置请求的唯一key，方便日志的grep
+            MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            
             boolean present = false;
             final Integer noSession = DistributedContextTools.getNoSession();
             if (noSession != null && noSession.intValue() == 1) {
@@ -240,13 +247,20 @@ public class DistributedCoreWebFilter implements Filter {
             while (false);
         } catch (Throwable e) {
             LOGGER.warn("distributed  error", e);
+            MDC.remove(MDC_TRACE);
             throw new RuntimeException(e);
         }
-        Result result = invoker.invoke(inv);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
+        
+        try{
+            Result result = invoker.invoke(inv);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
+            }
+            return result;
+        }finally {
+            MDC.remove(MDC_TRACE);
         }
-        return result;
+        
     }
     
     
