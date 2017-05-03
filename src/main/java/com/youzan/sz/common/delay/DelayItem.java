@@ -163,10 +163,12 @@ public abstract class DelayItem<R> implements Runnable, Delayed, Serializable {
             LOGGER.info("Task [{}-{}] already executed [{}] times.", this, this.getTaskName(), getExecutedTimes());
             doRun();
         } catch (BusinessException be) {
-            LOGGER.warn("Task[{}-{}] executed failed, re-enqueue , already executed [{}] times.", this, this.getTaskName(), this.getExecutedTimes(), be);
+            LOGGER.info("Task[{}-{}] executed failed,re-enqueue, already executed [{}] times.", this, this.getTaskName(), this.getExecutedTimes());
+            LOGGER.warn("Error message:", be);
             retry();
         } catch (Exception e) {
-            LOGGER.error("Task[{}-{}] executed failed,re-enqueue, already executed [{}] times.", this, this.getTaskName(), this.getExecutedTimes(), e);
+            LOGGER.info("Task[{}-{}] executed failed,re-enqueue, already executed [{}] times.", this, this.getTaskName(), this.getExecutedTimes());
+            LOGGER.error("Error message:", e);
             retry();
         }
     }
