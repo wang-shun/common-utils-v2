@@ -119,10 +119,11 @@ public class DelayExecutor {
         DelayThread(Runnable target, String name) {
             super(target, name + "-" + created.incrementAndGet());
             setUncaughtExceptionHandler((t, e) -> {
+                LOGGER.info("An exception occurred. Thread name:{}", t.getName());
                 if (e instanceof BusinessException) {
-                    LOGGER.warn("{} Error:{}", t.getName(), e);
+                    LOGGER.warn("Error message:", e);
                 }else {
-                    LOGGER.error("{} Error:{}", t.getName(), e);
+                    LOGGER.error("Error message:", e);
                 }
             });
         }
