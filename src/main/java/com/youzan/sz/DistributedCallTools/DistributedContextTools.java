@@ -1,14 +1,25 @@
 package com.youzan.sz.DistributedCallTools;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.youzan.platform.util.lang.StringUtil;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AdminId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Aid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AppVersion;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Bid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceType;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DistributedParam;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.KdtId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.NoSession;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class DistributedContextTools {
@@ -274,6 +285,8 @@ public class DistributedContextTools {
     //获取应用id
     public static Long getBid() {
         final Object bid = get(Bid.class.getCanonicalName());
+        if (bid == null)//bid为空尝试获取一下kdtId
+            return getKdtId();
         if (bid instanceof String) {
             return Long.valueOf((String) bid);
         }

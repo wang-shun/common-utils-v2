@@ -143,11 +143,18 @@ public class SessionTools {
         }
         //从session中加载一次
         final String bid = session.get(SessionTools.BID);
+        final String kdtId = session.get(SessionTools.KDT_ID);
         final String shopId = session.get(SessionTools.SHOP_ID);
         final String aid = session.get(SessionTools.AID);
         if (bid != null) {
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class, Long.valueOf(bid));
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.KdtId.class, Long.valueOf(bid));
         }
+        if (kdtId != null) {
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class, Long.valueOf(kdtId));
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.KdtId.class, Long.valueOf(kdtId));
+        }
+        
         if (shopId != null) {
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.ShopId.class, Long.valueOf(shopId));
         }
