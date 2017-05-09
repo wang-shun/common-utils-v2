@@ -204,4 +204,5 @@ public class PushMsgDTO extends BaseDTO {
     public void setTitle(String title) {
         this.title = title;
     }
+ 
 }

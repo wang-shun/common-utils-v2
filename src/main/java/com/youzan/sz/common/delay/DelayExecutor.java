@@ -35,7 +35,7 @@ public class DelayExecutor {
     
     static {
         int poolSize = Runtime.getRuntime().availableProcessors() + 1;
-        TASK_EXECUTOR = new DelayThreadPool(1, poolSize, 45, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+        TASK_EXECUTOR = new DelayThreadPool(poolSize, poolSize, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
     }
     
     public void addTask(String taskName, Runnable runnable, int maxRetryTimes, long delayTime, TimeUnit timeUnit) {
@@ -119,10 +119,11 @@ public class DelayExecutor {
         DelayThread(Runnable target, String name) {
             super(target, name + "-" + created.incrementAndGet());
             setUncaughtExceptionHandler((t, e) -> {
+                LOGGER.info("An exception occurred. Thread name:{}", t.getName());
                 if (e instanceof BusinessException) {
-                    LOGGER.warn("{} Error:{}", t.getName(), e);
+                    LOGGER.warn("Error message:", e);
                 }else {
-                    LOGGER.error("{} Error:{}", t.getName(), e);
+                    LOGGER.error("Error message:", e);
                 }
             });
         }

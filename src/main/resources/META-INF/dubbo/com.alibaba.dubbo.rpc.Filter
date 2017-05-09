@@ -1,2 +1,3 @@
 kernel=com.youzan.sz.DistributedCallTools.DistributedCoreFilter
 web_kernel=com.youzan.sz.DistributedCallTools.DistributedCoreWebFilter
+exception=com.youzan.sz.DistributedCallTools.BizExceptionFilter

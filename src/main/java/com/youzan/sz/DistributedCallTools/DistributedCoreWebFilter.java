@@ -19,18 +19,22 @@ import com.youzan.sz.common.anotations.Admin;
 import com.youzan.sz.common.anotations.Inner;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.common.util.MdcUtil;
 import com.youzan.sz.session.SessionTools;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 
 /**
@@ -48,6 +52,41 @@ public class DistributedCoreWebFilter implements Filter {
     private static final ObjectMapper om = new ObjectMapper();
     
     private static final Map<String, Method> methodCache = new HashMap<>();
+    
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
+    private static final String MDC_TRACE = "MDC_TRACE";
+    
+    private boolean isLogMdc(){
+        return LOGGER.isInfoEnabled();
+    }
+    
+    
+    /**
+     * 设置请求的唯一key，方便日志的grep
+     */
+    private void initLogMdc(){
+        if(isLogMdc()){
+            Stack<Integer> stack = stackLocal.get();
+            if(stack.isEmpty()){
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            }
+            
+            stack.push(1);
+        }
+    }
+    
+    private void clearLogMdc(){
+        if(isLogMdc()){
+            Stack<Integer> stack = stackLocal.get();
+            stack.pop();
+            if(stack.isEmpty()){
+                // 设置请求的唯一key，方便日志的grep
+                MDC.remove(MDC_TRACE);
+                stackLocal.remove();
+            }
+        }
+    }
     
     static {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -135,6 +174,9 @@ public class DistributedCoreWebFilter implements Filter {
         RpcInvocation inv = (RpcInvocation) invocation;
         // 处理通用invoke方式调用，目前是卡门调用过来的方式
         try {
+            // 设置请求的唯一key，方便日志的grep
+            initLogMdc();
+            
             boolean present = false;
             final Integer noSession = DistributedContextTools.getNoSession();
             if (noSession != null && noSession.intValue() == 1) {
@@ -201,7 +243,7 @@ public class DistributedCoreWebFilter implements Filter {
                                 }
                             }
                         } catch (NullPointerException | ClassCastException e) {
-                            LOGGER.error("请求失败，可能是参数不正确", e);
+                            LOGGER.error("请求失败，可能是参数不正确:"+JsonUtils.bean2Json(jsonNode), e);
                             throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                         }
                     }
@@ -239,13 +281,20 @@ public class DistributedCoreWebFilter implements Filter {
             while (false);
         } catch (Throwable e) {
             LOGGER.warn("distributed  error", e);
+            clearLogMdc();
             throw new RuntimeException(e);
         }
-        Result result = invoker.invoke(inv);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
+        
+        try{
+            Result result = invoker.invoke(inv);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
+            }
+            return result;
+        }finally {
+            clearLogMdc();
         }
-        return result;
+        
     }
     
     
@@ -278,7 +327,15 @@ public class DistributedCoreWebFilter implements Filter {
             }
             
         }else {
-            return om.readValue(jsonNode.toString(), parameterType);
+            if (parameterType.isArray() || Collection.class.isAssignableFrom(parameterType)) {
+                JsonNode node = jsonNode.get(parameter.getName());
+                if (node == null) {
+                    throw ResponseCode.PARAMETER_ERROR.getBusinessException();
+                }
+                return om.readValue(node.toString(), parameterType);
+            }else {
+                return om.readValue(jsonNode.toString(), parameterType);
+            }
         }
     }
     
