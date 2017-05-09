@@ -428,8 +428,9 @@ public class JedisTemplate {
 
     public void releaseLock(String lock) {
         this.execute((JedisActionNoResult) jedis -> {
+            String re = jedis.get(lock);
             long current = System.currentTimeMillis();
-            if (StringUtils.isNotBlank(lock) && current < Long.valueOf(jedis.get(lock))) {
+            if (StringUtils.isNotBlank(re) && current < Long.valueOf(re)) {
                 jedis.del(lock);
             }
         });
