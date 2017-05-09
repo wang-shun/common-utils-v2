@@ -28,6 +28,7 @@ import org.springframework.util.ClassUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -201,7 +202,7 @@ public class DistributedCoreWebFilter implements Filter {
                                 }
                             }
                         } catch (NullPointerException | ClassCastException e) {
-                            LOGGER.error("请求失败，可能是参数不正确", e);
+                            LOGGER.error("请求失败，可能是参数不正确:"+JsonUtils.bean2Json(jsonNode), e);
                             throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                         }
                     }
@@ -278,7 +279,15 @@ public class DistributedCoreWebFilter implements Filter {
             }
             
         }else {
-            return om.readValue(jsonNode.toString(), parameterType);
+            if (parameterType.isArray() || Collection.class.isAssignableFrom(parameterType)) {
+                JsonNode node = jsonNode.get(parameter.getName());
+                if (node == null) {
+                    throw ResponseCode.PARAMETER_ERROR.getBusinessException();
+                }
+                return om.readValue(node.toString(), parameterType);
+            }else {
+                return om.readValue(jsonNode.toString(), parameterType);
+            }
         }
     }
     
