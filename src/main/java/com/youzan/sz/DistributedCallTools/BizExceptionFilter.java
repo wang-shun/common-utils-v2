@@ -31,7 +31,7 @@ public class BizExceptionFilter implements Filter {
     
     
     public BizExceptionFilter() {
-        this(LoggerFactory.getLogger(ExceptionFilter.class));
+        this(LoggerFactory.getLogger(BizExceptionFilter.class));
     }
     
     
