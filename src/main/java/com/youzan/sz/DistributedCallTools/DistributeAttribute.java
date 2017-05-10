@@ -55,7 +55,10 @@ public interface DistributeAttribute extends IShop {
         }
         return biz;
     }
-    
+    default Integer getIdentity() {
+        final Integer identity = DistributedContextTools.getIdentity();
+        return identity;
+    }
     /**
      * 在指定店铺后就会拥有
      */

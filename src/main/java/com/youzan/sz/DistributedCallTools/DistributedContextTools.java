@@ -339,6 +339,14 @@ public class DistributedContextTools {
         return get(DeviceType.class.getCanonicalName());
     }
     
+    //获取操作人identiy
+    public static Integer getIdentity() {
+        final Object identity = get(Identity.class.getCanonicalName());
+        if (identity!= null && identity instanceof String) {
+            return Integer.valueOf((String) identity);
+        }
+        return (Integer) identity;
+    }
     
     /**
      * 设置属性,有泛型检查
