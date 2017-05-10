@@ -14,6 +14,7 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Identity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,8 +132,14 @@ public class DistributedContextTools {
                 return "distributed.no_session";
             }
         }
+    
+        public static class Identity extends DistributedParam<Integer> {
         
-        
+            public static String getName() {
+                return "distributed.identity";
+            }
+        }
+    
         private static Map<String, Class<?>> cache = new HashMap<>();
         
         static {
@@ -149,6 +156,7 @@ public class DistributedContextTools {
             cache.put(OpAdminName.getName(), OpAdminName.class);
             cache.put(AppVersion.getName(), AppVersion.class);
             cache.put(NoSession.getName(), NoSession.class);
+            cache.put(Identity.getName(), Identity.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
@@ -162,7 +170,7 @@ public class DistributedContextTools {
             cache.put(OpAdminName.class.getCanonicalName(), OpAdminName.class);
             cache.put(AppVersion.class.getCanonicalName(), AppVersion.class);
             cache.put(NoSession.class.getCanonicalName(), NoSession.class);
-            
+            cache.put(Identity.class.getCanonicalName(), Identity.class);
         }
         
         public static Class<?> get(Class<?> param) {
