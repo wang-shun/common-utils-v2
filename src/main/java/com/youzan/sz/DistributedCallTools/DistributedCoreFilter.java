@@ -191,6 +191,10 @@ public class DistributedCoreFilter implements Filter {
                     if (noSession != null) {
                         DistributedContextTools.set(DistributedParamManager.NoSession.class.getCanonicalName(), String.valueOf(noSession));
                     }
+                    final String identity = inv.getAttachment(DistributedParamManager.Identity.class.getCanonicalName());
+                    if (identity != null) {
+                        DistributedContextTools.set(DistributedParamManager.Identity.class.getCanonicalName(), Integer.valueOf(identity));
+                    }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {

@@ -52,6 +52,8 @@ public class SessionTools {
     
     public static final String CERT_STATUS = "certStatus"; //认证状态.0,未认证,1,个人人工,3,企业认证
     
+    public static final String IDENTITY = "identity";//用户身份信息（上帝账号用）
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.session.SessionTools.class);
     
     private static com.youzan.sz.session.SessionTools instance = null;
@@ -146,6 +148,7 @@ public class SessionTools {
         final String kdtId = session.get(SessionTools.KDT_ID);
         final String shopId = session.get(SessionTools.SHOP_ID);
         final String aid = session.get(SessionTools.AID);
+        final String identity = session.get(SessionTools.IDENTITY);
         if (bid != null) {
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Bid.class, Long.valueOf(bid));
             DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.KdtId.class, Long.valueOf(bid));
@@ -164,6 +167,9 @@ public class SessionTools {
             }else {
                 DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Aid.class, Integer.valueOf(aid));
             }
+        }
+        if(identity!=null){
+            DistributedContextTools.setAttr(DistributedContextTools.DistributedParamManager.Identity.class, Integer.valueOf(identity));
         }
         return session;
     }
