@@ -77,7 +77,7 @@ public class BizExceptionFilter implements Filter {
                     }
                     
                     // 未在方法签名上定义的异常，在服务器端打印ERROR日志
-                    logger.error("Got unchecked and undeclared exception which called by " + RpcContext.getContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " +
+                    logger.warn("Got unchecked and undeclared exception which called by " + RpcContext.getContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " +
                             "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + invocation.getMethodName() + ", exception: " + exception.getClass().getName() + ": " +
                             exception.getMessage(), exception);
                     
