@@ -177,8 +177,8 @@ public class DistributedCoreWebFilter implements Filter {
             initLogMdc();
 
             boolean present = false;
-            final Integer noSession = DistributedContextTools.getNoSession();
-            if (noSession != null && noSession.intValue() == 1) {
+            Integer noSession = DistributedContextTools.getNoSession();
+            if (noSession != null && noSession == 1) {
                 present = true;
             }
             do {
