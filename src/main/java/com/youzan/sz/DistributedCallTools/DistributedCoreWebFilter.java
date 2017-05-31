@@ -46,52 +46,35 @@ import java.util.Stack;
 @Activate(group = {Constants.PROVIDER}, order = -90000)
 @SPI("web_kernel")
 public class DistributedCoreWebFilter implements Filter {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreWebFilter.class);
-    
+
     private static final ObjectMapper om = new ObjectMapper();
-    
+
     private static final Map<String, Method> methodCache = new HashMap<>();
-    
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
+
     private static final String MDC_TRACE = "MDC_TRACE";
-    
-    private boolean isLogMdc(){
-        return LOGGER.isInfoEnabled();
+
+    static {
+        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
-    
-    
-    /**
-     * 设置请求的唯一key，方便日志的grep
-     */
-    private void initLogMdc(){
-        if(isLogMdc()){
-            Stack<Integer> stack = stackLocal.get();
-            if(stack.isEmpty()){
-                // 设置请求的唯一key，方便日志的grep
-                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
-            }
-            
-            stack.push(1);
-        }
-    }
-    
-    private void clearLogMdc(){
-        if(isLogMdc()){
+
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
+
+
+    private void clearLogMdc() {
+        if (isLogMdc()) {
             Stack<Integer> stack = stackLocal.get();
             stack.pop();
-            if(stack.isEmpty()){
+            if (stack.isEmpty()) {
                 // 设置请求的唯一key，方便日志的grep
                 MDC.remove(MDC_TRACE);
                 stackLocal.remove();
             }
         }
     }
-    
-    static {
-        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-    
+
+
     private void doAuth(String m, Method method, Class<?> interface1) {
         if (interface1.getAnnotation(Admin.class) != null) {//暂时不对管理进行鉴权
             return;
@@ -111,8 +94,8 @@ public class DistributedCoreWebFilter implements Filter {
             }
         }
     }
-    
-    
+
+
     /**
      * 获取接口的方法，如果是一个新的就先缓存一下
      *
@@ -146,37 +129,53 @@ public class DistributedCoreWebFilter implements Filter {
                 return getMethod(methodName, -1, -1, interf);//只按名称再查找一遍
             return null;
         }
-        
+
         Method targetMethod = null;
-        
+
         for (Method method : methodList) {
             if (method.getGenericParameterTypes() != null && !method.getGenericParameterTypes().getClass().getName().equals("[Ljava.lang.Class;")) {//泛型优先,数组先判断一次
                 targetMethod = method;
                 break;
             }
-            
+
             if (method.getGenericParameterTypes() != null && method.getGenericParameterTypes().length > 0 && !method.getGenericParameterTypes()[0].getTypeName().equals("java.lang.Object")) {//对象判断一次
                 targetMethod = method;
                 break;
             }
-            
+
         }
         if (targetMethod == null)
             targetMethod = methodList.get(0);
         methodCache.put(key, targetMethod);
         return targetMethod;
     }
-    
-    
+
+
+    /**
+     * 设置请求的唯一key，方便日志的grep
+     */
+    private void initLogMdc() {
+        if (isLogMdc()) {
+            Stack<Integer> stack = stackLocal.get();
+            if (stack.isEmpty()) {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            }
+
+            stack.push(1);
+        }
+    }
+
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        
+
         RpcInvocation inv = (RpcInvocation) invocation;
         // 处理通用invoke方式调用，目前是卡门调用过来的方式
         try {
             // 设置请求的唯一key，方便日志的grep
             initLogMdc();
-            
+
             boolean present = false;
             final Integer noSession = DistributedContextTools.getNoSession();
             if (noSession != null && noSession.intValue() == 1) {
@@ -186,7 +185,7 @@ public class DistributedCoreWebFilter implements Filter {
                 if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     break;
                 }
-                
+
                 String m = (String) inv.getArguments()[0];
                 String[] typesTmp = (String[]) inv.getArguments()[1];
                 Object[] argsTmp = (Object[]) inv.getArguments()[2];
@@ -205,7 +204,7 @@ public class DistributedCoreWebFilter implements Filter {
                 }
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
-                
+
                 if (!present)//没有no_session标志
                     doAuth(m, method, interface1);
                 else {
@@ -214,19 +213,19 @@ public class DistributedCoreWebFilter implements Filter {
                 }
                 String[] types;
                 Object[] args;
-                
+
                 // 解析json中的参数，并进行对应映射
                 if (readValue.isArray()) {
                     Parameter[] parameters = method.getParameters();
                     int parameterCount = parameters.length;
                     args = new Object[parameterCount];
                     types = new String[parameterCount];
-                    
+
                     if (parameterCount > 0) {
                         JsonNode jsonNode = readValue.get(0); //取出第一个参数，判断是不是Json对象
                         Parameter parameter;
                         Class<?> parameterType;
-                        
+
                         try {
                             if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
                                 for (int i = 0; i < parameterCount; i++) {
@@ -243,20 +242,20 @@ public class DistributedCoreWebFilter implements Filter {
                                 }
                             }
                         } catch (NullPointerException | ClassCastException e) {
-                            LOGGER.error("请求失败，可能是参数不正确:"+JsonUtils.bean2Json(jsonNode), e);
+                            LOGGER.error("请求失败，可能是参数不正确:" + JsonUtils.bean2Json(jsonNode), e);
                             throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                         }
                     }
                 }else if (readValue.isObject()) {  // //参数是Json对象，新的方式 json={"bid":1,"shopId":2}
-                    
+
                     Parameter[] parameters = method.getParameters();
                     int parameterCount = parameters.length;
                     args = new Object[parameterCount];
                     types = new String[parameterCount];
-                    
+
                     if (parameterCount > 0) {
                         Parameter parameter;
-                        
+
                         try {
                             for (int i = 0; i < parameterCount; i++) {
                                 parameter = parameters[i];
@@ -272,11 +271,11 @@ public class DistributedCoreWebFilter implements Filter {
                     args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
                     types = new String[]{method.getParameterTypes()[0].getName()};
                 }
-                
+
                 // 保存过滤掉系统参数后的结果
                 inv.getArguments()[1] = types;
                 inv.getArguments()[2] = args;
-                
+
             }
             while (false);
         } catch (Throwable e) {
@@ -284,20 +283,25 @@ public class DistributedCoreWebFilter implements Filter {
             clearLogMdc();
             throw new RuntimeException(e);
         }
-        
-        try{
+
+        try {
             Result result = invoker.invoke(inv);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
             }
             return result;
-        }finally {
+        } finally {
             clearLogMdc();
         }
-        
+
     }
-    
-    
+
+
+    private boolean isLogMdc() {
+        return LOGGER.isInfoEnabled();
+    }
+
+
     private Map<String, String> loadSession() {
         SessionTools session = SessionTools.getInstance();
         if (null != session) {
@@ -307,8 +311,8 @@ public class DistributedCoreWebFilter implements Filter {
         }
         return null;
     }
-    
-    
+
+
     /**
      * resolve 参数值
      */
@@ -325,18 +329,22 @@ public class DistributedCoreWebFilter implements Filter {
             }else {
                 return om.readValue(node.toString(), parameterType);
             }
-            
+
         }else {
             if (parameterType.isArray() || Collection.class.isAssignableFrom(parameterType)) {
-                JsonNode node = jsonNode.get(parameter.getName());
-                if (node == null) {
-                    throw ResponseCode.PARAMETER_ERROR.getBusinessException();
+                if (jsonNode.isArray()) {
+                    return om.readValue(jsonNode.toString(), parameterType);
+                }else {
+                    JsonNode node = jsonNode.get(parameter.getName());
+                    if (node == null) {
+                        throw ResponseCode.PARAMETER_ERROR.getBusinessException();
+                    }
+                    return om.readValue(node.toString(), parameterType);
                 }
-                return om.readValue(node.toString(), parameterType);
             }else {
                 return om.readValue(jsonNode.toString(), parameterType);
             }
         }
     }
-    
+
 }
