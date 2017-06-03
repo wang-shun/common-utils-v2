@@ -10,10 +10,8 @@
         <version>1.4.4-SNAPSHOT</version>
     </parent>
     <!-- -->
-    <groupId>com.youzan.sz</groupId>
     <artifactId>common-utils</artifactId>
-    <version>1.4.4-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <version>1.4.6-RELEASE</version>
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -36,12 +34,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.youzan.sz</groupId>
-            <artifactId>base-model</artifactId>
-            <version>${base-model.version}</version>
         </dependency>
 
 

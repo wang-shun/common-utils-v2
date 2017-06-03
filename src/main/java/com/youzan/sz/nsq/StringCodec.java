@@ -4,12 +4,12 @@ import com.youzan.sz.common.util.JsonUtils;
 
 import java.nio.charset.StandardCharsets;
 
+
 /**
- *
  * Created by zhanguo on 16/7/29.
  */
-public class StringCodec<T extends NSQMsg, V> extends AbstractNSQCodec<T, V> {
-
+public class StringCodec<T, V> extends AbstractNSQCodec<T, V> {
+    
     public StringCodec() {
     }
     
