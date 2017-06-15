@@ -13,6 +13,7 @@ public enum AppEnum {
                      FSS(3, "fss", "有赞零售免费版"), //free super store
                      PC(11, "fss", "收银专业版"), //Professional Checkout
                      BEAUTY(21, "beauty", "美业"),
+                     COMERCIAL(31,"comercial","商圈"),
     ;
     private Integer                            aid;
     private String                             shortName;
