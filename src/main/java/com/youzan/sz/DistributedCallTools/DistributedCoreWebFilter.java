@@ -140,20 +140,20 @@ public class DistributedCoreWebFilter implements Filter {
                 return getMethod(methodName, -1, -1, interf);//只按名称再查找一遍
             return null;
         }
-    
+        
         Method targetMethod = null;
-    
+        
         for (Method method : methodList) {
             if (method.getGenericParameterTypes() != null && !method.getGenericParameterTypes().getClass().getName().equals("[Ljava.lang.Class;")) {//泛型优先,数组先判断一次
                 targetMethod = method;
                 break;
             }
-        
+            
             if (method.getGenericParameterTypes() != null && method.getGenericParameterTypes().length > 0 && !method.getGenericParameterTypes()[0].getTypeName().equals("java.lang.Object")) {//对象判断一次
                 targetMethod = method;
                 break;
             }
-        
+            
         }
         if (targetMethod == null)
             targetMethod = methodList.get(0);
@@ -172,7 +172,7 @@ public class DistributedCoreWebFilter implements Filter {
                 // 设置请求的唯一key，方便日志的grep
                 MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
             }
-    
+            
             stack.push(1);
         }
     }
@@ -186,13 +186,13 @@ public class DistributedCoreWebFilter implements Filter {
         try {
             // 设置请求的唯一key，方便日志的grep
             initLogMdc();
-    
+            
             boolean present = false;
             Integer noSession = DistributedContextTools.getNoSession();
             if (noSession != null && noSession == 1) {
                 present = true;
             }
-    
+            
             do {
                 if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     break;
@@ -226,7 +226,7 @@ public class DistributedCoreWebFilter implements Filter {
                 }
                 if (LOGGER.isDebugEnabled())
                     LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
-        
+                
                 if (!present)//没有no_session标志
                     doAuth(m, method, interface1);
                 else {
@@ -235,19 +235,19 @@ public class DistributedCoreWebFilter implements Filter {
                 }
                 String[] types;
                 Object[] args;
-        
+                
                 // 解析json中的参数，并进行对应映射
                 if (readValue.isArray()) {
                     Parameter[] parameters = method.getParameters();
                     int parameterCount = parameters.length;
                     args = new Object[parameterCount];
                     types = new String[parameterCount];
-    
+                    
                     if (parameterCount > 0) {
                         JsonNode jsonNode = readValue.get(0); //取出第一个参数，判断是不是Json对象
                         Parameter parameter;
                         Class<?> parameterType;
-        
+                        
                         try {
                             if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
                                 for (int i = 0; i < parameterCount; i++) {
@@ -269,15 +269,15 @@ public class DistributedCoreWebFilter implements Filter {
                         }
                     }
                 }else if (readValue.isObject()) {  // //参数是Json对象，新的方式 json={"bid":1,"shopId":2}
-    
+                    
                     Parameter[] parameters = method.getParameters();
                     int parameterCount = parameters.length;
                     args = new Object[parameterCount];
                     types = new String[parameterCount];
-    
+                    
                     if (parameterCount > 0) {
                         Parameter parameter;
-        
+                        
                         try {
                             for (int i = 0; i < parameterCount; i++) {
                                 parameter = parameters[i];
@@ -293,20 +293,20 @@ public class DistributedCoreWebFilter implements Filter {
                     args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
                     types = new String[]{method.getParameterTypes()[0].getName()};
                 }
-        
+                
                 // 保存过滤掉系统参数后的结果
                 inv.getArguments()[1] = types;
                 inv.getArguments()[2] = args;
-        
+                
             }
             while (false)
                     ;
-    
+            
         } catch (
-        
+                
                 Throwable e)
-
-
+        
+        
         {
             LOGGER.warn("distributed  error", e);
             clearLogMdc();
@@ -318,9 +318,6 @@ public class DistributedCoreWebFilter implements Filter {
         
         {
             Result result = invoker.invoke(inv);
-            if (DistributedContextTools.getOpenApi()) {
-                
-            }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("result {}", JsonUtils.bean2Json(result.getValue()));
             }
@@ -367,7 +364,7 @@ public class DistributedCoreWebFilter implements Filter {
             }else {
                 return om.readValue(node.toString(), parameterType);
             }
-    
+            
         }else {
             if (parameterType.isArray() || Collection.class.isAssignableFrom(parameterType)) {
                 if (jsonNode.isArray()) {

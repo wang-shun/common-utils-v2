@@ -137,6 +137,7 @@ public class DistributedCoreFilter implements Filter {
                                     }
         
                                     DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
+                                    DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
                                     DistributedContextTools.set(DistributedParamManager.DeviceType.class, "openapi");
                                     DistributedContextTools.set(DistributedParamManager.Aid.class, 1);
         
@@ -378,8 +379,11 @@ public class DistributedCoreFilter implements Filter {
         }else if (invoke.getValue() instanceof Map) {
             // 这种通用调用返回结果也会被转换成map形式，所以这里要进行进一步判断
             String invokeClass;
-            if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
+            int resultCode = ResponseCode.SUCCESS.getCode();
+            //if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
+            if (DistributedContextTools.getOpenApi()) {
                 invokeClass = (String) ((Map) invoke.getValue()).remove("class");
+                resultCode = 200;
             }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
@@ -388,22 +392,30 @@ public class DistributedCoreFilter implements Filter {
                 final ListResult listResult = new ListResult();
                 listResult.setCount((Integer) ((Map) invoke.getValue()).get("count"));
                 listResult.setData((List) data);
-                listResult.setCode(ResponseCode.SUCCESS.getCode());
+                listResult.setCode(resultCode);
                 listResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
                 rpcResult.setValue(listResult);
             }else if (PlainResult.class.getName().equals(invokeClass)) {//返回listResult
                 final Object data = ((Map) invoke.getValue()).get("data");
                 final PlainResult plainResult = new PlainResult<>();
-                plainResult.setCode((Integer) ((Map) invoke.getValue()).get("code"));
+                Integer code = (Integer) ((Map) invoke.getValue()).get("code");
+                if (ResponseCode.SUCCESS.getCode() == code && DistributedContextTools.getOpenApi()) {
+                    code = 200;
+                }
+                plainResult.setCode(code);
                 plainResult.setData(data);
                 plainResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
                 rpcResult.setValue(plainResult);
             }else if (!BaseResponse.class.getName().equals(invokeClass)) {
-                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
+                br = new BaseResponse<>(resultCode, ResponseCode.SUCCESS.getMessage(), invoke.getValue());
                 rpcResult.setValue(br);
             }else {
                 final Object data = ((Map) invoke.getValue()).get("data");
-                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"), (String) ((Map) invoke.getValue()).get("message"), data);
+                Integer code = (Integer) ((Map) invoke.getValue()).get("code");
+                if (ResponseCode.SUCCESS.getCode() == code && DistributedContextTools.getOpenApi()) {
+                    code = 200;
+                }
+                br = new BaseResponse<>(code, (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
             

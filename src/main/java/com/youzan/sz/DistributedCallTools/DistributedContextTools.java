@@ -114,6 +114,13 @@ public class DistributedContextTools {
                 return "distributed.open_api";
             }
         }
+    
+        public static class ApiFormat extends DistributedParam<Boolean> {
+        
+            public static String getName() {
+                return "distributed.api_format";
+            }
+        }
         
         public static class CarmenParam extends DistributedParam<Boolean> {
             
@@ -376,6 +383,15 @@ public class DistributedContextTools {
     
     public static Boolean getOpenApi() {
         Object value = get(DistributedParamManager.OpenApi.class.getCanonicalName());
+        if (value == null) {
+            return false;
+        } else {
+            return (Boolean) value;
+        }
+    }
+    
+    public static Boolean getApiFormat() {
+        Object value = get(DistributedParamManager.ApiFormat.class.getCanonicalName());
         if (value == null) {
             return false;
         } else {
