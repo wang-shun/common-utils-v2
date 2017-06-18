@@ -54,40 +54,31 @@ import java.util.Stack;
 public class DistributedCoreFilter implements Filter {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
+    
     private static final String MDC_TRACE = "MDC_TRACE";
     
-    private boolean isLogMdc(){
-        return LOGGER.isInfoEnabled();
-    }
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
     
     
-    /**
-     * 设置请求的唯一key，方便日志的grep
-     */
-    private void initLogMdc(){
-        if(isLogMdc()){
-            Stack<Integer> stack = stackLocal.get();
-            if(stack.isEmpty()){
-                // 设置请求的唯一key，方便日志的grep
-                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
-            }
-    
-            stack.push(1);
+    public String getThrowableStr(Throwable e) {
+        if (e == null) {
+            return "";
         }
+        
+        ArrayWriter aw = new ArrayWriter();
+        e.printStackTrace(aw);
+        String[] arr = aw.toStringArray();
+        if (arr == null) {
+            return "";
+        }
+        
+        StringBuilder strBuf = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            strBuf.append(arr[i]).append("####");
+        }
+        return strBuf.toString();
     }
     
-    private void clearLogMdc(){
-        if(isLogMdc()){
-            Stack<Integer> stack = stackLocal.get();
-            stack.pop();
-            if(stack.isEmpty()){
-                // 设置请求的唯一key，方便日志的grep
-                MDC.remove(MDC_TRACE);
-                stackLocal.remove();
-            }
-        }
-    }
     
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -117,8 +108,42 @@ public class DistributedCoreFilter implements Filter {
                         // 将系统级的分布式变量放到统一的分布式上下文里面，同时将他们从传入参数中去除
                         for (int i = 0; i < typesTmp.length; i++) {
                             if (DistributedParamManager.isDistributedParam(typesTmp[i])) {
-                                Class<?> key = DistributedParamManager.get(typesTmp[i]);
-                                DistributedContextTools.set(key, argsTmp[i]);
+                                if (DistributedParamManager.CarmenParam.getName().equals(typesTmp[i])) {
+                                    Map<String, Object> carmenParam = (Map<String, Object>) argsTmp[i];
+                                    if (LOGGER.isInfoEnabled()) {
+                                        LOGGER.info("openApi {}", JsonUtils.toJson(carmenParam));
+                                    }
+                                    //设置openApi参数
+        
+                                    Object kdtId = carmenParam.get(DistributedParamManager.KdtId.getCarmenName());
+                                    if (kdtId != null) {
+                                        DistributedContextTools.set(DistributedParamManager.KdtId.class, kdtId);
+                                        DistributedContextTools.set(DistributedParamManager.Bid.class, kdtId);
+                                    }
+        
+                                    Object adminId = carmenParam.get(DistributedParamManager.AdminId.getCarmenName());
+                                    if (adminId != null) {
+                                        DistributedContextTools.set(DistributedParamManager.AdminId.class, adminId);
+                                    }
+        
+                                    Object requestIp = carmenParam.get(DistributedParamManager.RequestIp.getCarmenName());
+                                    if (requestIp != null) {
+                                        DistributedContextTools.set(DistributedParamManager.RequestIp.class, requestIp);
+                                    }
+        
+                                    Object clientId = carmenParam.get(DistributedParamManager.ClientId.getCarmenName());
+                                    if (clientId != null) {
+                                        DistributedContextTools.set(DistributedParamManager.ClientId.class, clientId);
+                                    }
+        
+                                    DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
+                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, "openapi");
+                                    DistributedContextTools.set(DistributedParamManager.Aid.class, 1);
+        
+                                }else {
+                                    Class<?> key = DistributedParamManager.get(typesTmp[i]);
+                                    DistributedContextTools.set(key, argsTmp[i]);
+                                }
                                 continue;
                             }
                             types.add(typesTmp[i]);
@@ -195,6 +220,14 @@ public class DistributedCoreFilter implements Filter {
                     if (identity != null) {
                         DistributedContextTools.set(DistributedParamManager.Identity.class.getCanonicalName(), Integer.valueOf(identity));
                     }
+                    final String clientId = inv.getAttachment(DistributedParamManager.ClientId.class.getCanonicalName());
+                    if (clientId != null) {
+                        DistributedContextTools.set(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
+                    }
+                    final String openApi = inv.getAttachment(DistributedParamManager.OpenApi.class.getCanonicalName());
+                    if (openApi != null) {
+                        DistributedContextTools.set(DistributedParamManager.OpenApi.class.getCanonicalName(), Boolean.valueOf(openApi));
+                    }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
@@ -230,6 +263,8 @@ public class DistributedCoreFilter implements Filter {
                 final String opAdminName = DistributedContextTools.getOpAdminName();
                 final String appVersion = DistributedContextTools.getAppVersion();
                 final Integer noSession = DistributedContextTools.getNoSession();
+                final String clientId = DistributedContextTools.getClientId();
+                final Boolean isOpenApi = DistributedContextTools.getOpenApi();
                 method = inv.getMethodName();
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
@@ -267,6 +302,14 @@ public class DistributedCoreFilter implements Filter {
                 if (noSession != null) {
                     inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
                 }
+    
+                if (clientId != null) {
+                    inv.setAttachment(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
+                }
+    
+                if (isOpenApi != null) {
+                    inv.setAttachment(DistributedParamManager.OpenApi.class.getCanonicalName(), isOpenApi.toString());
+                }
                 
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
@@ -286,6 +329,22 @@ public class DistributedCoreFilter implements Filter {
             }
         }
         
+    }
+    
+    
+    /**
+     * 设置请求的唯一key，方便日志的grep
+     */
+    private void initLogMdc() {
+        if (isLogMdc()) {
+            Stack<Integer> stack = stackLocal.get();
+            if (stack.isEmpty()) {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            }
+            
+            stack.push(1);
+        }
     }
     
     
@@ -357,23 +416,21 @@ public class DistributedCoreFilter implements Filter {
     }
     
     
-    public String getThrowableStr(Throwable e) {
-        if (e == null) {
-            return "";
+    private void clearLogMdc() {
+        if (isLogMdc()) {
+            Stack<Integer> stack = stackLocal.get();
+            stack.pop();
+            if (stack.isEmpty()) {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.remove(MDC_TRACE);
+                stackLocal.remove();
+            }
         }
-        
-        ArrayWriter aw = new ArrayWriter();
-        e.printStackTrace(aw);
-        String[] arr = aw.toStringArray();
-        if (arr == null) {
-            return "";
-        }
-        
-        StringBuilder strBuf = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            strBuf.append(arr[i]).append("####");
-        }
-        return strBuf.toString();
+    }
+    
+    
+    private boolean isLogMdc() {
+        return LOGGER.isInfoEnabled();
     }
     
 }
