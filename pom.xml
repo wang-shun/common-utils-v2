@@ -9,9 +9,9 @@
         <artifactId>dependency-pom</artifactId>
         <version>1.4.4-SNAPSHOT</version>
     </parent>
-    <!-- -->
     <artifactId>common-utils</artifactId>
-    <!--<version>1.4.6-RELEASE</version>-->
+    <version>1.4.9-SNAPSHOT</version>
+
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -35,7 +35,6 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>redis.clients</groupId>
