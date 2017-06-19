@@ -97,10 +97,10 @@ public class ParameterLogAspect {
                     String tab = tabSB.toString();
                     logSB.append(tab).append("method-->").append(stackLog.getMethod()).append(".").append("(").append(stackLog.getParams()).append(")").append(NEW_LINE);
                     logSB.append(tab).append("elapse-->").append("[").append(stackLog.getTimes()).append("ms ").append(timePercent).append("%]").append(NEW_LINE);
-                    if (stackLog.getResult() != null) {
+                    int pre = i - 1;
+                    if (stackLog.getResult() != null && stackLogList.get(pre).getResult() != null) {
                         //优化如果返回结果与上一层的长度一样则认为是一样不重复打印
-                        int pre = i - 1;
-                        if (pre >= 0 && stackLogList.get(pre).getResult().length() == stackLog.getResult().length()) {
+                        if (stackLog.getResult().length() > 64 && pre >= 0 && stackLogList.get(pre).getResult().length() == stackLog.getResult().length()) {
                             logSB.append(tab).append("result-->").append("same length as pre log").append(NEW_LINE).append(NEW_LINE);
                             continue;
                         }
