@@ -59,6 +59,8 @@ public class DistributedCoreFilter implements Filter {
     
     private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
     
+    private static final int CARMEN_SUCCESS_CODE = 200;
+    
     
     public String getThrowableStr(Throwable e) {
         if (e == null) {
@@ -380,13 +382,16 @@ public class DistributedCoreFilter implements Filter {
             // 这种通用调用返回结果也会被转换成map形式，所以这里要进行进一步判断
             String invokeClass;
             int resultCode = ResponseCode.SUCCESS.getCode();
-            //if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
-            if (DistributedContextTools.getOpenApi()) {
+            if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
                 invokeClass = (String) ((Map) invoke.getValue()).remove("class");
-                resultCode = 200;
-            }else {
+            }else if (DistributedContextTools.getOpenApi()) {
+                invokeClass = (String) ((Map) invoke.getValue()).remove("class");
+                resultCode = CARMEN_SUCCESS_CODE;
+            }
+            else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
+            
             if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
                 final Object data = ((Map) invoke.getValue()).get("data");
                 final ListResult listResult = new ListResult();
@@ -400,7 +405,7 @@ public class DistributedCoreFilter implements Filter {
                 final PlainResult plainResult = new PlainResult<>();
                 Integer code = (Integer) ((Map) invoke.getValue()).get("code");
                 if (ResponseCode.SUCCESS.getCode() == code && DistributedContextTools.getOpenApi()) {
-                    code = 200;
+                    code = CARMEN_SUCCESS_CODE;
                 }
                 plainResult.setCode(code);
                 plainResult.setData(data);
@@ -413,7 +418,7 @@ public class DistributedCoreFilter implements Filter {
                 final Object data = ((Map) invoke.getValue()).get("data");
                 Integer code = (Integer) ((Map) invoke.getValue()).get("code");
                 if (ResponseCode.SUCCESS.getCode() == code && DistributedContextTools.getOpenApi()) {
-                    code = 200;
+                    code = CARMEN_SUCCESS_CODE;
                 }
                 br = new BaseResponse<>(code, (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);

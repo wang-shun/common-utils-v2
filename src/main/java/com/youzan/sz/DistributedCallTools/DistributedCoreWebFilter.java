@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.SignOut;
+import com.youzan.sz.common.annotation.CarmenField;
 import com.youzan.sz.common.annotation.WithoutLogging;
 import com.youzan.sz.common.anotations.Admin;
 import com.youzan.sz.common.anotations.Inner;
@@ -27,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.util.ClassUtils;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -197,6 +200,9 @@ public class DistributedCoreWebFilter implements Filter {
                 if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     break;
                 }
+                String[] typesTmp = (String[]) inv.getArguments()[1];
+                Object[] argsTmp = (Object[]) inv.getArguments()[2];
+                
                 //openApi请求处理
                 if (DistributedContextTools.getOpenApi()) {
                     //为openapi请求创建Session
@@ -205,11 +211,32 @@ public class DistributedCoreWebFilter implements Filter {
                         LOGGER.warn("ERROR:{}" + ResponseCode.LOGIN_TIMEOUT.getMessage());
                         throw ResponseCode.LOGIN_TIMEOUT.getBusinessException();
                     }
+                    //解析class中List的类型字段
+                    for (int i = 0; i< typesTmp.length; i++) {
+                        Map<String, Object> paramMap = (Map<String, Object>) argsTmp[i];
+                        String type = typesTmp[i];
+                        Class clazz = Class.forName(type);
+                        Field[] fields = clazz.getDeclaredFields();
+                        for (Field f : fields) {
+                            Class fieldType = f.getType();
+                            Annotation[] annotations = f.getAnnotations();
+                            if (annotations != null && annotations.length > 0) {
+                                for (Annotation annotation : annotations) {
+                                    if (annotation instanceof CarmenField && List.class.isAssignableFrom(fieldType)) {
+                                        Class fieldClazz = ((CarmenField)annotation).clazz();
+                                        Object o = paramMap.get(f.getName());
+                                        List list = JsonUtils.json2ListBean(o.toString(), fieldClazz);
+                                        paramMap.put(f.getName(), list);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
                 
-                String[] typesTmp = (String[]) inv.getArguments()[1];
-                Object[] argsTmp = (Object[]) inv.getArguments()[2];
+               
                 String m = (String) inv.getArguments()[0];
                 // 只处理json类型的接口，其他类型的即可忽略
                 if (argsTmp.length != 1 || !"json".equals(typesTmp[0])) {
