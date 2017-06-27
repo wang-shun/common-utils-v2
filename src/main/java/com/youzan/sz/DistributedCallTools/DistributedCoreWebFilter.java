@@ -59,7 +59,7 @@ public class DistributedCoreWebFilter implements Filter {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(Stack::new);
 
 
     private void clearLogMdc() {
@@ -308,8 +308,8 @@ public class DistributedCoreWebFilter implements Filter {
             return session.getLocalSession();
         }else {
             LOGGER.warn("the session not found for {}", DistributedContextTools.getAdminId());
+            return null;
         }
-        return null;
     }
 
 
