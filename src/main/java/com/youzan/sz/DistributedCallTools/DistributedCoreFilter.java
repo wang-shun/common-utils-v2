@@ -52,60 +52,51 @@ import java.util.Stack;
 @Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -100000)
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
+
     private static final String MDC_TRACE = "MDC_TRACE";
+
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(Stack::new);
     
-    private boolean isLogMdc(){
-        return LOGGER.isInfoEnabled();
-    }
-    
-    
-    /**
-     * 设置请求的唯一key，方便日志的grep
-     */
-    private void initLogMdc(){
-        if(isLogMdc()){
-            Stack<Integer> stack = stackLocal.get();
-            if(stack.isEmpty()){
-                // 设置请求的唯一key，方便日志的grep
-                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
-            }
-    
-            stack.push(1);
+
+    public String getThrowableStr(Throwable e) {
+        if (e == null) {
+            return "";
         }
-    }
-    
-    private void clearLogMdc(){
-        if(isLogMdc()){
-            Stack<Integer> stack = stackLocal.get();
-            stack.pop();
-            if(stack.isEmpty()){
-                // 设置请求的唯一key，方便日志的grep
-                MDC.remove(MDC_TRACE);
-                stackLocal.remove();
-            }
+
+        ArrayWriter aw = new ArrayWriter();
+        e.printStackTrace(aw);
+        String[] arr = aw.toStringArray();
+        if (arr == null) {
+            return "";
         }
+
+        StringBuilder strBuf = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            strBuf.append(arr[i]).append("####");
+        }
+        return strBuf.toString();
     }
-    
+
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        
+
         RpcInvocation inv = (RpcInvocation) invocation;
         String method = "";
         Result invoke = null;
         boolean isSucess = true;
         long t = System.currentTimeMillis();
-        
+
         // provider侧的调用处理
         if (inv instanceof DecodeableRpcInvocation || "true".equals(inv.getAttachment(Constants.GENERIC_KEY))) {
             inv.setAttachment(Constants.ASYNC_KEY, "false");
-            
+
             try {
                 // 设置请求的唯一key，方便日志的grep
                 initLogMdc();
-                
+
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
@@ -127,12 +118,12 @@ public class DistributedCoreFilter implements Filter {
                         // 保存过滤掉系统参数后的结果
                         inv.getArguments()[1] = types.toArray(new String[0]);
                         inv.getArguments()[2] = args.toArray();
-                        
+
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isInfoEnabled()) {
                             LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method, inv.getMethodName(), JsonUtils.bean2Json(argsTmp));
                         }
-                        
+
                         if (invoke.hasException()) {
                             isSucess = false;
                         }
@@ -163,7 +154,7 @@ public class DistributedCoreFilter implements Filter {
                         DistributedContextTools.set(DeviceType.class, deviceType);
                     }
                     final String aid = inv.getAttachment(Aid.class.getCanonicalName());
-                    
+
                     if (aid != null) {
                         DistributedContextTools.set(Aid.class.getCanonicalName(), String.valueOf(aid));
                     }
@@ -205,7 +196,7 @@ public class DistributedCoreFilter implements Filter {
                 LOGGER.warn("normal rpc invoke fail", e);
                 isSucess = false;
                 return new RpcResult(e);
-                
+
             } finally {
                 // 调用结束后要清理掉分布式上下文，不然会有内存泄露和脏数据
                 DistributedContextTools.clear();
@@ -258,16 +249,16 @@ public class DistributedCoreFilter implements Filter {
                 if (opAdminId != null)
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
                 if (opAdminName != null)
-                    inv.setAttachment(OpAdminName.class.getCanonicalName(), opAdminName.toString());
+                    inv.setAttachment(OpAdminName.class.getCanonicalName(), opAdminName);
                 // app版本信息
                 if (appVersion != null) {
-                    inv.setAttachment(DistributedParamManager.AppVersion.class.getCanonicalName(), appVersion.toString());
+                    inv.setAttachment(DistributedParamManager.AppVersion.class.getCanonicalName(), appVersion);
                 }
-                
+
                 if (noSession != null) {
                     inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
                 }
-                
+
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
                     isSucess = false;
@@ -285,10 +276,26 @@ public class DistributedCoreFilter implements Filter {
                 clearLogMdc();
             }
         }
-        
+
     }
-    
-    
+
+
+    /**
+     * 设置请求的唯一key，方便日志的grep
+     */
+    private void initLogMdc() {
+        if (isLogMdc()) {
+            Stack<Integer> stack = stackLocal.get();
+            if (stack.isEmpty()) {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
+            }
+
+            stack.push(1);
+        }
+    }
+
+
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
      */
@@ -298,14 +305,14 @@ public class DistributedCoreFilter implements Filter {
         BaseResponse br = null;
         // 对于异常信息，统一进行包装
         if (invoke.hasException()) {
-            
+
             if (invoke.getException().getCause() instanceof BizException) {
                 BizException be = (BizException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
             }else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
-                
+
             }else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
@@ -347,7 +354,7 @@ public class DistributedCoreFilter implements Filter {
                 br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"), (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
-            
+
         }else if (!(invoke.getValue() instanceof BaseResponse)) {
             br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
             rpcResult.setValue(br);
@@ -355,25 +362,23 @@ public class DistributedCoreFilter implements Filter {
         rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
         return invoke;
     }
-    
-    
-    public String getThrowableStr(Throwable e) {
-        if (e == null) {
-            return "";
+
+
+    private void clearLogMdc() {
+        if (isLogMdc()) {
+            Stack<Integer> stack = stackLocal.get();
+            stack.pop();
+            if (stack.isEmpty()) {
+                // 设置请求的唯一key，方便日志的grep
+                MDC.remove(MDC_TRACE);
+                stackLocal.remove();
+            }
         }
-        
-        ArrayWriter aw = new ArrayWriter();
-        e.printStackTrace(aw);
-        String[] arr = aw.toStringArray();
-        if (arr == null) {
-            return "";
-        }
-        
-        StringBuilder strBuf = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            strBuf.append(arr[i]).append("####");
-        }
-        return strBuf.toString();
     }
-    
+
+
+    private boolean isLogMdc() {
+        return LOGGER.isInfoEnabled();
+    }
+
 }

@@ -93,13 +93,13 @@ public class SessionTools {
     }
 
 
-    public void addDevice(long adminId, String deviceId, int deviceType) {
-        sessionService.addDevice(adminId, deviceId, deviceType);
+    public void addDevice(String deviceId) {
+        sessionService.addDevice(deviceId);
     }
 
 
-    public void createSession(int aid, long bid, long shopId, long adminId, String deviceId, int deviceType) {
-        sessionService.createSession(aid, bid, shopId, adminId, deviceId, deviceType);
+    public void createSession() {
+        sessionService.createSession();
     }
 
 
@@ -140,13 +140,7 @@ public class SessionTools {
     public Map<String, String> getLocalSession() {
         Map<String, String> session = DistributedContextTools.get(SESSION);
         if (session == null) {
-
-            Long adminId = DistributedContextTools.getAdminId();
-            String deviceId = DistributedContextTools.getDeviceId();
-            int deviceType = Integer.parseInt(DistributedContextTools.getDeviceType());
-
-
-            session = sessionService.loadSession(adminId, deviceId, deviceType);
+            session = sessionService.loadSession();
             DistributedContextTools.set(SESSION, session);
         }
         //从session中加载一次
@@ -210,11 +204,11 @@ public class SessionTools {
     /**
      * 更新某一个key的值
      */
-    public void set(long adminId, String deviceId, int deviceType, String key, String value) {
+    public void set(String key, String value) {
         if (StringUtils.isEmpty(value)) {
             throw new BizException(ResponseCode.PARAMETER_ERROR);
         }
-        sessionService.set(adminId, deviceId, deviceType, key, value);
+        sessionService.set(key, value);
         getLocalSession().put(key, value);
     }
 
@@ -227,8 +221,8 @@ public class SessionTools {
     }
 
 
-    public void updateShopBind(int aid, long bid, long shopId, long adminId, int deviceType) {
-        BaseResponse baseResponse = sessionService.updateShopBind(aid, bid, shopId, adminId, deviceType);
+    public void updateShopBind() {
+        final BaseResponse baseResponse = sessionService.updateShopBind();
         if (!baseResponse.isSucc()) {
             LOGGER.warn("update shop bind failed");
         }
