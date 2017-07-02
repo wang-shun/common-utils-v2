@@ -116,33 +116,33 @@ public class DistributedCoreFilter implements Filter {
                                         LOGGER.info("openApi {}", JsonUtils.toJson(carmenParam));
                                     }
                                     //设置openApi参数
-        
+                                    
                                     Object kdtId = carmenParam.get(DistributedParamManager.KdtId.getCarmenName());
                                     if (kdtId != null) {
                                         DistributedContextTools.set(DistributedParamManager.KdtId.class, kdtId);
                                         DistributedContextTools.set(DistributedParamManager.Bid.class, kdtId);
                                     }
-        
+                                    
                                     Object adminId = carmenParam.get(DistributedParamManager.AdminId.getCarmenName());
                                     if (adminId != null) {
                                         DistributedContextTools.set(DistributedParamManager.AdminId.class, adminId);
                                     }
-        
+                                    
                                     Object requestIp = carmenParam.get(DistributedParamManager.RequestIp.getCarmenName());
                                     if (requestIp != null) {
                                         DistributedContextTools.set(DistributedParamManager.RequestIp.class, requestIp);
                                     }
-        
+                                    
                                     Object clientId = carmenParam.get(DistributedParamManager.ClientId.getCarmenName());
                                     if (clientId != null) {
                                         DistributedContextTools.set(DistributedParamManager.ClientId.class, clientId);
                                     }
-        
+                                    
                                     DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
                                     DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
-                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, "openapi");
-                                    DistributedContextTools.set(DistributedParamManager.Aid.class, 1);
-        
+                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.WEB.getValue()));
+                                    DistributedContextTools.set(DistributedParamManager.Aid.class, 1);//todo 暂时不支持零售的aid=2
+                                    
                                 }else {
                                     Class<?> key = DistributedParamManager.get(typesTmp[i]);
                                     DistributedContextTools.set(key, argsTmp[i]);
@@ -305,11 +305,11 @@ public class DistributedCoreFilter implements Filter {
                 if (noSession != null) {
                     inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
                 }
-    
+                
                 if (clientId != null) {
                     inv.setAttachment(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
                 }
-    
+                
                 if (isOpenApi != null) {
                     inv.setAttachment(DistributedParamManager.OpenApi.class.getCanonicalName(), isOpenApi.toString());
                 }
@@ -387,8 +387,7 @@ public class DistributedCoreFilter implements Filter {
             }else if (DistributedContextTools.getOpenApi()) {
                 invokeClass = (String) ((Map) invoke.getValue()).remove("class");
                 resultCode = CARMEN_SUCCESS_CODE;
-            }
-            else {
+            }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
             
@@ -412,6 +411,7 @@ public class DistributedCoreFilter implements Filter {
                 plainResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
                 rpcResult.setValue(plainResult);
             }else if (!BaseResponse.class.getName().equals(invokeClass)) {
+                //todo 此场景openapi还没有测试到
                 br = new BaseResponse<>(resultCode, ResponseCode.SUCCESS.getMessage(), invoke.getValue());
                 rpcResult.setValue(br);
             }else {
