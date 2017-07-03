@@ -366,5 +366,4 @@ public class DistributedCoreWebFilter implements Filter {
             }
         }
     }
-    
 }

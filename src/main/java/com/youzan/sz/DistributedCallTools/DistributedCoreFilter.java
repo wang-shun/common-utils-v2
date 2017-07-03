@@ -57,9 +57,9 @@ public class DistributedCoreFilter implements Filter {
     
     private static final String MDC_TRACE = "MDC_TRACE";
     
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
-    
     private static final int CARMEN_SUCCESS_CODE = 200;
+
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
     
     
     public String getThrowableStr(Throwable e) {
@@ -449,5 +449,4 @@ public class DistributedCoreFilter implements Filter {
     private boolean isLogMdc() {
         return LOGGER.isInfoEnabled();
     }
-    
 }
