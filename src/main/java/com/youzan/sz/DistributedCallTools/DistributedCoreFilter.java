@@ -52,53 +52,53 @@ import java.util.Stack;
 @Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -100000)
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
-    
+
     private static final String MDC_TRACE = "MDC_TRACE";
     
     private static final int CARMEN_SUCCESS_CODE = 200;
 
     private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
-    
-    
+
+
     public String getThrowableStr(Throwable e) {
         if (e == null) {
             return "";
         }
-        
+
         ArrayWriter aw = new ArrayWriter();
         e.printStackTrace(aw);
         String[] arr = aw.toStringArray();
         if (arr == null) {
             return "";
         }
-        
+
         StringBuilder strBuf = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            strBuf.append(arr[i]).append("####");
+        for (String anArr : arr) {
+            strBuf.append(anArr).append("####");
         }
         return strBuf.toString();
     }
-    
-    
+
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        
+
         RpcInvocation inv = (RpcInvocation) invocation;
         String method = "";
         Result invoke = null;
-        boolean isSucess = true;
+        boolean isSuccess = true;
         long t = System.currentTimeMillis();
-        
+
         // provider侧的调用处理
         if (inv instanceof DecodeableRpcInvocation || "true".equals(inv.getAttachment(Constants.GENERIC_KEY))) {
             inv.setAttachment(Constants.ASYNC_KEY, "false");
-            
+
             try {
                 // 设置请求的唯一key，方便日志的grep
                 initLogMdc();
-                
+
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
@@ -116,33 +116,33 @@ public class DistributedCoreFilter implements Filter {
                                         LOGGER.info("openApi {}", JsonUtils.toJson(carmenParam));
                                     }
                                     //设置openApi参数
-                                    
+
                                     Object kdtId = carmenParam.get(DistributedParamManager.KdtId.getCarmenName());
                                     if (kdtId != null) {
                                         DistributedContextTools.set(DistributedParamManager.KdtId.class, kdtId);
                                         DistributedContextTools.set(DistributedParamManager.Bid.class, kdtId);
                                     }
-                                    
+
                                     Object adminId = carmenParam.get(DistributedParamManager.AdminId.getCarmenName());
                                     if (adminId != null) {
                                         DistributedContextTools.set(DistributedParamManager.AdminId.class, adminId);
                                     }
-                                    
+
                                     Object requestIp = carmenParam.get(DistributedParamManager.RequestIp.getCarmenName());
                                     if (requestIp != null) {
                                         DistributedContextTools.set(DistributedParamManager.RequestIp.class, requestIp);
                                     }
-                                    
+
                                     Object clientId = carmenParam.get(DistributedParamManager.ClientId.getCarmenName());
                                     if (clientId != null) {
                                         DistributedContextTools.set(DistributedParamManager.ClientId.class, clientId);
                                     }
-                                    
+
                                     DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
                                     DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
                                     DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.WEB.getValue()));
                                     DistributedContextTools.set(DistributedParamManager.Aid.class, 1);//todo 暂时不支持零售的aid=2
-                                    
+
                                 }else {
                                     Class<?> key = DistributedParamManager.get(typesTmp[i]);
                                     DistributedContextTools.set(key, argsTmp[i]);
@@ -155,32 +155,32 @@ public class DistributedCoreFilter implements Filter {
                         // 保存过滤掉系统参数后的结果
                         inv.getArguments()[1] = types.toArray(new String[0]);
                         inv.getArguments()[2] = args.toArray();
-                        
+
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isInfoEnabled()) {
                             LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method, inv.getMethodName(), JsonUtils.bean2Json(argsTmp));
                         }
-                        
+
                         if (invoke.hasException()) {
-                            isSucess = false;
+                            isSuccess = false;
                         }
                     } catch (Throwable e) {
-                        isSucess = false;
+                        isSuccess = false;
                         invoke = new RpcResult(e);
                     }
                     return dealResult(invoke, inv);
                 }else {// 处理普通的rpc调用，即使用dubbo客户端直接调用的场景
                     String adminId = inv.getAttachment(AdminId.class.getCanonicalName());
                     if (null != adminId) {
-                        DistributedContextTools.set(AdminId.class, Long.valueOf(adminId));
+                        DistributedContextTools.setAttr(AdminId.class, Long.valueOf(adminId));
                     }
                     String requestIp = inv.getAttachment(RequestIp.class.getCanonicalName());
                     if (null != requestIp) {
-                        DistributedContextTools.set(RequestIp.class, requestIp);
+                        DistributedContextTools.setAttr(RequestIp.class, requestIp);
                     }
                     String kdtId = inv.getAttachment(KdtId.class.getCanonicalName());
                     if (null != kdtId) {
-                        DistributedContextTools.set(KdtId.class, Long.valueOf(kdtId));
+                        DistributedContextTools.setAttr(KdtId.class, Long.valueOf(kdtId));
                     }
                     String deviceId = inv.getAttachment(DeviceId.class.getCanonicalName());
                     if (null != deviceId) {
@@ -188,64 +188,64 @@ public class DistributedCoreFilter implements Filter {
                     }
                     String deviceType = inv.getAttachment(DeviceType.class.getCanonicalName());
                     if (null != deviceType) {
-                        DistributedContextTools.set(DeviceType.class, deviceType);
+                        DistributedContextTools.setAttr(DeviceType.class, deviceType);
                     }
-                    final String aid = inv.getAttachment(Aid.class.getCanonicalName());
-                    
+
+                    String aid = inv.getAttachment(Aid.class.getCanonicalName());
                     if (aid != null) {
                         DistributedContextTools.set(Aid.class.getCanonicalName(), String.valueOf(aid));
                     }
-                    final String bId = inv.getAttachment(Bid.class.getCanonicalName());
-                    if (bId != null) {
-                        DistributedContextTools.set(Bid.class.getCanonicalName(), String.valueOf(bId));
+                    String bid = inv.getAttachment(Bid.class.getCanonicalName());
+                    if (bid != null) {
+                        DistributedContextTools.set(Bid.class.getCanonicalName(), String.valueOf(bid));
                     }
-                    final String shopId = inv.getAttachment(ShopId.class.getCanonicalName());
+                    String shopId = inv.getAttachment(ShopId.class.getCanonicalName());
                     if (shopId != null) {
                         DistributedContextTools.set(ShopId.class.getCanonicalName(), String.valueOf(shopId));
                     }
-                    final String opAdminId = inv.getAttachment(OpAdminId.class.getCanonicalName());
+                    String opAdminId = inv.getAttachment(OpAdminId.class.getCanonicalName());
                     if (opAdminId != null) {
                         DistributedContextTools.set(OpAdminId.class.getCanonicalName(), String.valueOf(opAdminId));
                     }
-                    final String opAdminName = inv.getAttachment(OpAdminName.class.getCanonicalName());
+                    String opAdminName = inv.getAttachment(OpAdminName.class.getCanonicalName());
                     if (opAdminName != null) {
                         DistributedContextTools.set(OpAdminName.class.getCanonicalName(), String.valueOf(opAdminName));
                     }
-                    final String appVersion = inv.getAttachment(DistributedParamManager.AppVersion.class.getCanonicalName());
+                    String appVersion = inv.getAttachment(DistributedParamManager.AppVersion.class.getCanonicalName());
                     if (appVersion != null) {
                         DistributedContextTools.set(DistributedParamManager.AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
                     }
-                    final String noSession = inv.getAttachment(DistributedParamManager.NoSession.class.getCanonicalName());
+                    String noSession = inv.getAttachment(DistributedParamManager.NoSession.class.getCanonicalName());
                     if (noSession != null) {
                         DistributedContextTools.set(DistributedParamManager.NoSession.class.getCanonicalName(), String.valueOf(noSession));
                     }
-                    final String identity = inv.getAttachment(DistributedParamManager.Identity.class.getCanonicalName());
+                    String identity = inv.getAttachment(DistributedParamManager.Identity.class.getCanonicalName());
                     if (identity != null) {
                         DistributedContextTools.set(DistributedParamManager.Identity.class.getCanonicalName(), Integer.valueOf(identity));
                     }
-                    final String clientId = inv.getAttachment(DistributedParamManager.ClientId.class.getCanonicalName());
+                    String clientId = inv.getAttachment(DistributedParamManager.ClientId.class.getCanonicalName());
                     if (clientId != null) {
                         DistributedContextTools.set(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
                     }
-                    final String openApi = inv.getAttachment(DistributedParamManager.OpenApi.class.getCanonicalName());
+                    String openApi = inv.getAttachment(DistributedParamManager.OpenApi.class.getCanonicalName());
                     if (openApi != null) {
                         DistributedContextTools.set(DistributedParamManager.OpenApi.class.getCanonicalName(), Boolean.valueOf(openApi));
                     }
                 }
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
-                    isSucess = false;
+                    isSuccess = false;
                 }
                 return invoke;
             } catch (Throwable e) {
                 LOGGER.warn("normal rpc invoke fail", e);
-                isSucess = false;
+                isSuccess = false;
                 return new RpcResult(e);
-                
+
             } finally {
                 // 调用结束后要清理掉分布式上下文，不然会有内存泄露和脏数据
                 DistributedContextTools.clear();
-                LOGGER.info("p:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
+                LOGGER.info("p:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSuccess);
                 clearLogMdc();
             }
         }else {
@@ -258,17 +258,18 @@ public class DistributedCoreFilter implements Filter {
                 String requestIp = DistributedContextTools.getRequestIp();
                 Long KdtId = DistributedContextTools.getKdtId();
                 String deviceId = DistributedContextTools.getDeviceId();
-                final Long bid = DistributedContextTools.getBid();
-                final Integer aid = DistributedContextTools.getAId();
-                final Long shopId = DistributedContextTools.getShopId();
+                Long bid = DistributedContextTools.getBid();
+                Integer aid = DistributedContextTools.getAId();
+                Long shopId = DistributedContextTools.getShopId();
                 String deviceType = DistributedContextTools.getDeviceType();
-                final Long opAdminId = DistributedContextTools.getOpAdminId();
-                final String opAdminName = DistributedContextTools.getOpAdminName();
-                final String appVersion = DistributedContextTools.getAppVersion();
-                final Integer noSession = DistributedContextTools.getNoSession();
-                final String clientId = DistributedContextTools.getClientId();
-                final Boolean isOpenApi = DistributedContextTools.getOpenApi();
+                Long opAdminId = DistributedContextTools.getOpAdminId();
+                String opAdminName = DistributedContextTools.getOpAdminName();
+                String appVersion = DistributedContextTools.getAppVersion();
+                Integer noSession = DistributedContextTools.getNoSession();
+                String clientId = DistributedContextTools.getClientId();
+                Boolean isOpenApi = DistributedContextTools.getOpenApi();
                 method = inv.getMethodName();
+
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
                 }
@@ -276,7 +277,7 @@ public class DistributedCoreFilter implements Filter {
                     inv.setAttachment(RequestIp.class.getCanonicalName(), requestIp);
                 }
                 if (null != KdtId) {
-                    inv.setAttachment(DistributedParamManager.KdtId.class.getCanonicalName(), KdtId + "");
+                    inv.setAttachment(KdtId.class.getCanonicalName(), KdtId + "");
                 }
                 if (null != deviceId) {
                     inv.setAttachment(DeviceId.class.getCanonicalName(), deviceId);
@@ -296,45 +297,45 @@ public class DistributedCoreFilter implements Filter {
                 if (opAdminId != null)
                     inv.setAttachment(OpAdminId.class.getCanonicalName(), opAdminId.toString());
                 if (opAdminName != null)
-                    inv.setAttachment(OpAdminName.class.getCanonicalName(), opAdminName.toString());
+                    inv.setAttachment(OpAdminName.class.getCanonicalName(), opAdminName);
                 // app版本信息
                 if (appVersion != null) {
-                    inv.setAttachment(DistributedParamManager.AppVersion.class.getCanonicalName(), appVersion.toString());
+                    inv.setAttachment(DistributedParamManager.AppVersion.class.getCanonicalName(), appVersion);
                 }
-                
+
                 if (noSession != null) {
                     inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
                 }
-                
+
                 if (clientId != null) {
                     inv.setAttachment(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
                 }
-                
+
                 if (isOpenApi != null) {
                     inv.setAttachment(DistributedParamManager.OpenApi.class.getCanonicalName(), isOpenApi.toString());
                 }
-                
+
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
-                    isSucess = false;
+                    isSuccess = false;
                 }
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("outArgs[{}]", JsonUtils.bean2Json(invoke.getValue()));
                 }
                 return invoke;
             } catch (Throwable e) {
-                LOGGER.warn("consumber invoke fail", e);
-                isSucess = false;
+                LOGGER.warn("consumer invoke fail", e);
+                isSuccess = false;
                 return new RpcResult(e);
             } finally {
-                LOGGER.info("c:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSucess);
+                LOGGER.info("c:|" + method + "|" + (System.currentTimeMillis() - t) + "|" + isSuccess);
                 clearLogMdc();
             }
         }
-        
+
     }
-    
-    
+
+
     /**
      * 设置请求的唯一key，方便日志的grep
      */
@@ -345,12 +346,12 @@ public class DistributedCoreFilter implements Filter {
                 // 设置请求的唯一key，方便日志的grep
                 MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
             }
-            
+
             stack.push(1);
         }
     }
-    
-    
+
+
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
      */
@@ -360,14 +361,14 @@ public class DistributedCoreFilter implements Filter {
         BaseResponse br = null;
         // 对于异常信息，统一进行包装
         if (invoke.hasException()) {
-            
+
             if (invoke.getException().getCause() instanceof BizException) {
                 BizException be = (BizException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
             }else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
-                
+
             }else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
@@ -390,7 +391,7 @@ public class DistributedCoreFilter implements Filter {
             }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
-            
+
             if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
                 final Object data = ((Map) invoke.getValue()).get("data");
                 final ListResult listResult = new ListResult();
@@ -423,7 +424,7 @@ public class DistributedCoreFilter implements Filter {
                 br = new BaseResponse<>(code, (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
-            
+
         }else if (!(invoke.getValue() instanceof BaseResponse)) {
             br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
             rpcResult.setValue(br);
@@ -431,8 +432,8 @@ public class DistributedCoreFilter implements Filter {
         rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
         return invoke;
     }
-    
-    
+
+
     private void clearLogMdc() {
         if (isLogMdc()) {
             Stack<Integer> stack = stackLocal.get();
@@ -444,9 +445,10 @@ public class DistributedCoreFilter implements Filter {
             }
         }
     }
-    
-    
+
+
     private boolean isLogMdc() {
         return LOGGER.isInfoEnabled();
     }
+
 }
