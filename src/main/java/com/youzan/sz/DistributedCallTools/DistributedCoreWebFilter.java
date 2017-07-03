@@ -55,11 +55,22 @@ public class DistributedCoreWebFilter implements Filter {
 
     private static final String MDC_TRACE = "MDC_TRACE";
 
+    private static final String CARMEN_PARAM = "CarmenParam";
+
+    //openApi默认参数
+    private static final String KDT_ID = "kdtId";
+
+    private static final String ADMIN_ID = "adminId";
+
+    private static final String REQUEST_IP = "requestIp";
+
+    private static final String CLIENT_ID = "clientId";
+
     static {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(Stack::new);
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
 
 
     private void clearLogMdc() {
@@ -181,18 +192,27 @@ public class DistributedCoreWebFilter implements Filter {
             if (noSession != null && noSession == 1) {
                 present = true;
             }
+
             do {
                 if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     break;
                 }
-
                 String m = (String) inv.getArguments()[0];
                 String[] typesTmp = (String[]) inv.getArguments()[1];
                 Object[] argsTmp = (Object[]) inv.getArguments()[2];
+
+                //openapi暂时使用全json数据
+                if (DistributedContextTools.getOpenApi()) {
+                    if (typesTmp.length == 1) {
+                        typesTmp[0] = "json";
+                    }
+                }
+
                 // 只处理json类型的接口，其他类型的即可忽略
                 if (argsTmp.length != 1 || !"json".equals(typesTmp[0])) {
                     break;
                 }
+
                 JsonNode readValue = om.readValue((String) argsTmp[0], JsonNode.class);
                 Class<?> interface1 = invoker.getInterface();
                 int inputParamCount = readValue.isArray() ? readValue.size() : 1;
@@ -278,6 +298,7 @@ public class DistributedCoreWebFilter implements Filter {
 
             }
             while (false);
+
         } catch (Throwable e) {
             LOGGER.warn("distributed  error", e);
             clearLogMdc();
@@ -293,7 +314,6 @@ public class DistributedCoreWebFilter implements Filter {
         } finally {
             clearLogMdc();
         }
-
     }
 
 
@@ -346,5 +366,4 @@ public class DistributedCoreWebFilter implements Filter {
             }
         }
     }
-
 }

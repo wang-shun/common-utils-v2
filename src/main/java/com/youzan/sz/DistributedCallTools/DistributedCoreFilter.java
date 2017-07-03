@@ -17,12 +17,17 @@ import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Aid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AppVersion;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Bid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ClientId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceType;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Identity;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.KdtId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.NoSession;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpenApi;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
 import com.youzan.sz.common.exceptions.BizException;
@@ -56,8 +61,10 @@ public class DistributedCoreFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
 
     private static final String MDC_TRACE = "MDC_TRACE";
+    
+    private static final int CARMEN_SUCCESS_CODE = 200;
 
-    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(Stack::new);
+    private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
 
 
     public String getThrowableStr(Throwable e) {
@@ -108,8 +115,43 @@ public class DistributedCoreFilter implements Filter {
                         // 将系统级的分布式变量放到统一的分布式上下文里面，同时将他们从传入参数中去除
                         for (int i = 0; i < typesTmp.length; i++) {
                             if (DistributedParamManager.isDistributedParam(typesTmp[i])) {
-                                Class<?> key = DistributedParamManager.get(typesTmp[i]);
-                                DistributedContextTools.set(key, argsTmp[i]);
+                                if (DistributedParamManager.CarmenParam.getName().equals(typesTmp[i])) {
+                                    Map<String, Object> carmenParam = (Map<String, Object>) argsTmp[i];
+                                    if (LOGGER.isInfoEnabled()) {
+                                        LOGGER.info("openApi {}", JsonUtils.toJson(carmenParam));
+                                    }
+                                    //设置openApi参数
+
+                                    Object kdtId = carmenParam.get(DistributedParamManager.KdtId.getCarmenName());
+                                    if (kdtId != null) {
+                                        DistributedContextTools.set(DistributedParamManager.KdtId.class, kdtId);
+                                        DistributedContextTools.set(DistributedParamManager.Bid.class, kdtId);
+                                    }
+
+                                    Object adminId = carmenParam.get(DistributedParamManager.AdminId.getCarmenName());
+                                    if (adminId != null) {
+                                        DistributedContextTools.set(DistributedParamManager.AdminId.class, adminId);
+                                    }
+
+                                    Object requestIp = carmenParam.get(DistributedParamManager.RequestIp.getCarmenName());
+                                    if (requestIp != null) {
+                                        DistributedContextTools.set(DistributedParamManager.RequestIp.class, requestIp);
+                                    }
+
+                                    Object clientId = carmenParam.get(DistributedParamManager.ClientId.getCarmenName());
+                                    if (clientId != null) {
+                                        DistributedContextTools.set(DistributedParamManager.ClientId.class, clientId);
+                                    }
+
+                                    DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
+                                    DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
+                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.WEB.getValue()));
+                                    DistributedContextTools.set(DistributedParamManager.Aid.class, 1);//todo 暂时不支持零售的aid=2
+
+                                }else {
+                                    Class<?> key = DistributedParamManager.get(typesTmp[i]);
+                                    DistributedContextTools.set(key, argsTmp[i]);
+                                }
                                 continue;
                             }
                             types.add(typesTmp[i]);
@@ -174,17 +216,25 @@ public class DistributedCoreFilter implements Filter {
                     if (opAdminName != null) {
                         DistributedContextTools.set(OpAdminName.class.getCanonicalName(), String.valueOf(opAdminName));
                     }
-                    String appVersion = inv.getAttachment(DistributedParamManager.AppVersion.class.getCanonicalName());
+                    String appVersion = inv.getAttachment(AppVersion.class.getCanonicalName());
                     if (appVersion != null) {
-                        DistributedContextTools.set(DistributedParamManager.AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
+                        DistributedContextTools.set(AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
                     }
-                    String noSession = inv.getAttachment(DistributedParamManager.NoSession.class.getCanonicalName());
+                    String noSession = inv.getAttachment(NoSession.class.getCanonicalName());
                     if (noSession != null) {
-                        DistributedContextTools.set(DistributedParamManager.NoSession.class.getCanonicalName(), String.valueOf(noSession));
+                        DistributedContextTools.set(NoSession.class.getCanonicalName(), String.valueOf(noSession));
                     }
-                    String identity = inv.getAttachment(DistributedParamManager.Identity.class.getCanonicalName());
+                    String identity = inv.getAttachment(Identity.class.getCanonicalName());
                     if (identity != null) {
-                        DistributedContextTools.set(DistributedParamManager.Identity.class.getCanonicalName(), Integer.valueOf(identity));
+                        DistributedContextTools.set(Identity.class.getCanonicalName(), Integer.valueOf(identity));
+                    }
+                    String clientId = inv.getAttachment(ClientId.class.getCanonicalName());
+                    if (clientId != null) {
+                        DistributedContextTools.set(ClientId.class.getCanonicalName(), clientId);
+                    }
+                    String openApi = inv.getAttachment(OpenApi.class.getCanonicalName());
+                    if (openApi != null) {
+                        DistributedContextTools.set(OpenApi.class.getCanonicalName(), Boolean.valueOf(openApi));
                     }
                 }
                 invoke = invoker.invoke(inv);
@@ -221,6 +271,8 @@ public class DistributedCoreFilter implements Filter {
                 String opAdminName = DistributedContextTools.getOpAdminName();
                 String appVersion = DistributedContextTools.getAppVersion();
                 Integer noSession = DistributedContextTools.getNoSession();
+                String clientId = DistributedContextTools.getClientId();
+                Boolean isOpenApi = DistributedContextTools.getOpenApi();
                 method = inv.getMethodName();
 
                 if (null != adminId) {
@@ -258,6 +310,14 @@ public class DistributedCoreFilter implements Filter {
 
                 if (noSession != null) {
                     inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
+                }
+
+                if (clientId != null) {
+                    inv.setAttachment(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
+                }
+
+                if (isOpenApi != null) {
+                    inv.setAttachment(DistributedParamManager.OpenApi.class.getCanonicalName(), isOpenApi.toString());
                 }
 
                 invoke = invoker.invoke(inv);
@@ -327,32 +387,46 @@ public class DistributedCoreFilter implements Filter {
         }else if (invoke.getValue() instanceof Map) {
             // 这种通用调用返回结果也会被转换成map形式，所以这里要进行进一步判断
             String invokeClass;
+            int resultCode = ResponseCode.SUCCESS.getCode();
             if ("true".equals(invocation.getAttachment(CarmenCodec.CARMEN_CODEC))) {
                 invokeClass = (String) ((Map) invoke.getValue()).remove("class");
+            }else if (DistributedContextTools.getOpenApi()) {
+                invokeClass = (String) ((Map) invoke.getValue()).remove("class");
+                resultCode = CARMEN_SUCCESS_CODE;
             }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
+
             if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
                 final Object data = ((Map) invoke.getValue()).get("data");
                 final ListResult listResult = new ListResult();
                 listResult.setCount((Integer) ((Map) invoke.getValue()).get("count"));
                 listResult.setData((List) data);
-                listResult.setCode(ResponseCode.SUCCESS.getCode());
+                listResult.setCode(resultCode);
                 listResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
                 rpcResult.setValue(listResult);
             }else if (PlainResult.class.getName().equals(invokeClass)) {//返回listResult
                 final Object data = ((Map) invoke.getValue()).get("data");
                 final PlainResult plainResult = new PlainResult<>();
-                plainResult.setCode((Integer) ((Map) invoke.getValue()).get("code"));
+                Integer code = (Integer) ((Map) invoke.getValue()).get("code");
+                if (ResponseCode.SUCCESS.getCode() == code && DistributedContextTools.getOpenApi()) {
+                    code = CARMEN_SUCCESS_CODE;
+                }
+                plainResult.setCode(code);
                 plainResult.setData(data);
                 plainResult.setMessage((String) ((Map) invoke.getValue()).get("message"));
                 rpcResult.setValue(plainResult);
             }else if (!BaseResponse.class.getName().equals(invokeClass)) {
-                br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
+                //todo 此场景openapi还没有测试到
+                br = new BaseResponse<>(resultCode, ResponseCode.SUCCESS.getMessage(), invoke.getValue());
                 rpcResult.setValue(br);
             }else {
                 final Object data = ((Map) invoke.getValue()).get("data");
-                br = new BaseResponse<>((Integer) ((Map) invoke.getValue()).get("code"), (String) ((Map) invoke.getValue()).get("message"), data);
+                Integer code = (Integer) ((Map) invoke.getValue()).get("code");
+                if (ResponseCode.SUCCESS.getCode() == code && DistributedContextTools.getOpenApi()) {
+                    code = CARMEN_SUCCESS_CODE;
+                }
+                br = new BaseResponse<>(code, (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
 

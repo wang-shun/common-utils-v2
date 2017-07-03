@@ -8,13 +8,13 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceType;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DistributedParam;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Identity;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.KdtId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.NoSession;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
-import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Identity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +34,10 @@ public class DistributedContextTools {
             
             public static String getName() {
                 return "distributed.admin_id";
+            }
+            
+            public static String getCarmenName() {
+                return "adminId";
             }
         }
         
@@ -75,6 +79,10 @@ public class DistributedContextTools {
             public static String getName() {
                 return "distributed.kdt_id";
             }
+            
+            public static String getCarmenName() {
+                return "kdtId";
+            }
         }
         
         
@@ -82,6 +90,42 @@ public class DistributedContextTools {
             
             public static String getName() {
                 return "distributed.request_ip";
+            }
+            
+            public static String getCarmenName() {
+                return "requestIp";
+            }
+        }
+        
+        public static class ClientId extends DistributedParam<String> {
+            
+            public static String getName() {
+                return "distributed.client_id";
+            }
+            
+            public static String getCarmenName() {
+                return "clientId";
+            }
+        }
+        
+        public static class OpenApi extends DistributedParam<Boolean> {
+            
+            public static String getName() {
+                return "distributed.open_api";
+            }
+        }
+    
+        public static class ApiFormat extends DistributedParam<Boolean> {
+        
+            public static String getName() {
+                return "distributed.api_format";
+            }
+        }
+        
+        public static class CarmenParam extends DistributedParam<Boolean> {
+            
+            public static String getName() {
+                return "CarmenParam";
             }
         }
         
@@ -132,14 +176,14 @@ public class DistributedContextTools {
                 return "distributed.no_session";
             }
         }
-    
-        public static class Identity extends DistributedParam<Integer> {
         
+        public static class Identity extends DistributedParam<Integer> {
+            
             public static String getName() {
                 return "distributed.identity";
             }
         }
-    
+        
         private static Map<String, Class<?>> cache = new HashMap<>();
         
         static {
@@ -157,6 +201,8 @@ public class DistributedContextTools {
             cache.put(AppVersion.getName(), AppVersion.class);
             cache.put(NoSession.getName(), NoSession.class);
             cache.put(Identity.getName(), Identity.class);
+            cache.put(ClientId.getName(), ClientId.class);
+            cache.put(CarmenParam.getName(), CarmenParam.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
@@ -171,6 +217,8 @@ public class DistributedContextTools {
             cache.put(AppVersion.class.getCanonicalName(), AppVersion.class);
             cache.put(NoSession.class.getCanonicalName(), NoSession.class);
             cache.put(Identity.class.getCanonicalName(), Identity.class);
+            cache.put(ClientId.class.getCanonicalName(), ClientId.class);
+            cache.put(CarmenParam.class.getCanonicalName(), CarmenParam.class);
         }
         
         public static Class<?> get(Class<?> param) {
@@ -329,6 +377,29 @@ public class DistributedContextTools {
         return get(RequestIp.class.getCanonicalName());
     }
     
+    public static String getClientId() {
+        return get(DistributedParamManager.ClientId.class.getCanonicalName());
+    }
+    
+    public static Boolean getOpenApi() {
+        Object value = get(DistributedParamManager.OpenApi.class.getCanonicalName());
+        if (value == null) {
+            return false;
+        } else {
+            return (Boolean) value;
+        }
+    }
+    
+    public static Boolean getApiFormat() {
+        Object value = get(DistributedParamManager.ApiFormat.class.getCanonicalName());
+        if (value == null) {
+            return false;
+        } else {
+            return (Boolean) value;
+        }
+    }
+    
+    
     
     public static String getDeviceId() {
         return get(DeviceId.class.getCanonicalName());
@@ -376,3 +447,4 @@ public class DistributedContextTools {
     }
     
 }
+  

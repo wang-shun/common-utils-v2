@@ -31,9 +31,23 @@ public class ParameterLogAspect {
     
     private ThreadLocal<List<StackLog>> listLocal = new ThreadLocal<>();
     
-    private ThreadLocal<Throwable> throwLocal = new ThreadLocal<>();
+    private ThreadLocal<Throwable> throwableThreadLocal = new ThreadLocal<>();
     
     private int maxLength = 1024;
+    
+    private boolean logAll = false;
+    
+    private boolean logFirst = true;
+    
+    
+    public void setLogAll(boolean logAll) {
+        this.logAll = logAll;
+    }
+    
+    
+    public void setLogFirst(boolean logFirst) {
+        this.logFirst = logFirst;
+    }
     
     
     public ParameterLogAspect() {
@@ -43,81 +57,120 @@ public class ParameterLogAspect {
     
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         Object result = null;
-        MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
-        Method method = methodSignature.getMethod();
         long beginTime = System.currentTimeMillis();
-        StringBuilder sb = new StringBuilder();
         try {
-            //记录日志--入栈
-            if (LOGGER.isInfoEnabled()) {
-                StackLog stackLog = new StackLog();
-                sb.append(method.getDeclaringClass().getCanonicalName()).append(".").append(method.getName());
-                stackLog.setMethod(sb.toString());
-                String params = JsonUtils.toJson(pjp.getArgs());
-                stackLog.setParams(params);
-                stackLog.setLevel(getStackLocal().size());
-                addStackEnter(stackLog);
-            }
-            
-            //执行方法
+            MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
+            Method method = methodSignature.getMethod();
+            StringBuilder sb = new StringBuilder();
+            Stack<StackLog> stacks = getStackLocal();
+            //记录日志--调用方法和参数入栈
+            StackLog stackLog = new StackLog();
+            sb.append(method.getDeclaringClass().getCanonicalName()).append("#").append(method.getName());
+            stackLog.setMethod(sb.toString());
+            stackLog.setParams(pjp.getArgs());
+            stackLog.setLevel(stacks.size());
+            //同时保存到list和stack
+            addStackEnter(stackLog);
+        } catch (Throwable throwable) {
+            LOGGER.warn("aop log error", throwable);
+        }
+        
+        
+        //执行方法
+        try {
             result = pjp.proceed();
-            return result;
         } catch (Throwable t) {
-            if (LOGGER.isInfoEnabled()) {
-                if (throwLocal.get() == null) {
-                    throwLocal.set(t);
-                }
-            }
+            throwableThreadLocal.set(t);
+            processResult(beginTime, result);
             throw t;
-        } finally {
-            if (LOGGER.isInfoEnabled()) {
-                //计时
-                long times = System.currentTimeMillis() - beginTime;
-                //出参
-                StackLog stack = getStackLocal().pop();
-                stack.setTimes(times);
-                // TODO: 2017/4/6 判断是否只需要把最后一个返回结果打印出来
-                if (AopUtils.isCglibProxy(result)) {
-                    stack.setResult(result.toString());
-                }else {
-                    String json = JsonUtils.toJson(result);
-                    if (json != null && json.length() > maxLength) {
-                        json = json.substring(0, maxLength) + "... ...(result is longer than " + maxLength + " want more? you can set the maxLength)";
+        }
+        
+        //记录日志--返回结果入栈
+        processResult(beginTime, result);
+        return result;
+    }
+    
+    
+    private void processResult(long beginTime, Object result) {
+        try {
+            
+            
+            //计时
+            long times = System.currentTimeMillis() - beginTime;
+            //出参
+            Stack<StackLog> stacks = getStackLocal();
+            StackLog stack = stacks.pop();
+            stack.setTimes(times);
+            stack.setResult(result);
+            
+            if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
+                Throwable throwable = throwableThreadLocal.get();
+                List<StackLog> stackLogList = getListLocal();
+                //如果没有抛错且不需要全部打印且需要打印第一层函数
+                if (throwable == null && !logAll) {
+                    if (logFirst) {
+                        stackLogList = new ArrayList<>();
+                        stackLogList.add(getListLocal().get(0));
+                    }else {
+                        clearStack();
+                        return;
                     }
-                    stack.setResult(json);
                 }
                 
-                if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
-                    List<StackLog> stackLogList = getListLocal();
-                    StackLog first = stackLogList.get(0);
-                    double total = (double) first.getTimes();
-                    NumberFormat numberFormat = NumberFormat.getInstance();
-                    numberFormat.setMaximumFractionDigits(0);
-                    StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
-                    for (StackLog stackLog : stackLogList) {
-                        String timePercent = numberFormat.format(stackLog.getTimes() / total * 100);
-                        StringBuffer tabSB = new StringBuffer();
-                        for (int t = 0; t < stackLog.getLevel(); t++) {
-                            tabSB.append("\t");
-                        }
-                        String tab = tabSB.toString();
-                        logSB.append(tab).append("method-->").append(stackLog.getMethod()).append(".").append("(").append(stackLog.getParams()).append(")").append(NEW_LINE);
-                        logSB.append(tab).append("elapse-->").append("[").append(stackLog.getTimes()).append("ms ").append(timePercent).append("%]").append(NEW_LINE);
-                        if (stackLog.getResult() != null) {
-                            logSB.append(tab).append("result-->").append(stackLog.getResult()).append(NEW_LINE).append(NEW_LINE);
-                        }
+                StackLog first = stackLogList.get(0);
+                double total = (double) first.getTimes();
+                NumberFormat numberFormat = NumberFormat.getInstance();
+                numberFormat.setMaximumFractionDigits(0);
+                StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
+                for (int i = 0; i < stackLogList.size(); i++) {
+                    StackLog stackLog = stackLogList.get(i);
+                    String timePercent = numberFormat.format(stackLog.getTimes() / total * 100);
+                    StringBuffer tabSB = new StringBuffer();
+                    for (int t = 0; t < stackLog.getLevel(); t++) {
+                        tabSB.append("\t");
                     }
-                    logSB.append("------------end------------");
-                    Throwable t = throwLocal.get();
-                    if (t == null) {
-                        LOGGER.info(logSB.toString());
-                    }else {
-                        LOGGER.error(logSB.toString(), t);
+                    String tab = tabSB.toString();
+                    logSB.append(tab).append("method-->").append(stackLog.getMethod()).append("(").append(toJson(stackLog.getParams())).append(")").append(NEW_LINE);
+                    logSB.append(tab).append("elapse-->").append("[").append(stackLog.getTimes()).append("ms ").append(timePercent).append("%]").append(NEW_LINE);
+                    String stackResult = toJson(stackLog.getResult());
+                    //优化如果返回结果与上一层的长度一样则认为是一样不重复打印
+                    int pre = i - 1;
+                    if (stackResult.length() > 64 && pre >= 0 && toJson(stackLogList.get(pre).getResult()).length() == stackResult.length()) {
+                        logSB.append(tab).append("result-->").append("same length as pre log").append(NEW_LINE).append(NEW_LINE);
+                        continue;
                     }
-                    getListLocal().clear();
-                    throwLocal.set(null);
+                    if (stackResult.length() > maxLength) {
+                        stackResult = stackResult.substring(0, maxLength) + "!result is longer than " + maxLength + "!";
+                    }
+                    logSB.append(tab).append("result-->").append(stackResult).append(NEW_LINE);
                 }
+                logSB.append("------------end------------");
+                
+                if (throwable != null) {
+                    LOGGER.warn(logSB.toString(), throwable);
+                }else {
+                    LOGGER.info(logSB.toString());
+                }
+                clearStack();
             }
+        } catch (Throwable throwable) {
+            LOGGER.warn("aop log error", throwable);
+        }
+    }
+    
+    
+    private void clearStack() {
+        getStackLocal().clear();
+        getListLocal().clear();
+        throwableThreadLocal.set(null);
+    }
+    
+    
+    private String toJson(Object o) {
+        if (AopUtils.isCglibProxy(o)) {
+            return o.toString();
+        }else {
+            return JsonUtils.toJson(o);
         }
     }
     
@@ -166,13 +219,13 @@ public class ParameterLogAspect {
         
         private String method;
         
-        private String params;
+        private Object[] params;
         
         private int level;
         
         private long times;
         
-        private String result;
+        private Object result;
         
         private List<StackLog> list;
         
@@ -207,22 +260,22 @@ public class ParameterLogAspect {
         }
         
         
-        public String getParams() {
+        public Object[] getParams() {
             return params;
         }
         
         
-        public void setParams(String params) {
+        public void setParams(Object[] params) {
             this.params = params;
         }
         
         
-        public String getResult() {
+        public Object getResult() {
             return result;
         }
         
         
-        public void setResult(String result) {
+        public void setResult(Object result) {
             this.result = result;
         }
         
@@ -236,5 +289,14 @@ public class ParameterLogAspect {
             this.times = times;
         }
         
+    }
+    
+    
+    public static void main(String[] args) {
+        Stack<Integer> stack = new Stack<>();
+        stack.push(1);
+        stack.push(2);
+        stack.push(3);
+        System.out.println(stack.get(stack.size() - 1));
     }
 }
