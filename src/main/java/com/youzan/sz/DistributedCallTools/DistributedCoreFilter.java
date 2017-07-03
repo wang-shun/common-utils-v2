@@ -17,12 +17,17 @@ import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Aid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AppVersion;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Bid;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ClientId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeviceType;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Identity;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.KdtId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.NoSession;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpenApi;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
 import com.youzan.sz.common.exceptions.BizException;
@@ -211,25 +216,25 @@ public class DistributedCoreFilter implements Filter {
                     if (opAdminName != null) {
                         DistributedContextTools.set(OpAdminName.class.getCanonicalName(), String.valueOf(opAdminName));
                     }
-                    String appVersion = inv.getAttachment(DistributedParamManager.AppVersion.class.getCanonicalName());
+                    String appVersion = inv.getAttachment(AppVersion.class.getCanonicalName());
                     if (appVersion != null) {
-                        DistributedContextTools.set(DistributedParamManager.AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
+                        DistributedContextTools.set(AppVersion.class.getCanonicalName(), String.valueOf(appVersion));
                     }
-                    String noSession = inv.getAttachment(DistributedParamManager.NoSession.class.getCanonicalName());
+                    String noSession = inv.getAttachment(NoSession.class.getCanonicalName());
                     if (noSession != null) {
-                        DistributedContextTools.set(DistributedParamManager.NoSession.class.getCanonicalName(), String.valueOf(noSession));
+                        DistributedContextTools.set(NoSession.class.getCanonicalName(), String.valueOf(noSession));
                     }
-                    String identity = inv.getAttachment(DistributedParamManager.Identity.class.getCanonicalName());
+                    String identity = inv.getAttachment(Identity.class.getCanonicalName());
                     if (identity != null) {
-                        DistributedContextTools.set(DistributedParamManager.Identity.class.getCanonicalName(), Integer.valueOf(identity));
+                        DistributedContextTools.set(Identity.class.getCanonicalName(), Integer.valueOf(identity));
                     }
-                    String clientId = inv.getAttachment(DistributedParamManager.ClientId.class.getCanonicalName());
+                    String clientId = inv.getAttachment(ClientId.class.getCanonicalName());
                     if (clientId != null) {
-                        DistributedContextTools.set(DistributedParamManager.ClientId.class.getCanonicalName(), clientId);
+                        DistributedContextTools.set(ClientId.class.getCanonicalName(), clientId);
                     }
-                    String openApi = inv.getAttachment(DistributedParamManager.OpenApi.class.getCanonicalName());
+                    String openApi = inv.getAttachment(OpenApi.class.getCanonicalName());
                     if (openApi != null) {
-                        DistributedContextTools.set(DistributedParamManager.OpenApi.class.getCanonicalName(), Boolean.valueOf(openApi));
+                        DistributedContextTools.set(OpenApi.class.getCanonicalName(), Boolean.valueOf(openApi));
                     }
                 }
                 invoke = invoker.invoke(inv);
