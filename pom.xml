@@ -11,7 +11,7 @@
     </parent>
     <!-- -->
     <artifactId>common-utils</artifactId>
-    <version>1.4.9-RELEASE</version>
+    <version>1.4.11-REALEASE</version>
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
