@@ -93,6 +93,9 @@ public final class PushMsgClient {
         pushMsgDTO.setSendType(SendType.SHOP_ROLE.getValue());
         pushMsgDTO.addStaffRecv(staffDTO);
         pushMsgDTO.setParams(params);
+        if(staffDTO.getAid() != null){
+            pushMsgDTO.setAid(staffDTO.getAid());
+        }
         pushMsg(pushMsgDTO);
     }
 
