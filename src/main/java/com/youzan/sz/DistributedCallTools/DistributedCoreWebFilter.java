@@ -192,112 +192,121 @@ public class DistributedCoreWebFilter implements Filter {
             if (noSession != null && noSession == 1) {
                 present = true;
             }
-
-            do {
-                if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
-                    break;
+            if (DistributedContextTools.getOpenApi()) {
+                //针对openapi的调用都需要load session
+                Map<String, String> map = loadSession();
+                if (map == null) {
+                    LOGGER.warn("ERROR:" + ResponseCode.LOGIN_TIMEOUT.getMessage());
+                    throw ResponseCode.LOGIN_TIMEOUT.getBusinessException();
                 }
-                String m = (String) inv.getArguments()[0];
-                String[] typesTmp = (String[]) inv.getArguments()[1];
-                Object[] argsTmp = (Object[]) inv.getArguments()[2];
+            } else {
+                do {
+                    if (!inv.getMethodName().equals(Constants.$INVOKE) || inv.getArguments() == null || inv.getArguments().length != 3 || invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
+                        break;
+                    }
+                    String m = (String) inv.getArguments()[0];
+                    String[] typesTmp = (String[]) inv.getArguments()[1];
+                    Object[] argsTmp = (Object[]) inv.getArguments()[2];
 
-                //openapi暂时使用全json数据
-                if (DistributedContextTools.getOpenApi()) {
+                    //openapi暂时使用全json数据
+                /*if (DistributedContextTools.getOpenApi()) {
                     if (typesTmp.length == 1) {
                         typesTmp[0] = "json";
                     }
-                }
+                }*/
 
-                // 只处理json类型的接口，其他类型的即可忽略
-                if (argsTmp.length != 1 || !"json".equals(typesTmp[0])) {
-                    break;
-                }
+                    // 只处理json类型的接口，其他类型的即可忽略
+                    if (argsTmp.length != 1 || !"json".equals(typesTmp[0])) {
+                        break;
+                    }
 
-                JsonNode readValue = om.readValue((String) argsTmp[0], JsonNode.class);
-                Class<?> interface1 = invoker.getInterface();
-                int inputParamCount = readValue.isArray() ? readValue.size() : 1;
-                int objFieldCount = readValue.isArray() && readValue.size() > 0 ? readValue.get(0).size() : 1;
-                Method method = getMethod(m, inputParamCount, objFieldCount, interface1);
-                if (null == method) {
-                    throw new BusinessException((long) ResponseCode.METHOD_NOT_FOUND.getCode(), "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:" +
-                            inputParamCount);
-                }
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
-
-                if (!present)//没有no_session标志
-                    doAuth(m, method, interface1);
-                else {
+                    JsonNode readValue = om.readValue((String) argsTmp[0], JsonNode.class);
+                    Class<?> interface1 = invoker.getInterface();
+                    int inputParamCount = readValue.isArray() ? readValue.size() : 1;
+                    int objFieldCount = readValue.isArray() && readValue.size() > 0 ? readValue.get(0).size() : 1;
+                    Method method = getMethod(m, inputParamCount, objFieldCount, interface1);
+                    if (null == method) {
+                        throw new BusinessException((long) ResponseCode.METHOD_NOT_FOUND.getCode(), "the method [" + m + "] not found in interface [" + interface1.getName() + "] with paramCount:" +
+                                inputParamCount);
+                    }
                     if (LOGGER.isDebugEnabled())
-                        LOGGER.debug("find no  session flag,just skip");
-                }
-                String[] types;
-                Object[] args;
+                        LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
 
-                // 解析json中的参数，并进行对应映射
-                if (readValue.isArray()) {
-                    Parameter[] parameters = method.getParameters();
-                    int parameterCount = parameters.length;
-                    args = new Object[parameterCount];
-                    types = new String[parameterCount];
+                    if (!present)//没有no_session标志
+                        doAuth(m, method, interface1);
+                    else {
+                        if (LOGGER.isDebugEnabled())
+                            LOGGER.debug("find no  session flag,just skip");
+                    }
+                    String[] types;
+                    Object[] args;
 
-                    if (parameterCount > 0) {
-                        JsonNode jsonNode = readValue.get(0); //取出第一个参数，判断是不是Json对象
-                        Parameter parameter;
-                        Class<?> parameterType;
+                    // 解析json中的参数，并进行对应映射
+                    if (readValue.isArray()) {
+                        Parameter[] parameters = method.getParameters();
+                        int parameterCount = parameters.length;
+                        args = new Object[parameterCount];
+                        types = new String[parameterCount];
 
-                        try {
-                            if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
+                        if (parameterCount > 0) {
+                            JsonNode jsonNode = readValue.get(0); //取出第一个参数，判断是不是Json对象
+                            Parameter parameter;
+                            Class<?> parameterType;
+
+                            try {
+                                if (jsonNode.isContainerNode()) { //参数是Json对象，新的方式 json=[{"bid":1,"shopId":2}]
+                                    for (int i = 0; i < parameterCount; i++) {
+                                        parameter = parameters[i];
+                                        args[i] = resolveParamValue(jsonNode, parameter, parameterCount);
+                                        types[i] = parameter.getType().getName();
+                                    }
+                                }else { //旧的接口传参方式 json=[1,2,3,4]
+                                    for (int i = 0; i < parameterCount; i++) {
+                                        parameter = parameters[i];
+                                        parameterType = parameter.getType();
+                                        types[i] = parameterType.getName();
+                                        args[i] = om.readValue(readValue.get(i).toString(), parameterType);
+                                    }
+                                }
+                            } catch (NullPointerException | ClassCastException e) {
+                                LOGGER.error("请求失败，可能是参数不正确:" + JsonUtils.bean2Json(jsonNode), e);
+                                throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
+                            }
+                        }
+                    }else if (readValue.isObject()) {  // //参数是Json对象，新的方式 json={"bid":1,"shopId":2}
+
+                        Parameter[] parameters = method.getParameters();
+                        int parameterCount = parameters.length;
+                        args = new Object[parameterCount];
+                        types = new String[parameterCount];
+
+                        if (parameterCount > 0) {
+                            Parameter parameter;
+
+                            try {
                                 for (int i = 0; i < parameterCount; i++) {
                                     parameter = parameters[i];
-                                    args[i] = resolveParamValue(jsonNode, parameter, parameterCount);
+                                    args[i] = resolveParamValue(readValue, parameter, parameterCount);
                                     types[i] = parameter.getType().getName();
                                 }
-                            }else { //旧的接口传参方式 json=[1,2,3,4]
-                                for (int i = 0; i < parameterCount; i++) {
-                                    parameter = parameters[i];
-                                    parameterType = parameter.getType();
-                                    types[i] = parameterType.getName();
-                                    args[i] = om.readValue(readValue.get(i).toString(), parameterType);
-                                }
+                            } catch (NullPointerException | ClassCastException e) {
+                                LOGGER.error("请求失败，可能是参数不正确", e);
+                                throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                             }
-                        } catch (NullPointerException | ClassCastException e) {
-                            LOGGER.error("请求失败，可能是参数不正确:" + JsonUtils.bean2Json(jsonNode), e);
-                            throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
                         }
+                    }else {
+                        args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
+                        types = new String[]{method.getParameterTypes()[0].getName()};
                     }
-                }else if (readValue.isObject()) {  // //参数是Json对象，新的方式 json={"bid":1,"shopId":2}
 
-                    Parameter[] parameters = method.getParameters();
-                    int parameterCount = parameters.length;
-                    args = new Object[parameterCount];
-                    types = new String[parameterCount];
+                    // 保存过滤掉系统参数后的结果
+                    inv.getArguments()[1] = types;
+                    inv.getArguments()[2] = args;
 
-                    if (parameterCount > 0) {
-                        Parameter parameter;
-
-                        try {
-                            for (int i = 0; i < parameterCount; i++) {
-                                parameter = parameters[i];
-                                args[i] = resolveParamValue(readValue, parameter, parameterCount);
-                                types[i] = parameter.getType().getName();
-                            }
-                        } catch (NullPointerException | ClassCastException e) {
-                            LOGGER.error("请求失败，可能是参数不正确", e);
-                            throw new BusinessException((long) ResponseCode.PARAMETER_ERROR.getCode(), "参数不正确", e);
-                        }
-                    }
-                }else {
-                    args = new Object[]{om.readValue(readValue.toString(), method.getParameterTypes()[0])};
-                    types = new String[]{method.getParameterTypes()[0].getName()};
                 }
-
-                // 保存过滤掉系统参数后的结果
-                inv.getArguments()[1] = types;
-                inv.getArguments()[2] = args;
-
+                while (false);
             }
-            while (false);
+
 
         } catch (Throwable e) {
             LOGGER.warn("distributed  error", e);

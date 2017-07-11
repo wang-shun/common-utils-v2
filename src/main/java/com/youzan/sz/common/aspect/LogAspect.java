@@ -131,7 +131,7 @@ public class LogAspect {
                 double total = (double) first.getTimes();
                 NumberFormat numberFormat = NumberFormat.getInstance();
                 numberFormat.setMaximumFractionDigits(0);
-                StringBuilder logSB = new StringBuilder(NEW_LINE).append("start------------>").append(NEW_LINE);
+                StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
                 for (int i = 0; i < stackLogList.size(); i++) {
                     StackLog stackLog = stackLogList.get(i);
                     String timePercent = numberFormat.format(stackLog.getTimes() / total * 100);
@@ -154,7 +154,7 @@ public class LogAspect {
                     }
                     logSB.append(tab).append("result-->").append(stackResult).append(NEW_LINE);
                 }
-                logSB.append("<------------end");
+                logSB.append("------------end------------");
 
                 if (throwable != null) {
                     LOGGER.warn(logSB.toString(), throwable);

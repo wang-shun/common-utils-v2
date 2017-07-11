@@ -121,7 +121,6 @@ public class DistributedCoreFilter implements Filter {
                                         LOGGER.info("openApi {}", JsonUtils.toJson(carmenParam));
                                     }
                                     //设置openApi参数
-
                                     Object kdtId = carmenParam.get(DistributedParamManager.KdtId.getCarmenName());
                                     if (kdtId != null) {
                                         DistributedContextTools.set(DistributedParamManager.KdtId.class, kdtId);
@@ -144,9 +143,9 @@ public class DistributedCoreFilter implements Filter {
                                     }
 
                                     DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
-                                    DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
-                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.WEB.getValue()));
-                                    DistributedContextTools.set(DistributedParamManager.Aid.class, 1);//todo 暂时不支持零售的aid=2
+                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.CARMEN.getValue()));
+                                    //DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
+                                    //DistributedContextTools.set(DistributedParamManager.Aid.class, 1);todo 暂时不支持零售的aid=2
 
                                 }else {
                                     Class<?> key = DistributedParamManager.get(typesTmp[i]);
