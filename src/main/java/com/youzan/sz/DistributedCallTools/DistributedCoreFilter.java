@@ -144,8 +144,6 @@ public class DistributedCoreFilter implements Filter {
 
                                     DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
                                     DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.CARMEN.getValue()));
-                                    //DistributedContextTools.set(DistributedParamManager.ApiFormat.class, true);
-                                    //DistributedContextTools.set(DistributedParamManager.Aid.class, 1);todo 暂时不支持零售的aid=2
 
                                 }else {
                                     Class<?> key = DistributedParamManager.get(typesTmp[i]);
