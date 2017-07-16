@@ -1,6 +1,6 @@
 package com.youzan.sz.common.aspect;
 
-import com.youzan.sz.common.util.JsonUtils;
+import com.alibaba.fastjson.JSON;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -199,7 +199,7 @@ public class LogAspect {
         }else if (excludeClassSet.contains(o.getClass().getCanonicalName())) {
             return o.toString();
         }else {
-            return JsonUtils.toJson(o);
+            return JSON.toJSONString(o);
         }
     }
 
