@@ -41,6 +41,8 @@ public class LogAspect {
 
     private boolean logFirst = true;
 
+    private int slowLimit = 3000;//微秒
+
     /**
      * 存放不需要被toJson的类,如一些toJson会出错的类(可以通过本身实现toString方法来调整具体的输出)
      */
@@ -59,6 +61,11 @@ public class LogAspect {
 
     public void setExcludeClassSet(Set<Class> excludeClassSet) {
         this.excludeClassSet = excludeClassSet;
+    }
+
+
+    public void setSlowLimit(int slowLimit) {
+        this.slowLimit = slowLimit;
     }
 
 
@@ -134,7 +141,7 @@ public class LogAspect {
                 StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
                 for (int i = 0; i < stackLogList.size(); i++) {
                     StackLog stackLog = stackLogList.get(i);
-                    String timePercent = numberFormat.format(stackLog.getTimes() / total * 100);
+                    String timePercent = total == 0 ? "100%" : numberFormat.format(stackLog.getTimes() / total * 100);
                     StringBuffer tabSB = new StringBuffer();
                     for (int t = 0; t < stackLog.getLevel(); t++) {
                         tabSB.append("\t");
@@ -156,7 +163,7 @@ public class LogAspect {
                 }
                 logSB.append("------------end------------");
 
-                if (throwable != null) {
+                if (throwable != null || total > slowLimit) {
                     LOGGER.warn(logSB.toString(), throwable);
                 }else {
                     LOGGER.info(logSB.toString());
