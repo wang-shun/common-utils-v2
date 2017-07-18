@@ -118,32 +118,33 @@ public class DistributedCoreFilter implements Filter {
                                 if (DistributedParamManager.CarmenParam.getName().equals(typesTmp[i])) {
                                     Map<String, Object> carmenParam = (Map<String, Object>) argsTmp[i];
                                     if (LOGGER.isInfoEnabled()) {
-                                        LOGGER.info("openApi {}", JsonUtils.toJson(carmenParam));
+                                        LOGGER.info("open api {}", carmenParam);
                                     }
                                     //设置openApi参数
                                     Object kdtId = carmenParam.get(DistributedParamManager.KdtId.getCarmenName());
                                     if (kdtId != null) {
-                                        DistributedContextTools.set(DistributedParamManager.KdtId.class, kdtId);
-                                        DistributedContextTools.set(DistributedParamManager.Bid.class, kdtId);
+                                        DistributedContextTools.set(KdtId.class.getCanonicalName(), kdtId);
+                                        DistributedContextTools.set(Bid.class.getCanonicalName(), kdtId);
                                     }
 
                                     Object adminId = carmenParam.get(DistributedParamManager.AdminId.getCarmenName());
                                     if (adminId != null) {
-                                        DistributedContextTools.set(DistributedParamManager.AdminId.class, adminId);
+                                        DistributedContextTools.set(AdminId.class.getCanonicalName(), adminId);
                                     }
 
                                     Object requestIp = carmenParam.get(DistributedParamManager.RequestIp.getCarmenName());
                                     if (requestIp != null) {
-                                        DistributedContextTools.set(DistributedParamManager.RequestIp.class, requestIp);
+                                        DistributedContextTools.set(RequestIp.class.getCanonicalName(), requestIp);
                                     }
 
                                     Object clientId = carmenParam.get(DistributedParamManager.ClientId.getCarmenName());
                                     if (clientId != null) {
-                                        DistributedContextTools.set(DistributedParamManager.ClientId.class, clientId);
+                                        DistributedContextTools.set(ClientId.class.getCanonicalName(), clientId);
+                                        DistributedContextTools.set(DeviceId.class.getCanonicalName(), clientId);
                                     }
 
-                                    DistributedContextTools.set(DistributedParamManager.OpenApi.class, true);
-                                    DistributedContextTools.set(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.CARMEN.getValue()));
+                                    DistributedContextTools.set(OpenApi.class.getCanonicalName(), true);
+                                    DistributedContextTools.set(DeviceType.class.getCanonicalName(), String.valueOf(com.youzan.sz.common.model.enums.DeviceType.CARMEN.getValue()));
 
                                 }else {
                                     Class<?> key = DistributedParamManager.get(typesTmp[i]);

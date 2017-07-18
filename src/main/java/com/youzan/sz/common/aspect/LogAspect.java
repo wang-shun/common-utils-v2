@@ -123,8 +123,11 @@ public class LogAspect {
             if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
                 Throwable throwable = throwableThreadLocal.get();
                 List<StackLog> stackLogList = getListLocal();
+                StackLog first = stackLogList.get(0);
+                double total = (double) first.getTimes();
+
                 //如果没有抛错且不需要全部打印且需要打印第一层函数
-                if (throwable == null && !logAll) {
+                if (throwable == null && total < slowLimit && !logAll) {
                     if (logFirst) {
                         stackLogList = new ArrayList<>();
                         stackLogList.add(getListLocal().get(0));
@@ -134,8 +137,6 @@ public class LogAspect {
                     }
                 }
 
-                StackLog first = stackLogList.get(0);
-                double total = (double) first.getTimes();
                 NumberFormat numberFormat = NumberFormat.getInstance();
                 numberFormat.setMaximumFractionDigits(0);
                 StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
@@ -159,7 +160,7 @@ public class LogAspect {
                     if (stackResult.length() > maxLength) {
                         stackResult = stackResult.substring(0, maxLength) + "!result is longer than " + maxLength + "!";
                     }
-                    logSB.append(tab).append("result-->").append(stackResult).append(NEW_LINE);
+                    logSB.append(tab).append("result-->").append(stackResult).append(NEW_LINE).append(NEW_LINE);
                 }
                 logSB.append("------------end------------");
 
