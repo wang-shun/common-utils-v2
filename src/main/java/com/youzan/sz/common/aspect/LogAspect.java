@@ -46,7 +46,7 @@ public class LogAspect {
     /**
      * 存放不需要被toJson的类,如一些toJson会出错的类(可以通过本身实现toString方法来调整具体的输出)
      */
-    private Set<Class> excludeClassSet = new HashSet<>();
+    private Set<String> excludeClassSet = new HashSet<>();
 
 
     public void setLogAll(boolean logAll) {
@@ -59,7 +59,7 @@ public class LogAspect {
     }
 
 
-    public void setExcludeClassSet(Set<Class> excludeClassSet) {
+    public void setExcludeClassSet(Set<String> excludeClassSet) {
         this.excludeClassSet = excludeClassSet;
     }
 
@@ -84,7 +84,9 @@ public class LogAspect {
             Stack<StackLog> stacks = getStackLocal();
             //记录日志--调用方法和参数入栈
             StackLog stackLog = new StackLog();
-            sb.append(method.getDeclaringClass().getCanonicalName()).append("#").append(method.getName());
+
+            String methodName = method.getDeclaringClass().getCanonicalName();
+            sb.append(methodName).append("#").append(method.getName());
             stackLog.setMethod(sb.toString());
             stackLog.setParams(pjp.getArgs());
             stackLog.setLevel(stacks.size());
@@ -164,8 +166,10 @@ public class LogAspect {
                 }
                 logSB.append("------------end------------");
 
-                if (throwable != null || total > slowLimit) {
+                if (throwable != null) {
                     LOGGER.warn(logSB.toString(), throwable);
+                }else if (total > slowLimit  ) {
+                    LOGGER.warn(logSB.toString());
                 }else {
                     LOGGER.info(logSB.toString());
                 }
