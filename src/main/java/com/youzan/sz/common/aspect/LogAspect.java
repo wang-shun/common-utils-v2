@@ -24,56 +24,56 @@ import java.util.concurrent.Future;
  * Desc 通过aop切面以层级形式记录spring中bean的调用关系出入参及时间
  */
 public class LogAspect {
-
+    
     private static final String NEW_LINE = "\r\n";
-
+    
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
+    
     private ThreadLocal<Stack<StackLog>> stackLocal = new ThreadLocal<>();
-
+    
     private ThreadLocal<List<StackLog>> listLocal = new ThreadLocal<>();
-
+    
     private ThreadLocal<Throwable> throwableThreadLocal = new ThreadLocal<>();
-
+    
     private int maxLength = 1024;
-
+    
     private boolean logAll = false;
-
+    
     private boolean logFirst = true;
-
+    
     private int slowLimit = 1000;//微秒
-
+    
     /**
      * 存放不需要被toJson的类,如一些toJson会出错的类(可以通过本身实现toString方法来调整具体的输出)
      */
     private Set<String> excludeClassSet = new HashSet<>();
-
-
+    
+    
     public void setLogAll(boolean logAll) {
         this.logAll = logAll;
     }
-
-
+    
+    
     public void setLogFirst(boolean logFirst) {
         this.logFirst = logFirst;
     }
-
-
+    
+    
     public void setExcludeClassSet(Set<String> excludeClassSet) {
         this.excludeClassSet = excludeClassSet;
     }
-
-
+    
+    
     public void setSlowLimit(int slowLimit) {
         this.slowLimit = slowLimit;
     }
-
-
+    
+    
     public LogAspect() {
         LOGGER.info("init with max result length: " + maxLength);
     }
-
-
+    
+    
     public Object handle(ProceedingJoinPoint pjp) throws Throwable {
         Object result = null;
         long beginTime = System.currentTimeMillis();
@@ -84,7 +84,7 @@ public class LogAspect {
             Stack<StackLog> stacks = getStackLocal();
             //记录日志--调用方法和参数入栈
             StackLog stackLog = new StackLog();
-
+            
             String methodName = method.getDeclaringClass().getCanonicalName();
             sb.append(methodName).append("#").append(method.getName());
             stackLog.setMethod(sb.toString());
@@ -95,8 +95,8 @@ public class LogAspect {
         } catch (Throwable throwable) {
             LOGGER.warn("aop log error", throwable);
         }
-
-
+        
+        
         //执行方法
         try {
             result = pjp.proceed();
@@ -105,13 +105,13 @@ public class LogAspect {
             processResult(beginTime, result);
             throw t;
         }
-
+        
         //记录日志--返回结果入栈
         processResult(beginTime, result);
         return result;
     }
-
-
+    
+    
     private void processResult(long beginTime, Object result) {
         try {
             //计时
@@ -121,13 +121,13 @@ public class LogAspect {
             StackLog stack = stacks.pop();
             stack.setTimes(times);
             stack.setResult(result);
-
+            
             if (getStackLocal().size() == 0 && getListLocal().size() > 0) {
                 Throwable throwable = throwableThreadLocal.get();
                 List<StackLog> stackLogList = getListLocal();
                 StackLog first = stackLogList.get(0);
                 double total = (double) first.getTimes();
-
+                
                 //如果没有抛错且不需要全部打印且需要打印第一层函数
                 if (throwable == null && total < slowLimit && !logAll) {
                     if (logFirst) {
@@ -138,7 +138,7 @@ public class LogAspect {
                         return;
                     }
                 }
-
+                
                 NumberFormat numberFormat = NumberFormat.getInstance();
                 numberFormat.setMaximumFractionDigits(0);
                 StringBuilder logSB = new StringBuilder(NEW_LINE).append("------------start------------").append(NEW_LINE);
@@ -165,7 +165,7 @@ public class LogAspect {
                     logSB.append(tab).append("result-->").append(stackResult).append(NEW_LINE).append(NEW_LINE);
                 }
                 logSB.append("------------end------------");
-
+                
                 if (throwable != null) {
                     LOGGER.warn(logSB.toString(), throwable);
                 }else if (total > slowLimit  ) {
@@ -173,7 +173,7 @@ public class LogAspect {
                 }else {
                     LOGGER.info(logSB.toString());
                 }
-               // clearStack();
+                // clearStack();
             }
         } catch (Throwable throwable) {
             LOGGER.warn("aop log error", throwable);
@@ -181,15 +181,15 @@ public class LogAspect {
             clearStack();
         }
     }
-
-
+    
+    
     private void clearStack() {
         getStackLocal().clear();
         getListLocal().clear();
         throwableThreadLocal.set(null);
     }
-
-
+    
+    
     private String toJsonForParam(Object[] objects) {
         StringBuffer stringBuffer = new StringBuffer("[");
         for (int i = 0; i < objects.length; i++) {
@@ -201,8 +201,8 @@ public class LogAspect {
         stringBuffer.append("]");
         return stringBuffer.toString();
     }
-
-
+    
+    
     private String toJson(Object o) {
         try {
             if (o == null) {
@@ -221,8 +221,8 @@ public class LogAspect {
             return o.toString();
         }
     }
-
-
+    
+    
     private Stack<StackLog> getStackLocal() {
         Stack<StackLog> stack = stackLocal.get();
         if (stack == null) {
@@ -231,16 +231,16 @@ public class LogAspect {
         }
         return stack;
     }
-
-
+    
+    
     private void addStackEnter(StackLog stackLog) {
         List<StackLog> list = getListLocal();
         list.add(stackLog);
         Stack<StackLog> stack = getStackLocal();
         stack.push(stackLog);
     }
-
-
+    
+    
     private List<StackLog> getListLocal() {
         List<StackLog> list = listLocal.get();
         if (list == null) {
@@ -249,91 +249,91 @@ public class LogAspect {
         }
         return list;
     }
-
-
+    
+    
     public int getMaxLength() {
         return maxLength;
     }
-
-
+    
+    
     public void setMaxLength(int maxLength) {
         this.maxLength = maxLength;
     }
-
-
+    
+    
     private class StackLog {
-
+        
         private String method;
-
+        
         private Object[] params;
-
+        
         private int level;
-
+        
         private long times;
-
+        
         private Object result;
-
+        
         private List<StackLog> list;
-
-
+        
+        
         public int getLevel() {
             return level;
         }
-
-
+        
+        
         public void setLevel(int level) {
             this.level = level;
         }
-
-
+        
+        
         public List<StackLog> getList() {
             return list;
         }
-
-
+        
+        
         public void setList(List<StackLog> list) {
             this.list = list;
         }
-
-
+        
+        
         public String getMethod() {
             return method;
         }
-
-
+        
+        
         public void setMethod(String method) {
             this.method = method;
         }
-
-
+        
+        
         public Object[] getParams() {
             return params;
         }
-
-
+        
+        
         public void setParams(Object[] params) {
             this.params = params;
         }
-
-
+        
+        
         public Object getResult() {
             return result;
         }
-
-
+        
+        
         public void setResult(Object result) {
             this.result = result;
         }
-
-
+        
+        
         public long getTimes() {
             return times;
         }
-
-
+        
+        
         public void setTimes(long times) {
             this.times = times;
         }
-
+        
     }
 }
