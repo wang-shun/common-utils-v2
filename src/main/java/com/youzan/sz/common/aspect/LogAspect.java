@@ -173,10 +173,12 @@ public class LogAspect {
                 }else {
                     LOGGER.info(logSB.toString());
                 }
-                clearStack();
+               // clearStack();
             }
         } catch (Throwable throwable) {
             LOGGER.warn("aop log error", throwable);
+        }finally {
+            clearStack();
         }
     }
 
