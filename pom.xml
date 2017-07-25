@@ -11,7 +11,7 @@
     </parent>
     <!-- -->
     <artifactId>common-utils</artifactId>
-    <version>1.4.17-RELEASE</version>
+    <version>1.4.18-RELEASE</version>
 
     <dependencyManagement>
         <dependencies>

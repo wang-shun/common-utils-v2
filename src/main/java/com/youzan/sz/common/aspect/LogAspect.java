@@ -134,7 +134,7 @@ public class LogAspect {
                         stackLogList = new ArrayList<>();
                         stackLogList.add(getListLocal().get(0));
                     }else {
-                        clearStack();
+                        //clearStack();
                         return;
                     }
                 }
