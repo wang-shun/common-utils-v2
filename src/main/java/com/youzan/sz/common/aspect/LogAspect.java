@@ -41,7 +41,7 @@ public class LogAspect {
 
     private boolean logFirst = true;
 
-    private int slowLimit = 3000;//微秒
+    private int slowLimit = 1000;//微秒
 
     /**
      * 存放不需要被toJson的类,如一些toJson会出错的类(可以通过本身实现toString方法来调整具体的输出)
@@ -202,16 +202,21 @@ public class LogAspect {
 
 
     private String toJson(Object o) {
-        if (o == null) {
-            return "null";
-        }else if (AopUtils.isCglibProxy(o)) {
+        try {
+            if (o == null) {
+                return "null";
+            }else if (AopUtils.isCglibProxy(o)) {
+                return o.toString();
+            }else if (o instanceof Runnable || o instanceof Future) {
+                return "Runnable";
+            }else if (excludeClassSet.contains(o.getClass().getCanonicalName())) {
+                return o.toString();
+            }else {
+                return JSON.toJSONString(o);
+            }
+        }catch (Throwable t) {
+            LOGGER.warn("aop log json error for {}", o.toString());
             return o.toString();
-        }else if (o instanceof Runnable || o instanceof Future) {
-            return "Runnable";
-        }else if (excludeClassSet.contains(o.getClass().getCanonicalName())) {
-            return o.toString();
-        }else {
-            return JSON.toJSONString(o);
         }
     }
 
