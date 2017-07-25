@@ -134,7 +134,7 @@ public class LogAspect {
                         stackLogList = new ArrayList<>();
                         stackLogList.add(getListLocal().get(0));
                     }else {
-                        //clearStack();
+                        clearStack();
                         return;
                     }
                 }
@@ -173,11 +173,10 @@ public class LogAspect {
                 }else {
                     LOGGER.info(logSB.toString());
                 }
-                // clearStack();
+                clearStack();
             }
         } catch (Throwable throwable) {
             LOGGER.warn("aop log error", throwable);
-        }finally {
             clearStack();
         }
     }
