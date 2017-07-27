@@ -5,7 +5,7 @@ package com.youzan.sz.common.extra;
  */
 public class ImageConfig {
     //二维码大小
-    private Integer qrcodeSize;
+    private Integer qrcodeSize=200;
     //镶嵌的横坐标
     private Integer XCoord;
     //镶嵌的纵坐标
