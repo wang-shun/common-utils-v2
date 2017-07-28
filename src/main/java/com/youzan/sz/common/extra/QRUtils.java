@@ -1,9 +1,8 @@
 package com.youzan.sz.common.extra;
 
 import com.youzan.sz.common.model.qr.QRConfigVO;
-import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.JsonUtils;
-import com.youzan.sz.common.util.PropertiesUtils;
+import com.youzan.sz.jutil.string.StringUtil;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -30,8 +29,8 @@ public class QRUtils {
     //    单个接口:http://10.9.17.31:8888/?size=200&fg_color=000000&bg_color=ffffff&case=1&txt=12a&margin=0&level=3&hint=2&ver=2
     //    批量接口:http://10.9.17.31:8888/qrcode/batch?size=200&fg_color=000000&bg_color=ffffff&case=1&margin=0&level=3&hint=2&ver=2&txt[]=123&txt[]=456
     public static String getQRCode(QRConfigVO qrConfig) {
-        //String yzQRUrl = "http://10.9.17.31:8888";
-        final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
+        String yzQRUrl = "http://10.9.17.31:8888";
+        //final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
         final StringBuilder url = new StringBuilder(yzQRUrl);
         if (url.lastIndexOf("/") == url.indexOf("//") + 1) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
             url.append("/");
@@ -50,6 +49,9 @@ public class QRUtils {
         url.append("&").append("level=").append(qrConfig.getLevel());//
         url.append("&").append("hint=").append(qrConfig.getHint());//
         url.append("&").append("ver=").append(qrConfig.getVer());//
+        if(StringUtil.isNotEmpty(qrConfig.getCp())){
+            url.append("&").append("cp=").append(qrConfig.getCp());//
+        }
         return url.toString();
     }
 
@@ -88,7 +90,8 @@ public class QRUtils {
         String qrUrl=getQRCode(qrConfigVO);
         System.out.println("the qr url is:"+qrUrl);
         System.err.println("len" + encode.length());*/
-        System.out.println(WaterMarkUtil.createQRWithImg("www.youzan.com",logo,null));
+        //System.out.println(WaterMarkUtil.createQRWithImg("www.youzan.com",logo,null));
+        System.out.println(WaterMarkUtil.getBase64QR(logo,50));
         System.out.println(System.currentTimeMillis()-start);
 
     }

@@ -68,7 +68,7 @@ public class WaterMarkUtil {
         String QRuRL = QRUtils.getQRCode(qrConfigVO);
 
 
-        BufferedImage source = null;
+        BufferedImage source;
         try {
             source = ImageIO.read(new URL(QRuRL));
         } catch (IOException e) {
@@ -159,13 +159,14 @@ public class WaterMarkUtil {
         QRConfigVO qrConfigVO = new QRConfigVO();
         qrConfigVO.setTxt(content);
         qrConfigVO.setSize(imageConfig.getQrcodeSize());
+        //如果图片url不为空，那么二维码的冗余度要大一些
         if (logoImg != null) {
-            qrConfigVO.setLevel(2);
+            qrConfigVO.setLevel(3);
         }
         String QRuRL = QRUtils.getQRCode(qrConfigVO);
 
 
-        BufferedImage source = null;
+        BufferedImage source;
         try {
             source = ImageIO.read(new URL(QRuRL));
         } catch (IOException e) {
@@ -177,7 +178,6 @@ public class WaterMarkUtil {
         // 插入二维码
         g.drawImage(source, 0, 0, imageConfig.getQrcodeSize(), imageConfig.getQrcodeSize(), null);
         // 插入logo,对logo进行压缩,不然太大
-
         if (logoImg != null) {
             Image logoScale = logoImg.getScaledInstance(imageConfig.getLogoSize(), imageConfig.getLogoSize(), Image.SCALE_SMOOTH);
             g.drawImage(logoScale, (imageConfig.getQrcodeSize() - imageConfig.getLogoSize()) / 2, (imageConfig.getQrcodeSize() - imageConfig.getLogoSize()) / 2, imageConfig.getLogoSize(),
@@ -200,57 +200,22 @@ public class WaterMarkUtil {
      * @param content 二维码的内容
      * @param logoUrl logo的图片的地址
      */
-    public static String createQRWithImg(String content, String logoUrl, QrConfig qrConfig) throws IOException {
-        QrConfig tempQrConfig=qrConfig;
+    public static String createQRWithImg(String content, String logoUrl, ImageConfig ImageConfig) throws IOException {
+        ImageConfig tempQrConfig = ImageConfig;
         if (tempQrConfig == null) {
-            tempQrConfig = new QrConfig();
+            tempQrConfig = new ImageConfig();
+            tempQrConfig.setLogoSize(55);
+            tempQrConfig.setQrcodeSize(200);
         }
-
-        QRConfigVO qrConfigVO = new QRConfigVO();
-        qrConfigVO.setTxt(content);
-        //如果图片url不为空，那么二维码的冗余度要大一些
-        if (StringUtil.isNotEmpty(logoUrl)) {
-            qrConfigVO.setLevel(3);
-        }
-        String QRuRL = QRUtils.getQRCode(qrConfigVO);
-
-        BufferedImage source ;
         BufferedImage logo = null;
-        try {
-            source = ImageIO.read(new URL(QRuRL));
-        } catch (IOException e) {
-            LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}", e);
-            return null;
-        }
-        if(StringUtil.isNotEmpty(logoUrl)){
+        if (StringUtil.isNotEmpty(logoUrl)) {
             try {
                 logo = ImageIO.read(new URL(logoUrl));
             } catch (IOException e) {
                 LOGGER.warn("二维码服务不可用,无法获取到为二维码:{}", e);
             }
         }
-
-        BufferedImage tag = new BufferedImage(tempQrConfig.getQrSize(), tempQrConfig.getQrSize(), BufferedImage.TYPE_INT_RGB);
-        Graphics g = tag.getGraphics();
-        g.drawImage(source, 0, 0, tempQrConfig.getQrSize(), tempQrConfig.getQrSize(), null);
-        // 插入二维码
-        if (logo != null) {
-            // 插入logo,对logo进行压缩,不然太大
-            Image logoScale = logo.getScaledInstance(tempQrConfig.getLogoSize(), tempQrConfig.getLogoSize(), Image.SCALE_SMOOTH);
-            g.drawImage(logoScale, (tempQrConfig.getQrSize() - tempQrConfig.getLogoSize()) / 2, (tempQrConfig.getQrSize() - tempQrConfig.getLogoSize()) / 2, tempQrConfig.getLogoSize(),
-                    tempQrConfig.getLogoSize(), null);
-            logoScale.flush();
-        }
-        //释放图片
-        g.dispose();
-        if (source != null) {
-            source.flush();
-        }
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ImageIO.write(tag, "png", bos);
-        byte[] imageBytes = bos.toByteArray();
-
-        return Base64.getEncoder().encodeToString(imageBytes);
+        return getBase64logoImage(content, logo, tempQrConfig);
     }
 
 
@@ -267,6 +232,52 @@ public class WaterMarkUtil {
             throw e;
         }
     }
+
+
+    /**
+     * 获取图片base64并且进行图片压缩压缩
+     */
+    public static String getBase64QR(String qrUrl, Integer size) {
+        byte[] imageBytes = new byte[0];
+        try {
+            URL url = new URL(qrUrl);
+            BufferedImage image = ImageIO.read(url);
+            //进行压缩
+            if (size != null && size != 0) {
+                //重新绘制被压缩的图片
+                BufferedImage resize = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+                resize.getGraphics().drawImage(image, 0, 0, size, size, null);
+                resize.flush();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ImageIO.write(resize, "png", bos);
+                imageBytes = bos.toByteArray();
+            }else{
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", bos);
+                imageBytes = bos.toByteArray();
+            }
+        } catch (IOException e) {
+            LOGGER.warn("encode to base64 error,qrUrl:{}，size:{}", qrUrl, size, e);
+        }
+        return Base64.getEncoder().encodeToString(imageBytes);
+    }
+    /**
+     * 获取图片base64并且进行图片压缩压缩
+     */
+    public static String getBase64QR(String qrUrl) {
+        byte[] imageBytes = new byte[0];
+        try {
+            URL url = new URL(qrUrl);
+            BufferedImage image = ImageIO.read(url);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", bos);
+            imageBytes = bos.toByteArray();
+        } catch (IOException e) {
+            LOGGER.warn("encode to base64 error,qrUrl:{}，size:{}", qrUrl);
+        }
+        return Base64.getEncoder().encodeToString(imageBytes);
+    }
+
 
 
     private static ImageConfig inherrateConifg(ImageConfig imageConfig) {
