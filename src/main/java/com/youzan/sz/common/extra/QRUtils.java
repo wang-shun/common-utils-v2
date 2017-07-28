@@ -1,7 +1,9 @@
 package com.youzan.sz.common.extra;
 
 import com.youzan.sz.common.model.qr.QRConfigVO;
+import com.youzan.sz.common.util.ConfigsUtils;
 import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.common.util.PropertiesUtils;
 import com.youzan.sz.jutil.string.StringUtil;
 
 import org.apache.commons.codec.binary.Base64;
@@ -29,8 +31,8 @@ public class QRUtils {
     //    单个接口:http://10.9.17.31:8888/?size=200&fg_color=000000&bg_color=ffffff&case=1&txt=12a&margin=0&level=3&hint=2&ver=2
     //    批量接口:http://10.9.17.31:8888/qrcode/batch?size=200&fg_color=000000&bg_color=ffffff&case=1&margin=0&level=3&hint=2&ver=2&txt[]=123&txt[]=456
     public static String getQRCode(QRConfigVO qrConfig) {
-        String yzQRUrl = "http://10.9.17.31:8888";
-        //final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
+        //String yzQRUrl = "http://10.9.17.31:8888";
+        final String yzQRUrl = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, YZ_QR_URL);
         final StringBuilder url = new StringBuilder(yzQRUrl);
         if (url.lastIndexOf("/") == url.indexOf("//") + 1) {//如果最后一个不是/,需要添加,避免某些情况Android无法访问
             url.append("/");
