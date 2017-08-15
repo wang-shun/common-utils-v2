@@ -124,6 +124,11 @@ public class PermissionsUtil {
             }
     
         }
+        for(int j=0;j<rightArr.length;j++){
+            if(rightArr[j] == null){
+                rightArr[j] = 0L;
+            }
+        }
         return rightArr;
     }
 

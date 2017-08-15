@@ -7,13 +7,22 @@
     <parent>
         <groupId>com.youzan.sz</groupId>
         <artifactId>dependency-pom</artifactId>
-        <version>1.4.3-sam-SNAPSHOT</version>
+        <version>1.4.4-SNAPSHOT</version>
     </parent>
     <!-- -->
-    <groupId>com.youzan.sz</groupId>
     <artifactId>common-utils</artifactId>
-    <version>1.4.3-RELEASE</version>
-    <packaging>jar</packaging>
+    <version>1.5.1-RELEASE</version>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.youzan.sz</groupId>
+                <artifactId>base-model</artifactId>
+                <version>1.5.1-RELEASE</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -37,13 +46,6 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.youzan.sz</groupId>
-            <artifactId>base-model</artifactId>
-            <version>${base-model.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>redis.clients</groupId>
@@ -466,26 +468,17 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
-                        <phase>deploy</phase>
+                        <phase>install</phase>
                         <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -1,20 +1,21 @@
 package com.youzan.sz.common.extra;
 
+import com.youzan.sz.common.model.qr.QRConfigVO;
+import com.youzan.sz.common.util.ConfigsUtils;
+import com.youzan.sz.common.util.JsonUtils;
+import com.youzan.sz.common.util.PropertiesUtils;
+import com.youzan.sz.jutil.string.StringUtil;
+
+import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
-
-import com.youzan.sz.common.util.ConfigsUtils;
-import com.youzan.sz.common.util.JsonUtils;
-import com.youzan.sz.common.util.PropertiesUtils;
-import org.apache.commons.codec.binary.Base64;
-
-import com.youzan.sz.common.model.qr.QRConfigVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -50,6 +51,9 @@ public class QRUtils {
         url.append("&").append("level=").append(qrConfig.getLevel());//
         url.append("&").append("hint=").append(qrConfig.getHint());//
         url.append("&").append("ver=").append(qrConfig.getVer());//
+        if(StringUtil.isNotEmpty(qrConfig.getCp())){
+            url.append("&").append("cp=").append(qrConfig.getCp());//
+        }
         return url.toString();
     }
 
@@ -69,19 +73,11 @@ public class QRUtils {
     }
 
     public static void main(String[] args) throws IOException {
-        String yzQRUrl = "http://10.9.17.31:8888";
-        final StringBuilder url = new StringBuilder(yzQRUrl);
-        System.out.println(url.lastIndexOf("/"));
-        System.out.println(url.indexOf("//"));
-        if (url.lastIndexOf("/") == url.indexOf("//") + 1) {//如果url最后一个不是/,需要添加,避免某些情况Android无法访问(不自动重定向)不带根目录的url
-            url.append("/");
-        }
-        System.err.println(url);
+        String logo="http://img.yzcdn.cn/upload_files/2017/07/27/Flbf2KrMpN8WVIFc3O9YNTp25iru.jpg";
         final long start = System.currentTimeMillis();
+       /*
 
-
-        final URL imgUrl = new URL(
-            "http://10.9.17.31:8888/?txt=http%3A%2F%2Fshorturl-qa.s.qima-inc.com%2F1w0V1r&size=200&fg_color=000000&bg_color=ffffff&case=1&margin=0&level=0&hint=2&ver=2");
+        final URL imgUrl = new URL(logo);
         final BufferedImage image = ImageIO.read(imgUrl);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", bos);
@@ -90,8 +86,15 @@ public class QRUtils {
 
         final String encode = encoder.encodeAsString(imageBytes);
         System.err.println(encode);
-        System.err.println("cost:" + (System.currentTimeMillis() - start));
-        System.err.println("len" + encode.length());
+        QRConfigVO qrConfigVO = new QRConfigVO();
+        qrConfigVO.setCp(encode);
+        qrConfigVO.setTxt("www.youzan.com");
+        String qrUrl=getQRCode(qrConfigVO);
+        System.out.println("the qr url is:"+qrUrl);
+        System.err.println("len" + encode.length());*/
+        //System.out.println(WaterMarkUtil.createQRWithImg("www.youzan.com",logo,null));
+        System.out.println(WaterMarkUtil.getBase64QR(logo,50));
+        System.out.println(System.currentTimeMillis()-start);
 
     }
 

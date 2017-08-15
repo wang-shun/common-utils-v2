@@ -53,10 +53,10 @@ public class PushMsgDTO extends BaseDTO {
 
     private String sound;
     
-    /**
+  /*  /**
      * 为了支持多app使用，需要抽象一层，多个app可以使用，作为业务区分
      */
-    private Integer aid= AppEnum.FC.getAid();
+    //private Integer aid= AppEnum.FC.getAid();
     
     
     /**
@@ -104,7 +104,7 @@ public class PushMsgDTO extends BaseDTO {
     }
     
     
-    public Integer getAid() {
+    /*public Integer getAid() {
         
         return aid;
     }
@@ -113,7 +113,7 @@ public class PushMsgDTO extends BaseDTO {
     public void setAid(Integer aid) {
         
         this.aid = aid;
-    }
+    }*/
 
 
     public String getContent() {
@@ -204,4 +204,5 @@ public class PushMsgDTO extends BaseDTO {
     public void setTitle(String title) {
         this.title = title;
     }
+ 
 }

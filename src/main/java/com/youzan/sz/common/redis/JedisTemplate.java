@@ -2,6 +2,8 @@ package com.youzan.sz.common.redis;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.response.enums.ResponseCode;
+
+import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -426,8 +428,9 @@ public class JedisTemplate {
 
     public void releaseLock(String lock) {
         this.execute((JedisActionNoResult) jedis -> {
+            String re = jedis.get(lock);
             long current = System.currentTimeMillis();
-            if (current < Long.valueOf(jedis.get(lock))) {
+            if (StringUtils.isNotBlank(re) && current < Long.valueOf(re)) {
                 jedis.del(lock);
             }
         });

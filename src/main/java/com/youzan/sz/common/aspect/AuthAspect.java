@@ -72,7 +72,7 @@ public class AuthAspect extends BaseAspect {
         Long shopId = DistributedContextTools.getShopId();
         if (shopId == null) {//店铺不存在
             LOGGER.warn("shopId can not pass authority,context shopId is empty");
-            return null;
+            shopId = 0L;
         }
         //bid不为空,需要进行bid判断
         //// TODO: 2016/12/13

@@ -61,6 +61,9 @@ public final class PushMsgClient {
         pushMsgDTO.setSendType(SendType.ADMIN_ID.getValue());
         pushMsgDTO.addStaffRecv(staffDTO);
         pushMsgDTO.setParams(params);
+        if(staffDTO.getAid() != null){
+            pushMsgDTO.setAid(staffDTO.getAid());
+        }
         pushMsg(pushMsgDTO);
     }
     /**
@@ -79,6 +82,9 @@ public final class PushMsgClient {
         pushMsgDTO.addStaffRecv(staffDTO);
         pushMsgDTO.setParams(params);
         pushMsgDTO.setSound(soundFile);
+        if(staffDTO.getAid() != null){
+            pushMsgDTO.setAid(staffDTO.getAid());
+        }
         pushMsg(pushMsgDTO);
     }
     /**
@@ -93,6 +99,9 @@ public final class PushMsgClient {
         pushMsgDTO.setSendType(SendType.SHOP_ROLE.getValue());
         pushMsgDTO.addStaffRecv(staffDTO);
         pushMsgDTO.setParams(params);
+        if(staffDTO.getAid() != null){
+            pushMsgDTO.setAid(staffDTO.getAid());
+        }
         pushMsg(pushMsgDTO);
     }
 
