@@ -11,7 +11,7 @@
     </parent>
     <!-- -->
     <artifactId>common-utils</artifactId>
-    <version>1.5.3-RELEASE</version>
+    <version>1.6.0-carmen-SNAPSHOT</version>
 
     <dependencyManagement>
         <dependencies>
