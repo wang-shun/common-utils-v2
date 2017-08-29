@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -109,8 +110,8 @@ public class DistributedCoreFilter implements Filter {
                         // 将系统级的分布式变量放到统一的分布式上下文里面，同时将他们从传入参数中去除
                         for (int i = 0; i < typesTmp.length; i++) {
                             if (DistributedParamManager.isDistributedParam(typesTmp[i])) {
-                                Class<?> key = DistributedParamManager.get(typesTmp[i]);
-                                DistributedContextTools.set(key, argsTmp[i]);
+                                HashMap<String,Object> distributedParam = (HashMap) argsTmp[i];
+                                DistributedContextTools.setMap(distributedParam);
                                 continue;
                             }
                             types.add(typesTmp[i]);

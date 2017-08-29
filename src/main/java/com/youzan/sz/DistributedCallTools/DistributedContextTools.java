@@ -56,6 +56,9 @@ public class DistributedContextTools {
             public static String getName() {
                 return "distributed.bid";
             }
+            public static String getCarmenName() {
+                return "bid";
+            }
         }
         
         
@@ -202,6 +205,7 @@ public class DistributedContextTools {
             cache.put(RequestIp.getCarmenName(), RequestIp.class);
             cache.put(KdtId.getCarmenName(), KdtId.class);
             cache.put(ClientId.getCarmenName(), KdtId.class);
+            cache.put(Bid.getCarmenName(), Bid.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
@@ -236,7 +240,8 @@ public class DistributedContextTools {
         
         
         public static boolean isDistributedParam(String param) {
-            return cache.containsKey(param);
+//          return cache.containsKey(param);
+            return "distributed".equals(param);
         }
     }
     
@@ -444,6 +449,15 @@ public class DistributedContextTools {
         context.put(key, value);
     }
     
+    public static <T> void setMap(Map<String,Object> distributedParam) {
+        distributedParam.forEach((k,v)->{
+            System.out.println(k + " = " + v);
+            Class<?> key = DistributedParamManager.get(k);
+            if(key != null){
+                context.put(key.getCanonicalName(), v);
+            }
+        });
+    }
     
     public static void main(String[] args) {
         System.out.println(Long.parseLong(""));
