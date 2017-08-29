@@ -11,6 +11,7 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
+import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcResult;
 import com.youzan.api.common.response.ListResult;
 import com.youzan.api.common.response.PlainResult;
 import com.youzan.platform.bootstrap.exception.BusinessException;
@@ -133,7 +134,7 @@ public class DistributedCoreFilter implements Filter {
                         isSuccess = false;
                         invoke = new RpcResult(e);
                     }
-                    return dealResult(invoke, inv);
+                    return dealResult(invoke, inv, true);
                 }else {// 处理普通的rpc调用，即使用dubbo客户端直接调用的场景
                     String adminId = inv.getAttachment(AdminId.class.getCanonicalName());
                     if (null != adminId) {
@@ -301,7 +302,7 @@ public class DistributedCoreFilter implements Filter {
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
      */
-    Result dealResult(Result invoke, Invocation invocation) {
+    Result dealResult(Result invoke, Invocation invocation, boolean isCarmen) {
         // 统一处理返回值，一遍能够达到给卡门使用的要求，同时对于卡门接口就不在返回异常了，统一包装成错误消息
         RpcResult rpcResult = (RpcResult) invoke;
         BaseResponse br = null;
@@ -373,6 +374,14 @@ public class DistributedCoreFilter implements Filter {
 
         }else if (!(invoke.getValue() instanceof BaseResponse)) {
             br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
+            rpcResult.setValue(br);
+        }
+        
+        if (isCarmen) {//如果是卡门调用，要把正确返回码换成200
+            br = (BaseResponse) rpcResult.getValue();
+            if(ResponseCode.SUCCESS.getCode() == br.getCode()){
+                br.setCode(200);
+            }
             rpcResult.setValue(br);
         }
         rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
