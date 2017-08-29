@@ -36,8 +36,6 @@ public class DistributedContextTools {
 
      *由于每次调用都会重新放置context等对象.所以这里可以清除本线程所有的
      */
-    
-    
     public static void clear() {
         Long adminId = getAdminId();
         context.clear();
@@ -46,39 +44,75 @@ public class DistributedContextTools {
     
     
     /**
-     * ic static Long getAdminId() {
-     * Object obj = get(AdminId.class.getCanonicalName());
-     * return getLong(obj);
-     * }
-     *
-     * @Sup pressWarnings("unchecked") public static <T> T get(String key) { return (T) context.get(key); }
-     *
-     *
-     * publ
-     *
-     * ate static Long getLong(Object obj) { if (obj == null) { return null; } if (obj instanceof String) { if (StringUtil.isEmpty(obj.toString())) { return 0L; } return Long.valueOf(obj.toString());
-     * }else if (obj instanceof Number) { return Long.valueOf(obj + ""); } return (Long) obj; }
-     *
-     *
-     * publ
-     *
-     * 应用id public static Integer getAId() {
-     *
-     * final Object aid = get(Aid.class.getCanonicalName()); if (aid instanceof String) { return Integer.valueOf((String) aid); }else if (aid instanceof Long) { return Integer.valueOf(aid + ""); }
-     * return (Integer) aid; }
-     *
-     *
-     * publ
-     *
-     * ic static Boolean getApiFormat() { Object value = get(DistributedParamManager.ApiFormat.class.getCanonicalName()); if (value == null) { return false; } else { return (Boolean) value; } }
-     *
-     *
-     * priv
-     *
-     * PP版本信息 public static String getAppVersion() { return get(AppVersion.class.getCanonicalName()); }
-     *
-     *
-     * //获取
+ 
+ 
+     ic static Long getAdminId() {
+     Object obj = get(AdminId.class.getCanonicalName());
+     return getLong(obj);
+     }
+ 
+ 
+     @Sup pressWarnings("unchecked")
+     public static <T> T get(String key) {
+     return (T) context.get(key);
+     }
+ 
+ 
+     publ
+ 
+     ate static Long getLong(Object obj) {
+     if (obj == null) {
+     return null;
+     }
+     if (obj instanceof String) {
+     if (StringUtil.isEmpty(obj.toString())) {
+     return 0L;
+     }
+     return Long.valueOf(obj.toString());
+     }else if (obj instanceof Number) {
+     return Long.valueOf(obj + "");
+     }
+     return (Long) obj;
+     }
+ 
+ 
+     publ
+ 
+     应用id
+     public static Integer getAId() {
+ 
+     final Object aid = get(Aid.class.getCanonicalName());
+     if (aid instanceof String) {
+     return Integer.valueOf((String) aid);
+     }else if (aid instanceof Long) {
+     return Integer.valueOf(aid + "");
+     }
+     return (Integer) aid;
+     }
+ 
+ 
+     publ
+ 
+     ic static Boolean getApiFormat() {
+     Object value = get(DistributedParamManager.ApiFormat.class.getCanonicalName());
+     if (value == null) {
+     return false;
+     }else {
+     return (Boolean) value;
+     }
+     }
+ 
+ 
+     priv
+ 
+     PP版本信息
+     public static String getAppVersion() {
+     return get(AppVersion.class.getCanonicalName());
+     }
+ 
+ 
+     //获取
+
      * @deprecated 改个名字
      */
     @Deprecated
@@ -90,8 +124,6 @@ public class DistributedContextTools {
     //获取
     
     应用id
-    
-    
     public static Long getBid() {
         final Object bid = get(Bid.class.getCanonicalName());
         if (bid == null)//bid为空尝试获取一下kdtId
@@ -107,134 +139,143 @@ public class DistributedContextTools {
     
     
     /**
-     * ic static Long getKdtId() {
-     * Object obj = get(KdtId.class.getCanonicalName());
-     * return getLong(obj);
-     * }
-     *
-     *
-     * //获取
-     *
-     * ic static String getClientId() {
-     * return get(DistributedParamManager.ClientId.class.getCanonicalName());
-     * }
-     *
-     *
-     * //获取
-     *
-     * ic static String getDeviceId() {
-     * return get(DeviceId.class.getCanonicalName());
-     * }
-     *
-     *
-     * //获取
-     *
-     * ic static String getDeviceType() {
-     * return get(DeviceType.class.getCanonicalName());
-     * }
-     *
-     *
-     * // A
-     *
-     * 操作人identiy
-     * public static Integer getIdentity() {
-     * final Object identity = get(Identity.class.getCanonicalName());
-     * if (identity!= null && identity instanceof String) {
-     * return Integer.valueOf((String) identity);
-     * }
-     * return (Integer) identity;
-     * }
-     *
-     *
-     * publ
-     *
-     * ic static Integer getNoSession() {
-     * Object obj = get(NoSession.class.getCanonicalName());
-     * if (obj != null) {
-     * if (obj instanceof Integer)
-     * return (Integer) obj;
-     * if (obj instanceof String) {
-     * return Integer.valueOf(obj.toString());
-     * }
-     * }
-     * return 0;
-     * }
-     *
-     * publ
-     *
-     * 操作人id
-     * public static Long getOpAdminId() {
-     * final Object opAdminId = get(OpAdminId.class.getCanonicalName());
-     * if (opAdminId instanceof String) {
-     * return Long.valueOf((String) opAdminId);
-     * }
-     * return (Long) opAdminId;
-     * }
-     *
-     * publ
-     *
-     * 操作人名字
-     * public static String getOpAdminName() {
-     * return get(OpAdminName.class.getCanonicalName());
-     * }
-     *
-     * publ
-     *
-     * ic static Boolean getOpenApi() {
-     * Object value = get(DistributedParamManager.OpenApi.class.getCanonicalName());
-     * if (value == null) {
-     * return false;
-     * } else {
-     * return (Boolean) value;
-     * }
-     * }
-     *
-     *
-     *
-     * publ
-     *
-     * ic static String getRequestIp() {
-     * return get(RequestIp.class.getCanonicalName());
-     * }
-     *
-     *
-     * publ
-     *
-     * 应用id
-     * public static Long getShopId() {
-     * final Object shopId = get(ShopId.class.getCanonicalName());
-     * if (shopId instanceof String) {
-     * return Long.valueOf((String) shopId);
-     * }else if (shopId instanceof Integer) {
-     * return Long.valueOf(shopId + "");
-     * }
-     * return (Long) shopId;
-     * }
-     *
-     * //获取
-     *
-     * ic static void main(String[] args) {
-     * System.out.println(Long.parseLong(""));
-     * }
-     *
-     * }
-     * /**
-     *
-     *
-     * recated
-     * public static <T> void set(Class<?> key, T value) {
-     * //        if (LOGGER.isDebugEnabled()) {
-     * //            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
-     * //        }
-     * //        setAttr(key,value);
-     * context.put(key.getCanonicalName(), value);
-     * }
-     *
-     * @Dep ic static <T> void set(String key, T value) { context.put(key, value); }
-     *
-     *
-     * publ
-     *
+ 
+ 
+     ic static Long getKdtId() {
+     Object obj = get(KdtId.class.getCanonicalName());
+     return getLong(obj);
+     }
+ 
+ 
+     //获取
+ 
+     ic static String getClientId() {
+     return get(DistributedParamManager.ClientId.class.getCanonicalName());
+     }
+ 
+ 
+     //获取
+ 
+     ic static String getDeviceId() {
+     return get(DeviceId.class.getCanonicalName());
+     }
+ 
+ 
+     //获取
+ 
+     ic static String getDeviceType() {
+     return get(DeviceType.class.getCanonicalName());
+     }
+ 
+ 
+     // A
+ 
+     操作人identiy
+     public static Integer getIdentity() {
+     final Object identity = get(Identity.class.getCanonicalName());
+     if (identity != null && identity instanceof String) {
+     return Integer.valueOf((String) identity);
+     }
+     return (Integer) identity;
+     }
+ 
+ 
+     publ
+ 
+     ic static Integer getNoSession() {
+     Object obj = get(NoSession.class.getCanonicalName());
+     if (obj != null) {
+     if (obj instanceof Integer)
+     return (Integer) obj;
+     if (obj instanceof String) {
+     return Integer.valueOf(obj.toString());
+     }
+     }
+     return 0;
+     }
+ 
+ 
+     publ
+ 
+     操作人id
+     public static Long getOpAdminId() {
+     final Object opAdminId = get(OpAdminId.class.getCanonicalName());
+     if (opAdminId instanceof String) {
+     return Long.valueOf((String) opAdminId);
+     }
+     return (Long) opAdminId;
+     }
+ 
+ 
+     publ
+ 
+     操作人名字
+     public static String getOpAdminName() {
+     return get(OpAdminName.class.getCanonicalName());
+     }
+ 
+ 
+     publ
+ 
+     ic static Boolean getOpenApi() {
+     Object value = get(DistributedParamManager.OpenApi.class.getCanonicalName());
+     if (value == null) {
+     return false;
+     }else {
+     return (Boolean) value;
+     }
+     }
+ 
+ 
+     publ
+ 
+     ic static String getRequestIp() {
+     return get(RequestIp.class.getCanonicalName());
+     }
+ 
+ 
+     publ
+ 
+     应用id
+     public static Long getShopId() {
+     final Object shopId = get(ShopId.class.getCanonicalName());
+     if (shopId instanceof String) {
+     return Long.valueOf((String) shopId);
+     }else if (shopId instanceof Integer) {
+     return Long.valueOf(shopId + "");
+     }
+     return (Long) shopId;
+     }
+ 
+ 
+     //获取
+ 
+     ic static void main(String[] args) {
+     System.out.println(Long.parseLong(""));
+     }
+     
+     }
+ 
+     /**
+ 
+ 
+     recated
+     public static <T> void set(Class<?> key, T value) {
+     //        if (LOGGER.isDebugEnabled()) {
+     //            LOGGER.debug("set distribution key:{},value:{}", key.getSimpleName(), value);
+     //        }
+     //        setAttr(key,value);
+     context.put(key.getCanonicalName(), value);
+     }
+ 
+ 
+     @Dep ic static <T> void set(String key, T value) {
+     context.put(key, value);
+     }
+ 
+ 
+     publ
+
      * 设置属性,有泛型检查
      */
     public static <T extends DistributedParam<V>, V> void setAttr(Class<T> key, V value) {
@@ -253,7 +294,7 @@ public class DistributedContextTools {
             cache.put(AdminId.getCarmenName(), AdminId.class);
             cache.put(RequestIp.getCarmenName(), RequestIp.class);
             cache.put(KdtId.getCarmenName(), KdtId.class);
-            cache.put(ClientId.getCarmenName(), ClientId.class);
+            cache.put(ClientId.getCarmenName(), KdtId.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
@@ -303,16 +344,16 @@ public class DistributedContextTools {
                 return "distributed.admin_id";
             }
         }
-        
-
+    
+    
         public static class Aid extends DistributedParam<Integer> {
             
             public static String getName() {
                 return "distributed.app_id";
             }
         }
-        
-
+    
+    
         public static class Bid extends DistributedParam<Long> {
             
             public static String getName() {
@@ -320,15 +361,15 @@ public class DistributedContextTools {
             }
         }
     
-
+    
         public static class ShopId extends DistributedParam<Long> {
             
             public static String getName() {
                 return "distributed.shop_id";
             }
         }
-        
-
+    
+    
         public static abstract class DistributedParam<T> {
             
             public static String getName() {
@@ -398,16 +439,16 @@ public class DistributedContextTools {
                 return "CarmenParam";
             }
         }
-        
-
+    
+    
         public static class DeviceId extends DistributedParam<String> {
             
             public static String getName() {
                 return "distributed.device_id";
             }
         }
-        
-
+    
+    
         public static class DeviceType extends DistributedParam<String> {
             
             public static String getName() {
