@@ -201,11 +201,20 @@ public class DistributedContextTools {
         
         static {
             // 放入卡门调用时传入的参数类型映射
-            cache.put(AdminId.getCarmenName(), AdminId.class);
-            cache.put(RequestIp.getCarmenName(), RequestIp.class);
-            cache.put(KdtId.getCarmenName(), KdtId.class);
-            cache.put(ClientId.getCarmenName(), KdtId.class);
-            cache.put(Bid.getCarmenName(), Bid.class);
+            cache.put(AdminId.getName(), AdminId.class);
+            cache.put(RequestIp.getName(), RequestIp.class);
+            cache.put(KdtId.getName(), KdtId.class);
+            cache.put(DeviceId.getName(), DeviceId.class);
+            cache.put(DeviceType.getName(), DeviceType.class);
+            cache.put(Aid.getName(), Aid.class);
+            cache.put(ShopId.getName(), ShopId.class);
+            cache.put(Bid.getName(), Bid.class);
+            cache.put(OpAdminId.getName(), OpAdminId.class);
+            cache.put(OpAdminName.getName(), OpAdminName.class);
+            cache.put(AppVersion.getName(), AppVersion.class);
+            cache.put(NoSession.getName(), NoSession.class);
+            cache.put(Identity.getName(), Identity.class);
+            cache.put(ClientId.getName(), ClientId.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
@@ -221,6 +230,7 @@ public class DistributedContextTools {
             cache.put(NoSession.class.getCanonicalName(), NoSession.class);
             cache.put(Identity.class.getCanonicalName(), Identity.class);
             cache.put(ClientId.class.getCanonicalName(), ClientId.class);
+            cache.put(OpenApi.class.getCanonicalName(), OpenApi.class);
             cache.put(CarmenParam.class.getCanonicalName(), CarmenParam.class);
         }
         
@@ -240,8 +250,8 @@ public class DistributedContextTools {
         
         
         public static boolean isDistributedParam(String param) {
-//          return cache.containsKey(param);
-            return "distributed".equals(param);
+          return cache.containsKey(param);
+//            return "distributed".equals(param);
         }
     }
     

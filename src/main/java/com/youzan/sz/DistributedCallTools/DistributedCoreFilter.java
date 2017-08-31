@@ -11,10 +11,10 @@ import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.RpcResult;
 import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
-import com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcResult;
 import com.youzan.api.common.response.ListResult;
 import com.youzan.api.common.response.PlainResult;
 import com.youzan.platform.bootstrap.exception.BusinessException;
+import com.youzan.platform.util.lang.StringUtil;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.AdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Aid;
@@ -26,6 +26,7 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.RequestIp;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.ShopId;
+import com.youzan.sz.common.enums.AppEnum;
 import com.youzan.sz.common.exceptions.BizException;
 import com.youzan.sz.common.response.BaseResponse;
 import com.youzan.sz.common.response.enums.ResponseCode;
@@ -37,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -54,28 +54,28 @@ import java.util.Stack;
 @Activate(group = {Constants.PROVIDER, Constants.CONSUMER}, order = -100000)
 @SPI("kernel")
 public class DistributedCoreFilter implements Filter {
-
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(com.youzan.sz.DistributedCallTools.DistributedCoreFilter.class);
-
+    
     private static final String MDC_TRACE = "MDC_TRACE";
     
     private static final int CARMEN_SUCCESS_CODE = 200;
-
+    
     private ThreadLocal<Stack<Integer>> stackLocal = ThreadLocal.withInitial(() -> new Stack<Integer>());
-
-
+    
+    
     public String getThrowableStr(Throwable e) {
         if (e == null) {
             return "";
         }
-
+        
         ArrayWriter aw = new ArrayWriter();
         e.printStackTrace(aw);
         String[] arr = aw.toStringArray();
         if (arr == null) {
             return "";
         }
-
+        
         StringBuilder strBuf = new StringBuilder();
         for (String anArr : arr) {
             strBuf.append(anArr).append("####");
@@ -95,11 +95,11 @@ public class DistributedCoreFilter implements Filter {
         // provider侧的调用处理
         if (inv instanceof DecodeableRpcInvocation || "true".equals(inv.getAttachment(Constants.GENERIC_KEY))) {
             inv.setAttachment(Constants.ASYNC_KEY, "false");
-    
+            
             try {
                 // 设置请求的唯一key，方便日志的grep
                 initLogMdc();
-        
+                
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
                     try {
@@ -111,22 +111,26 @@ public class DistributedCoreFilter implements Filter {
                         // 将系统级的分布式变量放到统一的分布式上下文里面，同时将他们从传入参数中去除
                         for (int i = 0; i < typesTmp.length; i++) {
                             if (DistributedParamManager.isDistributedParam(typesTmp[i])) {
-                                HashMap<String,Object> distributedParam = (HashMap) argsTmp[i];
-                                DistributedContextTools.setMap(distributedParam);
+                                //http
+                                Class<?> key = DistributedParamManager.get(typesTmp[i]);
+                                com.youzan.sz.DistributedCallTools.DistributedContextTools.set(key, argsTmp[i]);
                                 continue;
                             }
                             types.add(typesTmp[i]);
                             args.add(argsTmp[i]);
                         }
+                        putCarmenParamIntoContext(inv.getAttachments());
                         // 保存过滤掉系统参数后的结果
-                        inv.getArguments()[1] = types.toArray(new String[0]);
-                        inv.getArguments()[2] = args.toArray();
-    
+                        if(types.size() > 0 && args.size()>0){
+                            inv.getArguments()[1] = types.toArray(new String[0]);
+                            inv.getArguments()[2] = args.toArray();
+                        }
+                        
                         invoke = invoker.invoke(inv);
                         if (LOGGER.isInfoEnabled()) {
                             LOGGER.info("core filter,path:{}:methodName:{},inArgs:{}", inv.getAttachment("path"), method, inv.getMethodName(), JsonUtils.bean2Json(argsTmp));
                         }
-    
+                        
                         if (invoke.hasException()) {
                             isSuccess = false;
                         }
@@ -156,7 +160,7 @@ public class DistributedCoreFilter implements Filter {
                     if (null != deviceType) {
                         DistributedContextTools.setAttr(DeviceType.class, deviceType);
                     }
-    
+                    
                     String aid = inv.getAttachment(Aid.class.getCanonicalName());
                     if (aid != null) {
                         DistributedContextTools.set(Aid.class.getCanonicalName(), String.valueOf(aid));
@@ -199,7 +203,7 @@ public class DistributedCoreFilter implements Filter {
                 LOGGER.warn("normal rpc invoke fail", e);
                 isSuccess = false;
                 return new RpcResult(e);
-        
+                
             } finally {
                 // 调用结束后要清理掉分布式上下文，不然会有内存泄露和脏数据
                 DistributedContextTools.clear();
@@ -224,7 +228,7 @@ public class DistributedCoreFilter implements Filter {
                 String appVersion = DistributedContextTools.getAppVersion();
                 Integer noSession = DistributedContextTools.getNoSession();
                 method = inv.getMethodName();
-    
+                
                 if (null != adminId) {
                     inv.setAttachment(AdminId.class.getCanonicalName(), adminId + "");
                 }
@@ -257,11 +261,11 @@ public class DistributedCoreFilter implements Filter {
                 if (appVersion != null) {
                     inv.setAttachment(DistributedParamManager.AppVersion.class.getCanonicalName(), appVersion);
                 }
-    
+                
                 if (noSession != null) {
                     inv.setAttachment(DistributedParamManager.NoSession.class.getCanonicalName(), noSession.toString());
                 }
-    
+                
                 invoke = invoker.invoke(inv);
                 if (invoke.hasException()) {
                     isSuccess = false;
@@ -281,8 +285,43 @@ public class DistributedCoreFilter implements Filter {
         }
         
     }
-
-
+    
+    
+    private void putCarmenParamIntoContext(Map<String, String> attachments) {
+        String adminId = attachments.get("admin_id");
+        String requestIp = attachments.get("request_ip");
+        String kdtId = attachments.get("kdt_id");
+        String bid = attachments.get("kdt_id");
+        String shopId = attachments.get("shop_id");
+        String opAdminId = attachments.get("admin_id");
+        String clientId = attachments.get("client_id");
+        if(StringUtil.isNotEmpty(adminId)){
+            DistributedContextTools.setAttr(DistributedParamManager.AdminId.class, Long.valueOf(adminId));
+        }
+        if(StringUtil.isNotEmpty(requestIp)){
+            DistributedContextTools.setAttr(DistributedParamManager.RequestIp.class, requestIp);
+        }
+        if(StringUtil.isNotEmpty(kdtId)){
+            DistributedContextTools.setAttr(DistributedParamManager.KdtId.class, Long.valueOf(kdtId));
+        }
+        if(StringUtil.isNotEmpty(bid)){
+            DistributedContextTools.setAttr(DistributedParamManager.Bid.class, Long.valueOf(bid));
+        }
+        if(StringUtil.isNotEmpty(shopId)){
+            DistributedContextTools.setAttr(DistributedParamManager.ShopId.class, Long.valueOf(shopId));
+        }
+        if(StringUtil.isNotEmpty(opAdminId)){
+            DistributedContextTools.setAttr(DistributedParamManager.OpAdminId.class, Long.valueOf(opAdminId));
+        }
+        if(StringUtil.isNotEmpty(clientId)){
+            DistributedContextTools.setAttr(DistributedParamManager.ClientId.class, clientId);
+            DistributedContextTools.setAttr(DistributedParamManager.OpenApi.class, true);
+            DistributedContextTools.setAttr(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.CARMEN.getValue()));
+            DistributedContextTools.setAttr(DistributedParamManager.Aid.class, AppEnum.FC.getAid());
+        }
+    }
+    
+    
     /**
      * 设置请求的唯一key，方便日志的grep
      */
@@ -293,12 +332,12 @@ public class DistributedCoreFilter implements Filter {
                 // 设置请求的唯一key，方便日志的grep
                 MDC.put(MDC_TRACE, MdcUtil.createMDCTraceId());
             }
-
+            
             stack.push(1);
         }
     }
-
-
+    
+    
     /**
      * 处理通用调用类型的返回对象结果，需要将返回对象包装成baseresponse对象
      */
@@ -308,14 +347,14 @@ public class DistributedCoreFilter implements Filter {
         BaseResponse br = null;
         // 对于异常信息，统一进行包装
         if (invoke.hasException()) {
-
+            
             if (invoke.getException().getCause() instanceof BizException) {
                 BizException be = (BizException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), be.getData());
             }else if (invoke.getException() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
-
+                
             }else if (invoke.getException().getCause() instanceof BusinessException) {
                 BusinessException be = (BusinessException) invoke.getException().getCause();
                 br = new BaseResponse<>(be.getCode().intValue(), be.getMessage(), invoke.getValue());
@@ -338,7 +377,7 @@ public class DistributedCoreFilter implements Filter {
             }else {
                 invokeClass = (String) ((Map) invoke.getValue()).get("class");
             }
-
+            
             if (ListResult.class.getName().equals(invokeClass)) {//返回listResult
                 final Object data = ((Map) invoke.getValue()).get("data");
                 final ListResult listResult = new ListResult();
@@ -371,7 +410,7 @@ public class DistributedCoreFilter implements Filter {
                 br = new BaseResponse<>(code, (String) ((Map) invoke.getValue()).get("message"), data);
                 rpcResult.setValue(br);
             }
-
+            
         }else if (!(invoke.getValue() instanceof BaseResponse)) {
             br = new BaseResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), invoke.getValue());
             rpcResult.setValue(br);
@@ -379,7 +418,7 @@ public class DistributedCoreFilter implements Filter {
         
         if (isCarmen) {//如果是卡门调用，要把正确返回码换成200
             br = (BaseResponse) rpcResult.getValue();
-            if(ResponseCode.SUCCESS.getCode() == br.getCode()){
+            if (ResponseCode.SUCCESS.getCode() == br.getCode()) {
                 br.setCode(200);
             }
             rpcResult.setValue(br);
@@ -387,8 +426,8 @@ public class DistributedCoreFilter implements Filter {
         rpcResult.setAttachment(CarmenCodec.CARMEN_CODEC, invocation.getAttachment(CarmenCodec.CARMEN_CODEC));
         return invoke;
     }
-
-
+    
+    
     private void clearLogMdc() {
         if (isLogMdc()) {
             Stack<Integer> stack = stackLocal.get();
@@ -400,10 +439,10 @@ public class DistributedCoreFilter implements Filter {
             }
         }
     }
-
-
+    
+    
     private boolean isLogMdc() {
         return LOGGER.isInfoEnabled();
     }
-
+    
 }

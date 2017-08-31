@@ -119,13 +119,13 @@ public class DistributedCoreWebFilter implements Filter {
         List<Method> methodList = new ArrayList<>(2);
         for (Method method : methods) {
             if (method.getName().equals(methodName)) {
-                if (paramCount <= 0 || method.getParameterCount() == paramCount || method.getParameterCount() == objFieldCount) {
+                if (paramCount < 0 || method.getParameterCount() == paramCount || method.getParameterCount() == objFieldCount) {
                     methodList.add(method);
                 }
             }
         }
         if (methodList.isEmpty()) {
-            if (paramCount >= 0)
+            if (paramCount > 0)
                 return getMethod(methodName, -1, -1, interf);//只按名称再查找一遍
             return null;
         }
