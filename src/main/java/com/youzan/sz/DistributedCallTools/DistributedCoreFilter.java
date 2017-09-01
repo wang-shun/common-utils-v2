@@ -102,6 +102,7 @@ public class DistributedCoreFilter implements Filter {
                 
                 // 处理通用invoke方式调用，目前是卡门调用过来的方式
                 if (inv.getMethodName().equals(Constants.$INVOKE) && inv.getArguments() != null && inv.getArguments().length == 3 && !invoker.getUrl().getParameter(Constants.GENERIC_KEY, false)) {
+                    boolean isCarmen = false;
                     try {
                         method = (String) inv.getArguments()[0];
                         String[] typesTmp = (String[]) inv.getArguments()[1];
@@ -119,7 +120,7 @@ public class DistributedCoreFilter implements Filter {
                             types.add(typesTmp[i]);
                             args.add(argsTmp[i]);
                         }
-                        putCarmenParamIntoContext(inv.getAttachments());
+                        isCarmen = putCarmenParamIntoContext(inv.getAttachments());
                         // 保存过滤掉系统参数后的结果
                         if(types.size() > 0 && args.size()>0){
                             inv.getArguments()[1] = types.toArray(new String[0]);
@@ -138,7 +139,7 @@ public class DistributedCoreFilter implements Filter {
                         isSuccess = false;
                         invoke = new RpcResult(e);
                     }
-                    return dealResult(invoke, inv, true);
+                    return dealResult(invoke, inv, isCarmen);
                 }else {// 处理普通的rpc调用，即使用dubbo客户端直接调用的场景
                     String adminId = inv.getAttachment(AdminId.class.getCanonicalName());
                     if (null != adminId) {
@@ -287,7 +288,7 @@ public class DistributedCoreFilter implements Filter {
     }
     
     
-    private void putCarmenParamIntoContext(Map<String, String> attachments) {
+    private boolean putCarmenParamIntoContext(Map<String, String> attachments) {
         String adminId = attachments.get("admin_id");
         String requestIp = attachments.get("request_ip");
         String kdtId = attachments.get("kdt_id");
@@ -318,6 +319,9 @@ public class DistributedCoreFilter implements Filter {
             DistributedContextTools.setAttr(DistributedParamManager.OpenApi.class, true);
             DistributedContextTools.setAttr(DistributedParamManager.DeviceType.class, String.valueOf(com.youzan.sz.common.model.enums.DeviceType.CARMEN.getValue()));
             DistributedContextTools.setAttr(DistributedParamManager.Aid.class, AppEnum.FC.getAid());
+            return true;
+        }else {
+            return false;
         }
     }
     
