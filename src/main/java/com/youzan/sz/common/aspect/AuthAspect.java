@@ -15,7 +15,6 @@ import com.youzan.sz.common.service.AuthService;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.session.SessionTools;
 
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -33,105 +32,101 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+
 /**
  * Created by wangpan on 2016/12/5.
  */
 @Aspect
 public class AuthAspect extends BaseAspect {
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthAspect.class);
-
+    
     @Resource
-    private AuthService         authService;
-
-
+    private AuthService authService;
+    
+    
     @After("pointcut()")
     public void after(JoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Auth auth = methodSignature.getMethod().getAnnotation(Auth.class);
         if (auth.clearCache()) {
-            clearUserPermCatche();
+            Long shopId = DistributedContextTools.getShopId();
+            Long bid = DistributedContextTools.getBid();
+            Long adminId = DistributedContextTools.getAdminId();
+            String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
+            GrantPolicyDTO grantPolicyDTO = buildGrantPolicyDTO(bid, shopId, Long.valueOf(staffId), adminId);
+            if (grantPolicyDTO == null) {
+                return;
+            }
+            try {
+                authService.clearStaffPermCache(grantPolicyDTO);
+            } catch (Exception e) {
+                LOGGER.warn("clear staff perm cache error({}),parameter({})", e, JsonUtils.bean2Json(grantPolicyDTO));
+            }
         }
     }
-
-
-    private void clearUserPermCatche() {
-        GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
-        if (grantPolicyDTO == null) {
-            return;
-        }
-        try {
-            authService.clearStaffPermCache(grantPolicyDTO);
-        } catch (Exception e) {
-            LOGGER.warn("clear staff perm cache error({}),parameter({})", e, JsonUtils.bean2Json(grantPolicyDTO));
-        }
-    }
-
-
-    private GrantPolicyDTO getGrantPolicyDTO() {
-
-        Long shopId = DistributedContextTools.getShopId();
+    
+    
+    private GrantPolicyDTO buildGrantPolicyDTO(Long bid, Long shopId, Long staffId, Long adminId) {
+        
         if (shopId == null) {//店铺不存在
             LOGGER.warn("shopId can not pass authority,context shopId is empty");
             shopId = 0L;
         }
-        //bid不为空,需要进行bid判断
-        //// TODO: 2016/12/13
-        Long bid = DistributedContextTools.getBid();
-        if (bid == null) { //bid不为空,需要进行bid判断
+        
+        if (bid == null) {
             LOGGER.warn("bid can not pass authority.context bid is empty");
             return null;
         }
-
-        String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
-        if (StringUtil.isEmpty(staffId)) { //bid不为空,需要进行bid判断
+        
+        
+        if (null == staffId) {
             LOGGER.warn("staffId can not pass authority.context staffId is empty");
             return null;
         }
         GrantPolicyDTO grantPolicyDTO = new GrantPolicyDTO();
-        grantPolicyDTO.setBid(Long.valueOf(bid));
+        grantPolicyDTO.setBid(bid);
         grantPolicyDTO.setShopId(shopId);
-        grantPolicyDTO.setAdminId(DistributedContextTools.getAdminId());
-        grantPolicyDTO.setStaffId(Long.valueOf(Long.valueOf(staffId)));
+        grantPolicyDTO.setAdminId(adminId);
+        grantPolicyDTO.setStaffId(staffId);
         return grantPolicyDTO;
-
+        
     }
     
     
     @Before("pointcut()")
     public void before(JoinPoint joinPoint) {
     }
-
-
+    
+    
     /**
      * 如果有权限 返回true 否则 false
      *
      * @param allowedPermissions
      * @return
      */
-    private boolean checkPermission(PermEnum[] allowedPermissions, String name) {
-
+    public boolean checkPermission(Long bid, Long shopId, Long staffId, Long adminId, PermEnum... allowedPermissions) {
+        
         if (allowedPermissions == null || allowedPermissions.length == 0) {
             return true;
         }
-        String staffId = SessionTools.getInstance().get(SessionTools.STAFF_ID);
-        final Long adminId = DistributedContextTools.getAdminId();
-    
+        
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("auth user permission:adminId:{},staffId:{},allowedPermission：{}", adminId, staffId, allowedPermissions);
         }
-    
-    
-        GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
-
+        
+        
+        GrantPolicyDTO grantPolicyDTO = buildGrantPolicyDTO(bid, shopId, staffId, adminId);
+        
         if (grantPolicyDTO == null) {
             return false;
         }
         StaffPerm staffPerm = new StaffPerm();
-        staffPerm.setKdtId(DistributedContextTools.getBid());
-        staffPerm.setAdminId(DistributedContextTools.getAdminId());
-        staffPerm.setShopId(DistributedContextTools.getShopId());
-        if (StringUtils.isNotEmpty(staffId)) {
-            staffPerm.setStaffId(Long.valueOf(staffId));
+        staffPerm.setKdtId(bid);
+        staffPerm.setAdminId(adminId);
+        staffPerm.setShopId(shopId);
+        if (null != staffId) {
+            staffPerm.setStaffId(staffId);
         }else {
             LOGGER.warn("kdtId ({}),adminId({}) staffId is null", staffPerm.getKdtId(), staffPerm.getAdminId());
         }
@@ -191,19 +186,20 @@ public class AuthAspect extends BaseAspect {
         if (LOGGER.isInfoEnabled())
             LOGGER.info("consumer auth|result:{}", JsonUtils.toJson(baseResponse));
     }
-
-
-    private GrantPolicyDTO getGrantPolicyDTOWithAdminId() {
-
-        GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTO();
-        grantPolicyDTO.setStaffId(DistributedContextTools.getAdminId());
-        grantPolicyDTO.setAdminId(DistributedContextTools.getAdminId());
     
+    
+    private GrantPolicyDTO getGrantPolicyDTOWithAdminId() {
+        
+        Long shopId = DistributedContextTools.getShopId();
+        Long bid = DistributedContextTools.getBid();
+        Long adminId = DistributedContextTools.getAdminId();
+        GrantPolicyDTO grantPolicyDTO = buildGrantPolicyDTO(bid, shopId, adminId, adminId);
+        
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("getGrantPolicyDTOWithAdminId :adminId:{}", DistributedContextTools.getAdminId());
+            LOGGER.info("getGrantPolicyDTOWithAdminId :adminId:{}", adminId);
         }
         return grantPolicyDTO;
-
+        
     }
     
     
@@ -213,27 +209,15 @@ public class AuthAspect extends BaseAspect {
         Method method = this.getMethod(pjp);
         Auth auth = method.getAnnotation(Auth.class);
         Class<?> returnType = method.getReturnType();
-        // 获取注解上传过来的参数
-        PermEnum[] allowedPermissions = auth.allowedPerms();
-        boolean allow = checkPermission(allowedPermissions, method.getDeclaringClass().getName() + "." + method.getName());
+        // 验证注解上的权限信息
+        boolean allow = checkPermission(DistributedContextTools.getBid(), DistributedContextTools.getShopId(), Long.valueOf(SessionTools.getInstance().get(SessionTools.STAFF_ID)),
+                DistributedContextTools.getAdminId(), auth.allowedPerms());
         //检查是否被授予临时权限
         if (!allow) {
             allow = tryGrant(auth.resource());
         }
         if (allow) {
             // 通过鉴权,开始调用业务逻辑方法
-            /* try {
-                return pjp.proceed();
-            } catch (BusinessException be) {
-                throw be;
-            } catch (Throwable e) {
-                LOGGER.warn("Exception:{}", e);
-                if (BaseResponse.class.isAssignableFrom(returnType)) {
-                    return new BaseResponse(ResponseCode.ERROR.getCode(), e.getMessage(), null);
-                } else {
-                    throw new BusinessException((long) ResponseCode.ERROR.getCode(), "系统异常", e);
-                }
-            }*/
             try {
                 return proceed(pjp, returnType);
             } finally {
@@ -254,13 +238,13 @@ public class AuthAspect extends BaseAspect {
     @Pointcut("@annotation(com.youzan.sz.common.annotation.Auth)")
     public void pointcut() {
     }
-
-
+    
+    
     /*
     * @return 如果临时授权成功,返回true
     * */
     private boolean tryGrant(ResourceEnum resourceEnum) {
-
+    
         if (resourceEnum == null || resourceEnum == ResourceEnum.NONE) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("for resource:{} reason ,skip clear grant", resourceEnum);
@@ -270,7 +254,7 @@ public class AuthAspect extends BaseAspect {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("resource:({}:{}) 支持提权,开始进行提权检查", resourceEnum.getResource(), resourceEnum.getDesc());
         }
-
+    
         final GrantPolicyDTO grantPolicyDTO = getGrantPolicyDTOWithAdminId();
         grantPolicyDTO.setResource(resourceEnum.getResource());
         final BaseResponse baseResponse = authService.AuthByGrant(grantPolicyDTO);
@@ -287,5 +271,5 @@ public class AuthAspect extends BaseAspect {
         throw new BizException(ResponseCode.getRespondeByCode(baseResponse.getCode()), baseResponse.getData());
         //        throw .getBusinessException();
     }
-
+    
 }
