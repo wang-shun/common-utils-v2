@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 /**
  * Created by zefa on 16/6/23.
@@ -96,8 +98,8 @@ public class JsonUtils {
 
 
     public static void main(String[] args) {
-
-        System.out.println(JsonUtils.json2Bean("{\"name\":\"基德\",\"age\":99}", String.class));
+        HashMap<String, String> result = JsonUtils.json2Bean("{\"name\":\"基德\",\"age\":99}", HashMap.class);
+        System.out.println(result);
     }
     
     

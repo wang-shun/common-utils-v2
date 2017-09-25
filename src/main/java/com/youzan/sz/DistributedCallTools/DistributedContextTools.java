@@ -195,6 +195,13 @@ public class DistributedContextTools {
                 return "distributed.identity";
             }
         }
+    
+        public static class Sign extends DistributedParam<String> {
+        
+            public static String getName() {
+                return "distributed.sign";
+            }
+        }
         
         
         private static Map<String, Class<?>> cache = new HashMap<>();
@@ -215,6 +222,7 @@ public class DistributedContextTools {
             cache.put(NoSession.getName(), NoSession.class);
             cache.put(Identity.getName(), Identity.class);
             cache.put(ClientId.getName(), ClientId.class);
+            cache.put(Sign.getName(), Sign.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
@@ -232,6 +240,7 @@ public class DistributedContextTools {
             cache.put(ClientId.class.getCanonicalName(), ClientId.class);
             cache.put(OpenApi.class.getCanonicalName(), OpenApi.class);
             cache.put(CarmenParam.class.getCanonicalName(), CarmenParam.class);
+            cache.put(Sign.class.getCanonicalName(), Sign.class);
         }
         
         public static Class<?> get(Class<?> param) {
@@ -389,6 +398,10 @@ public class DistributedContextTools {
     
     public static String getRequestIp() {
         return get(RequestIp.class.getCanonicalName());
+    }
+    
+    public static String getSign() {
+        return get(DistributedParamManager.Sign.class.getCanonicalName());
     }
     
     

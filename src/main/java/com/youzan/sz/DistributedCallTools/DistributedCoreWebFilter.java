@@ -14,13 +14,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youzan.platform.bootstrap.exception.BusinessException;
 import com.youzan.sz.common.SignOut;
+import com.youzan.sz.common.annotation.Sign;
 import com.youzan.sz.common.annotation.WithoutLogging;
 import com.youzan.sz.common.anotations.Admin;
 import com.youzan.sz.common.anotations.Inner;
 import com.youzan.sz.common.response.enums.ResponseCode;
+import com.youzan.sz.common.service.AuthService;
+import com.youzan.sz.common.service.SessionService;
 import com.youzan.sz.common.util.JsonUtils;
 import com.youzan.sz.common.util.MdcUtil;
+import com.youzan.sz.common.util.SpringUtils;
 import com.youzan.sz.session.SessionTools;
+import com.youzan.sz.sign.SignTools;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +80,7 @@ public class DistributedCoreWebFilter implements Filter {
     }
     
     
-    private void doAuth(String m, Method method, Class<?> interface1) {
+    private void doAuth(String m, Method method, String paramStr, Class<?> interface1) {
         if (interface1.getAnnotation(Admin.class) != null) {//暂时不对管理进行鉴权
             return;
         }
@@ -85,6 +90,9 @@ public class DistributedCoreWebFilter implements Filter {
         if (method.getAnnotation(Admin.class) != null) {
             return;
         }
+        if(method.getAnnotation(Sign.class) != null && !SignTools.getInstance().sign(paramStr)){
+            throw ResponseCode.PORTAL_SIGN_FAIL.getBusinessException();
+        }
         if (method.getAnnotation(WithoutLogging.class) == null && method.getAnnotation(SignOut.class) == null) {
             Map<String, String> map = loadSession();
             //除了不需要session的方法,其他方法都要做登录状态检测.
@@ -93,6 +101,7 @@ public class DistributedCoreWebFilter implements Filter {
                 throw ResponseCode.LOGIN_TIMEOUT.getBusinessException();
             }
         }
+        
     }
     
     
@@ -207,7 +216,7 @@ public class DistributedCoreWebFilter implements Filter {
                     LOGGER.debug("web core filter:methodName {},inArgs:{}", method.getName(), argsTmp);
         
                 if (!present)//没有no_session标志
-                    doAuth(m, method, interface1);
+                    doAuth(m, method, (String) argsTmp[0], interface1);
                 else {
                     if (LOGGER.isDebugEnabled())
                         LOGGER.debug("find no  session flag,just skip");
