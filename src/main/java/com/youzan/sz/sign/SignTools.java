@@ -53,6 +53,7 @@ public class SignTools {
     }
     
     public static boolean sign(String paramJson){
+        //去掉paramJson 首尾中括号
         Map<String, String> params = JsonUtils.json2Bean(paramJson, Map.class);
         String sign = DistributedContextTools.getSign();
         LOGGER.info("call authService.sign param:{} sign:{}", params, sign);
