@@ -209,9 +209,16 @@ public class AuthAspect extends BaseAspect {
         Method method = this.getMethod(pjp);
         Auth auth = method.getAnnotation(Auth.class);
         Class<?> returnType = method.getReturnType();
+    
+        boolean allow = true;
+        
         // 验证注解上的权限信息
-        boolean allow = checkPermission(DistributedContextTools.getBid(), DistributedContextTools.getShopId(), Long.valueOf(SessionTools.getInstance().get(SessionTools.STAFF_ID)),
-                DistributedContextTools.getAdminId(), auth.allowedPerms());
+        if (null != auth.allowedPerms() && auth.allowedPerms().length > 0) {
+            allow = checkPermission(DistributedContextTools.getBid(), DistributedContextTools.getShopId(), Long.valueOf(SessionTools.getInstance().get(SessionTools.STAFF_ID)),
+                    DistributedContextTools.getAdminId(), auth.allowedPerms());
+        }
+        
+       
         //检查是否被授予临时权限
         if (!allow) {
             allow = tryGrant(auth.resource());
