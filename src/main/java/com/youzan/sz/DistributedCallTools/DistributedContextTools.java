@@ -10,6 +10,7 @@ import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedPar
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DistributedParam;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.Identity;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.KdtId;
+import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.DeptId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.NoSession;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminId;
 import com.youzan.sz.DistributedCallTools.DistributedContextTools.DistributedParamManager.OpAdminName;
@@ -89,8 +90,20 @@ public class DistributedContextTools {
                 return "kdtId";
             }
         }
+    
+    
+        public static class DeptId extends DistributedParam<Long> {
         
-        
+            public static String getName() {
+                return "distributed.dept_id";
+            }
+    
+            public static String getCarmenName() {
+                return "deptId";
+            }
+        }
+    
+    
         public static class RequestIp extends DistributedParam<String> {
             
             public static String getName() {
@@ -195,6 +208,13 @@ public class DistributedContextTools {
                 return "distributed.identity";
             }
         }
+    
+        public static class Sign extends DistributedParam<String> {
+        
+            public static String getName() {
+                return "distributed.sign";
+            }
+        }
         
         
         private static Map<String, Class<?>> cache = new HashMap<>();
@@ -204,6 +224,7 @@ public class DistributedContextTools {
             cache.put(AdminId.getName(), AdminId.class);
             cache.put(RequestIp.getName(), RequestIp.class);
             cache.put(KdtId.getName(), KdtId.class);
+            cache.put(DeptId.getName(), DeptId.class);
             cache.put(DeviceId.getName(), DeviceId.class);
             cache.put(DeviceType.getName(), DeviceType.class);
             cache.put(Aid.getName(), Aid.class);
@@ -215,9 +236,11 @@ public class DistributedContextTools {
             cache.put(NoSession.getName(), NoSession.class);
             cache.put(Identity.getName(), Identity.class);
             cache.put(ClientId.getName(), ClientId.class);
+            cache.put(Sign.getName(), Sign.class);
             // 放入使用客户端直接调用时放入的参数类型
             cache.put(AdminId.class.getCanonicalName(), AdminId.class);
             cache.put(KdtId.class.getCanonicalName(), KdtId.class);
+            cache.put(DeptId.class.getCanonicalName(), DeptId.class);
             cache.put(RequestIp.class.getCanonicalName(), RequestIp.class);
             cache.put(DeviceId.class.getCanonicalName(), DeviceId.class);
             cache.put(DeviceType.class.getCanonicalName(), DeviceType.class);
@@ -232,6 +255,7 @@ public class DistributedContextTools {
             cache.put(ClientId.class.getCanonicalName(), ClientId.class);
             cache.put(OpenApi.class.getCanonicalName(), OpenApi.class);
             cache.put(CarmenParam.class.getCanonicalName(), CarmenParam.class);
+            cache.put(Sign.class.getCanonicalName(), Sign.class);
         }
         
         public static Class<?> get(Class<?> param) {
@@ -286,6 +310,10 @@ public class DistributedContextTools {
         return getLong(obj);
     }
     
+    public static Long getDeptId() {
+        Object obj = get(DeptId.class.getCanonicalName());
+        return getLong(obj);
+    }
     
     public static Integer getNoSession() {
         Object obj = get(NoSession.class.getCanonicalName());
@@ -389,6 +417,10 @@ public class DistributedContextTools {
     
     public static String getRequestIp() {
         return get(RequestIp.class.getCanonicalName());
+    }
+    
+    public static String getSign() {
+        return get(DistributedParamManager.Sign.class.getCanonicalName());
     }
     
     

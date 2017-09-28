@@ -457,12 +457,13 @@ public class CarmenCodec implements Codec2 {
             String opAdminId = parseQueryString.get("op_admin_id");
             String opAdminName = parseQueryString.get("op_admin_name");
             String noSession = parseQueryString.get("no_session");
+            String sign = parseQueryString.get("sign");
             
             inv.setArguments(new Object[]{methodName, new String[]{DistributedParamManager.AdminId.getName(), DistributedParamManager.RequestIp.getName(), DistributedParamManager.KdtId.getName(),
                     DistributedParamManager.DeviceId.getName(), DistributedParamManager.DeviceType.getName(), DistributedParamManager.Aid.getName(), DistributedParamManager.Bid.getName(),
                     DistributedParamManager.ShopId.getName(), DistributedParamManager.OpAdminId.getName(), DistributedParamManager.OpAdminName.getName(), DistributedParamManager.AppVersion.getName
-                    (), DistributedParamManager.NoSession.getName(), "json"}, new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid, shopId, opAdminId, opAdminName, versionStr,
-                    noSession, jsonValue}});
+                    (), DistributedParamManager.NoSession.getName(),DistributedParamManager.Sign.getName(), "json"}, new Object[]{adminId, requestIp, kdtId, deviceId, deviceType, aid, bid, shopId, opAdminId, opAdminName, versionStr,
+                    noSession,sign, jsonValue}});
             inv.setMethodName(Constants.$INVOKE);
             inv.setParameterTypes(new Class[]{String.class, String[].class, Object[].class});
             Map<String, String> attachments = new HashMap<>();
