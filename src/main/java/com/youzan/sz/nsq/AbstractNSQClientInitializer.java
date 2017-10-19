@@ -18,32 +18,32 @@ import java.util.concurrent.TimeUnit;
  * Created by zhanguo on 16/7/29.
  */
 public abstract class AbstractNSQClientInitializer<T> implements ClientInitializer {
-    
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     protected NSQConfig nsqConfig;
-    
+
     protected NSQCodec nsqCodec = null;
-    
+
     protected String topic = null;
-    
+
     protected String consumerName;
-    
+
     protected Integer connectTimeoutInMillisecond = 3 * 1000;
-    
+
     protected Integer msgTimeoutInMillisecond = (int) TimeUnit.SECONDS.toMillis(120);
-    
-    
+
+
     protected AbstractNSQClientInitializer() {
         try {
-            
+
             nsqConfig = new NSQConfig();
         } catch (RuntimeException e) {
             logger.error("init exception", e);
         }
     }
-    
-    
+
+
     @Override
     public void build() {
         final String property = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "nsq.connection.timeout.second");
@@ -54,7 +54,7 @@ public abstract class AbstractNSQClientInitializer<T> implements ClientInitializ
             }
             this.connectTimeoutInMillisecond = integer;
         }
-        
+
         if (StringUtil.isEmpty(this.consumerName)) {
             final String defaultConsumerName = "sz" + "_" + getTopic() + "consumer";
             if (logger.isInfoEnabled()) {
@@ -62,9 +62,8 @@ public abstract class AbstractNSQClientInitializer<T> implements ClientInitializ
             }
             this.consumerName = defaultConsumerName;
         }
-        
-        // if (getNsqConfig().getLookupAddresses() == null || getNsqConfig().getLookupAddresses().length == 0) {
-        if (Strings.isNullOrEmpty(getNsqConfig().getLookupAddresses())) {
+
+        if (getNsqConfig().getLookupAddresses() == null || getNsqConfig().getLookupAddresses().length == 0) {
             logger.debug("nsq is null,use default set:{}", getLookupDefault());
             getNsqConfig().setLookupAddresses(getLookupDefault());
         }
@@ -74,13 +73,13 @@ public abstract class AbstractNSQClientInitializer<T> implements ClientInitializ
         getNsqConfig().setConnectTimeoutInMillisecond(connectTimeoutInMillisecond);
         getNsqConfig().setMsgTimeoutInMillisecond(msgTimeoutInMillisecond);
     }
-    
-    
+
+
     public String getTopic() {
         return this.topic;
     }
-    
-    
+
+
     /**
      * 设置主题
      */
@@ -89,58 +88,58 @@ public abstract class AbstractNSQClientInitializer<T> implements ClientInitializ
         this.topic = topic;
         return this;
     }
-    
-    
+
+
     public NSQConfig getNsqConfig() {
         return nsqConfig;
     }
-    
-    
+
+
     public String getConsumerName() {
         return consumerName;
     }
-    
-    
+
+
     public AbstractNSQClientInitializer setConsumerName(String consumerName) {
         this.consumerName = consumerName;
         return this;
     }
-    
-    
+
+
     public Integer getConnectTimeoutInMillisecond() {
         return connectTimeoutInMillisecond;
     }
-    
-    
+
+
     public AbstractNSQClientInitializer<T> setConnectTimeoutInMillisecond(Integer connectTimeoutInMillisecond) {
         this.connectTimeoutInMillisecond = connectTimeoutInMillisecond;
         return this;
     }
-    
-    
+
+
     public Integer getMsgTimeoutInMillisecond() {
         return msgTimeoutInMillisecond;
     }
-    
-    
+
+
     public AbstractNSQClientInitializer<T> setMsgTimeoutInMillisecond(Integer msgTimeoutInMillisecond) {
         this.msgTimeoutInMillisecond = msgTimeoutInMillisecond;
         return this;
     }
-    
-    
+
+
     public NSQCodec getNsqCodec() {
         return nsqCodec;
     }
-    
-    
+
+
     public AbstractNSQClientInitializer setCodec(NSQCodec nsqCodec) {
         Objects.requireNonNull(nsqCodec);
         this.nsqCodec = nsqCodec;
         return this;
     }
-    
-    
+
+
     public AbstractNSQClientInitializer setLookUp(String... lookUps) {
         if (lookUps != null && lookUps.length > 0) {
             StringBuilder lp = new StringBuilder();
@@ -149,7 +148,7 @@ public abstract class AbstractNSQClientInitializer<T> implements ClientInitializ
             }
             nsqConfig.setLookupAddresses(lp.toString());
         }
-        
+
         return this;
     }
 }
