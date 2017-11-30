@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
-import com.youzan.platform.courier.domain.Recipient;
+import com.youzan.platform.push.domain.Recipient;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.youzan.sz.common.model.BaseDTO;

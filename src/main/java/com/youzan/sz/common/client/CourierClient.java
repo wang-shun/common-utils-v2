@@ -1,10 +1,10 @@
 package com.youzan.sz.common.client;
 
 import com.youzan.platform.bootstrap.exception.BusinessException;
-import com.youzan.platform.courier.api.PushService;
+import com.youzan.platform.push.api.PushService;
 import com.youzan.platform.courier.common.MsgChannel;
-import com.youzan.platform.courier.domain.MessageContext;
-import com.youzan.platform.courier.domain.Recipient;
+import com.youzan.platform.push.domain.MessageContext;
+import com.youzan.platform.push.domain.Recipient;
 import com.youzan.sz.common.model.enums.DeviceType;
 import com.youzan.sz.common.response.enums.ResponseCode;
 import com.youzan.sz.common.util.JsonUtils;

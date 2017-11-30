@@ -11,9 +11,14 @@
     </parent>
     <!-- -->
     <artifactId>common-utils</artifactId>
-    <version>1.7.4-RELEASE</version>
+    <version>1.7.5-RELEASE</version>
 
     <dependencies>
+        <dependency>
+            <groupId>com.youzan.platform</groupId>
+            <artifactId>push-api</artifactId>
+            <version>1.0.6-RELEASE</version>
+        </dependency>
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>
