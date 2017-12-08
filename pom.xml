@@ -15,6 +15,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.youzan.paas</groupId>
+            <artifactId>march-java-sdk</artifactId>
+            <version>1.0.8</version>
+        </dependency>
+        <dependency>
             <groupId>com.youzan.platform</groupId>
             <artifactId>push-api</artifactId>
             <version>1.0.6-RELEASE</version>
@@ -22,6 +27,7 @@
         <dependency>
             <groupId>com.youzan.sz</groupId>
             <artifactId>base-model</artifactId>
+            <version>1.7.0-RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -49,6 +55,7 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>

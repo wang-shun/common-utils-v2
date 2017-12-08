@@ -1,7 +1,9 @@
 package com.youzan.sz.common.util;
 
+import com.youzan.paas.march.sdk.exceptions.MarchClientException;
 import com.youzan.sz.common.client.IdClient;
 import com.youzan.sz.common.model.number.NumberTypes;
+import com.youzan.sz.common.response.enums.ResponseCode;
 
 import org.joda.time.DateTime;
 
@@ -13,8 +15,9 @@ import java.util.UUID;
  * Created by zefa on 16/4/9.
  */
 public class NumberUtils {
-    private static final String idClientHost = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "idclient.host", "192.168.66.202");
-    private static final String idClientPort = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "idclient.port", "6000");
+    private static final String idClientHost = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "idclient.host", "10.9.193.20:7143,10.9.107.207:7143");
+    private static final String userName = "cashier";
+    private static final String password = PropertiesUtils.getProperty(ConfigsUtils.CONFIG_ENV_FILE_PATH, "idclient.password", "L5VlGJj9CsycdcSVFtIk");
     
     
     public static <T extends Number> boolean isNotBetween(T min, T max, T current) {
@@ -45,15 +48,15 @@ public class NumberUtils {
     }
     
     
-    public static void main(String[] args) throws Throwable {
-        for (int i = 0; i < 100; i++) {
-            System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
-            for (int k = 0; k < 5; k++) {
-                System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
-            }
-        }
-        
-    }
+//    public static void main(String[] args) throws Throwable {
+//        for (int i = 0; i < 100; i++) {
+//            System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
+//            for (int k = 0; k < 5; k++) {
+//                System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
+//            }
+//        }
+//
+//    }
     
     
     public static void testBatch(NumberTypes numberType, int num) {
@@ -87,8 +90,8 @@ public class NumberUtils {
         return result;
     }
     
-    //    public static void main(String args[]) {
-    //        System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
+        public static void main(String args[]) {
+//            System.out.println(NumberTypes.PRODUCT.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCT));
     //        System.out.println(NumberTypes.SKU.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKU));
     //        System.out.println(NumberTypes.SELL.getName() + ":" + NumberUtils.initNumber(NumberTypes.SELL));
     //        System.out.println(NumberTypes.RETURN.getName() + ":" + NumberUtils.initNumber(NumberTypes.RETURN));
@@ -104,13 +107,13 @@ public class NumberUtils {
     //        System.out.println(NumberTypes.BANKACCOUNTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.BANKACCOUNTID));
     //        System.out.println(NumberTypes.SPNODEID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SPNODEID));
     //        System.out.println(NumberTypes.CATEGORYID.getName() + ":" + NumberUtils.initNumber(NumberTypes.CATEGORYID));
-    //        System.out.println(NumberTypes.SHOPID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOPID));
-    //        System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
-    //        System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
-    //        System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
+            System.out.println(NumberTypes.SHOPID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SHOPID));
+            System.out.println(NumberTypes.ACCOUNT.getName() + ":" + NumberUtils.initNumber(NumberTypes.ACCOUNT));
+            System.out.println(NumberTypes.PRODUCTID.getName() + ":" + NumberUtils.initNumber(NumberTypes.PRODUCTID));
+            System.out.println(NumberTypes.SKUID.getName() + ":" + NumberUtils.initNumber(NumberTypes.SKUID));
     //        System.out.println("批量方法");
     //        NumberUtils.testBatch(NumberTypes.SELL, 10);
-    //    }
+        }
     
     
     private static List<String> batchInitSnowflakeNumber(NumberTypes numberType, int num) {
@@ -161,8 +164,12 @@ public class NumberUtils {
     
     
     private static String initSequences(NumberTypes numberType) {
-        IdClient idClient = new IdClient(idClientHost, Integer.parseInt(idClientPort));
-        return String.valueOf(idClient.getId("step", numberType.getHead()));
+        IdClient idClient = new IdClient(idClientHost, userName, password);
+        try {
+            return String.valueOf(idClient.getId(numberType.getHead()));
+        } catch (MarchClientException e) {
+            throw ResponseCode.REDIS_ERROR.getBusinessException("发号器异常，请稍后再试");
+        }
     }
     
     
